@@ -104,11 +104,16 @@ export default function OtpScreen() {
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', margin: '22px 0 0', justifyContent: 'center' }} onPaste={onPaste}>
+        <div
+          style={{ display: 'flex', gap: '10px', margin: '22px 0 0', justifyContent: 'center' }}
+          onPaste={onPaste}
+        >
           {code.map((d, i) => (
             <input
               key={i}
-              ref={(el) => { inputs.current[i] = el; }}
+              ref={(el) => {
+                inputs.current[i] = el;
+              }}
               autoFocus={i === 0}
               value={d}
               onChange={(e) => put(i, e.target.value)}
@@ -117,8 +122,14 @@ export default function OtpScreen() {
               maxLength={1}
               aria-label={t(`अंक ${i + 1}`, `Digit ${i + 1}`)}
               style={{
-                width: '52px', height: '60px', borderRadius: '10px', textAlign: 'center',
-                fontSize: '24px', fontWeight: 700, fontFamily: 'var(--sans)', color: 'var(--text)',
+                width: '52px',
+                height: '60px',
+                borderRadius: '10px',
+                textAlign: 'center',
+                fontSize: '24px',
+                fontWeight: 700,
+                fontFamily: 'var(--sans)',
+                color: 'var(--text)',
                 border: `2px solid ${error ? 'var(--rust)' : d ? 'var(--navy)' : 'var(--line)'}`,
                 background: error ? 'var(--rust-tint)' : d ? 'var(--navy-tint)' : '#fff',
                 outlineColor: 'var(--saffron)',
@@ -127,26 +138,61 @@ export default function OtpScreen() {
           ))}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '14px', minHeight: '20px', fontSize: '12.5px', color: error ? 'var(--rust)' : 'var(--muted)', fontWeight: error ? 600 : 400 }}>
-          {error ?? (
-            left > 0 ? (
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '14px',
+            minHeight: '20px',
+            fontSize: '12.5px',
+            color: error ? 'var(--rust)' : 'var(--muted)',
+            fontWeight: error ? 600 : 400,
+          }}
+        >
+          {error ??
+            (left > 0 ? (
               <>
                 <T hi="कोड नहीं आया? " en="Didn't get it? " />
                 <span style={{ color: 'var(--teal)', fontWeight: 700 }}>{mmss}</span>
               </>
             ) : (
-              <button onClick={resend} style={{ background: 'transparent', border: 0, color: 'var(--teal)', fontWeight: 700, fontSize: '12.5px', cursor: 'pointer', textDecoration: 'underline', padding: '6px' }}>
+              <button
+                onClick={resend}
+                style={{
+                  background: 'transparent',
+                  border: 0,
+                  color: 'var(--teal)',
+                  fontWeight: 700,
+                  fontSize: '12.5px',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: '6px',
+                }}
+              >
                 <T hi="कोड दोबारा भेजिए" en="Resend the code" />
               </button>
-            )
-          )}
+            ))}
         </div>
 
-        <div style={{ marginTop: '14px', textAlign: 'center', fontSize: '11px', color: 'var(--faint)', background: 'var(--panel)', border: '1px dashed var(--line)', borderRadius: '8px', padding: '8px' }}>
+        <div
+          style={{
+            marginTop: '14px',
+            textAlign: 'center',
+            fontSize: '11px',
+            color: 'var(--faint)',
+            background: 'var(--panel)',
+            border: '1px dashed var(--line)',
+            borderRadius: '8px',
+            padding: '8px',
+          }}
+        >
           <T hi={`डेमो · कोड ${MOCK_OTP}`} en={`Demo build · the code is ${MOCK_OTP}`} />
         </div>
 
-        <Primary onClick={verify} disabled={filled.length !== OTP_LENGTH || busy} style={{ marginTop: 'auto' }}>
+        <Primary
+          onClick={verify}
+          disabled={filled.length !== OTP_LENGTH || busy}
+          style={{ marginTop: 'auto' }}
+        >
           {busy ? <T hi="जाँच हो रही…" en="Checking…" /> : <T hi="आगे बढ़िए" en="Continue" />}
         </Primary>
       </div>

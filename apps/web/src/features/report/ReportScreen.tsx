@@ -9,11 +9,31 @@ import { inr, num } from '@/lib/format';
 import { Header, Primary, T } from '@/components';
 
 const Mark = ({ children, tone = 'navy' }: { children: React.ReactNode; tone?: 'navy' | 'sage' }) => (
-  <b style={{ background: tone === 'sage' ? 'var(--sage-tint)' : 'var(--navy-tint)', color: tone === 'sage' ? '#3F5637' : 'var(--navy-dark)', borderRadius: '5px', padding: '0 5px', fontWeight: 700 }}>{children}</b>
+  <b
+    style={{
+      background: tone === 'sage' ? 'var(--sage-tint)' : 'var(--navy-tint)',
+      color: tone === 'sage' ? '#3F5637' : 'var(--navy-dark)',
+      borderRadius: '5px',
+      padding: '0 5px',
+      fontWeight: 700,
+    }}
+  >
+    {children}
+  </b>
 );
 
 const Section = ({ n, hi, en }: { n: number; hi: string; en: string }) => (
-  <div style={{ fontFamily: 'var(--serif)', fontSize: '13.5px', fontWeight: 600, color: 'var(--navy-dark)', borderBottom: '1px solid var(--line)', paddingBottom: '5px', marginTop: '4px' }}>
+  <div
+    style={{
+      fontFamily: 'var(--serif)',
+      fontSize: '13.5px',
+      fontWeight: 600,
+      color: 'var(--navy-dark)',
+      borderBottom: '1px solid var(--line)',
+      paddingBottom: '5px',
+      marginTop: '4px',
+    }}
+  >
     {n} · <T hi={hi} en={en} />
   </div>
 );
@@ -37,14 +57,38 @@ export default function ReportScreen() {
     <div className="dc-phone">
       <Header onBack={() => nav.go('feasibility')} title={<T hi="पूरी रिपोर्ट" en="Full report" />} />
 
-      <div style={{ flex: 1, padding: '13px 14px 14px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '11px', background: 'var(--navy)', color: '#fff', borderRadius: '13px', padding: '10px 13px', boxShadow: 'var(--e1)' }}>
+      <div
+        style={{ flex: 1, padding: '13px 14px 14px', display: 'flex', flexDirection: 'column', gap: '9px' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '11px',
+            background: 'var(--navy)',
+            color: '#fff',
+            borderRadius: '13px',
+            padding: '10px 13px',
+            boxShadow: 'var(--e1)',
+          }}
+        >
           <div style={{ fontSize: '32px', fontWeight: 700, lineHeight: '.85' }}>
-            {report.score}<span style={{ fontSize: '11px', color: '#9FB6D3', fontWeight: 600 }}>/100</span>
+            {report.score}
+            <span style={{ fontSize: '11px', color: '#9FB6D3', fontWeight: 600 }}>/100</span>
           </div>
           <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(255,255,255,.2)' }} />
-          <div style={{ fontSize: '13px', fontWeight: 700, color: report.verdict === 'good' ? 'var(--saffron-soft)' : '#E6B94F' }}>
-            {report.verdict === 'good' ? <T hi="अच्छा मौका" en="Good opportunity" /> : <T hi="पहले जाँच लीजिए" en="Worth checking first" />}
+          <div
+            style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: report.verdict === 'good' ? 'var(--saffron-soft)' : '#E6B94F',
+            }}
+          >
+            {report.verdict === 'good' ? (
+              <T hi="अच्छा मौका" en="Good opportunity" />
+            ) : (
+              <T hi="पहले जाँच लीजिए" en="Worth checking first" />
+            )}
           </div>
         </div>
 
@@ -55,11 +99,17 @@ export default function ReportScreen() {
             hi={`${village} (${report.village.block} तहसील) में ${business} की इकाई। ${report.radiusKm} किमी के दायरे में `}
             en={`A ${business.toLowerCase()} unit in ${village} (${report.village.block} tehsil). Within ${report.radiusKm} km there are `}
           />
-          <Mark>{num(report.marketReach.households)} <T hi="घर" en="households" /></Mark>
+          <Mark>
+            {num(report.marketReach.households)} <T hi="घर" en="households" />
+          </Mark>
           <T hi=" और " en=" and " />
-          <Mark>{report.totalCompetitors} <T hi="प्रतियोगी" en="competitors" /></Mark>
+          <Mark>
+            {report.totalCompetitors} <T hi="प्रतियोगी" en="competitors" />
+          </Mark>
           <T hi=". सुझाया दाम " en=". Suggested price " />
-          <Mark tone="sage">{priceText} {unit}</Mark>
+          <Mark tone="sage">
+            {priceText} {unit}
+          </Mark>
           <T
             hi={`, जिससे अनुमानित मासिक आय ${inr(monthly)} बनती है।`}
             en={`, giving an estimated monthly income of ${inr(monthly)}.`}
@@ -67,7 +117,14 @@ export default function ReportScreen() {
         </div>
 
         {emiShare != null ? (
-          <div style={{ borderLeft: '3px solid var(--teal)', background: 'var(--teal-tint)', padding: '9px 12px', borderRadius: '0 8px 8px 0' }}>
+          <div
+            style={{
+              borderLeft: '3px solid var(--teal)',
+              background: 'var(--teal-tint)',
+              padding: '9px 12px',
+              borderRadius: '0 8px 8px 0',
+            }}
+          >
             <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#0F4E68', lineHeight: 1.4 }}>
               <T
                 hi={`“किश्त अनुमानित कमाई का लगभग ${emiShare}% है”`}
@@ -76,16 +133,23 @@ export default function ReportScreen() {
             </div>
             {emiShare > 40 ? (
               <div style={{ fontSize: '11px', color: 'var(--rust)', marginTop: '4px', fontWeight: 600 }}>
-                <T hi="यह हिस्सा ऊँचा है — कम पूँजी या लंबी अवधि पर विचार कीजिए।" en="That share is high — consider less capital or a longer tenure." />
+                <T
+                  hi="यह हिस्सा ऊँचा है — कम पूँजी या लंबी अवधि पर विचार कीजिए।"
+                  en="That share is high — consider less capital or a longer tenure."
+                />
               </div>
             ) : null}
           </div>
         ) : null}
 
         <Section n={2} hi="जोखिम एवं शर्तें" en="Risks & conditions" />
-        <ul style={{ fontSize: '11px', lineHeight: 1.6, color: 'var(--text)', margin: 0, paddingLeft: '16px' }}>
+        <ul
+          style={{ fontSize: '11px', lineHeight: 1.6, color: 'var(--text)', margin: 0, paddingLeft: '16px' }}
+        >
           {report.swot.weaknesses.concat(report.swot.threats).map((r, i) => (
-            <li key={i} style={{ marginBottom: '3px' }}>{label(r, s.lang)}</li>
+            <li key={i} style={{ marginBottom: '3px' }}>
+              {label(r, s.lang)}
+            </li>
           ))}
           {plan && !isGap(plan) ? (
             <li style={{ marginBottom: '3px' }}>
@@ -99,10 +163,34 @@ export default function ReportScreen() {
 
         <button
           onClick={() => nav.go('swot')}
-          style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: '11px', padding: '11px 13px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12.5px', fontWeight: 600, color: 'var(--navy)', boxShadow: 'var(--e1)', minHeight: '44px' }}
+          style={{
+            background: '#fff',
+            border: '1px solid var(--line)',
+            borderRadius: '11px',
+            padding: '11px 13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            fontSize: '12.5px',
+            fontWeight: 600,
+            color: 'var(--navy)',
+            boxShadow: 'var(--e1)',
+            minHeight: '44px',
+          }}
         >
           <T hi="पूरा SWOT देखिए" en="See the full SWOT" />
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ marginLeft: 'auto' }}><path d="M9 6l6 6-6 6" /></svg>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            style={{ marginLeft: 'auto' }}
+          >
+            <path d="M9 6l6 6-6 6" />
+          </svg>
         </button>
 
         <Primary onClick={() => nav.go('scheme')} arrow style={{ marginTop: 'auto' }}>

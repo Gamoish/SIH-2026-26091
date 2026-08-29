@@ -28,7 +28,10 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     ],
     annualRevenueRatio: 1.75,
     strengths: [
-      { hi: 'कच्चा माल (सखुआ पत्ता) पास के जंगल से मिलता है', en: 'Raw material (sal leaf) comes from the nearby forest' },
+      {
+        hi: 'कच्चा माल (सखुआ पत्ता) पास के जंगल से मिलता है',
+        en: 'Raw material (sal leaf) comes from the nearby forest',
+      },
       { hi: 'मशीन चलाना एक हफ़्ते में सीखा जा सकता है', en: 'The machine can be learned in about a week' },
     ],
     weaknesses: [
@@ -123,7 +126,10 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
       { hi: 'काम मौसम पर निर्भर', en: 'Work depends on the season' },
     ],
     opportunities: [
-      { hi: 'सरकारी आवास योजनाओं से फ़र्नीचर के ऑर्डर', en: 'Furniture orders from government housing schemes' },
+      {
+        hi: 'सरकारी आवास योजनाओं से फ़र्नीचर के ऑर्डर',
+        en: 'Furniture orders from government housing schemes',
+      },
     ],
     threats: [
       { hi: 'लकड़ी के दाम बढ़ना', en: 'Rising timber prices' },
@@ -150,9 +156,7 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
       { hi: 'बीमारी से पूरा बैच जा सकता है', en: 'Disease can take an entire batch' },
       { hi: 'रोज़ की देखभाल ज़रूरी', en: 'Needs daily attention' },
     ],
-    opportunities: [
-      { hi: 'दुद्धी की माँस दुकानों को सीधी सप्लाई', en: 'Direct supply to Dudhi meat shops' },
-    ],
+    opportunities: [{ hi: 'दुद्धी की माँस दुकानों को सीधी सप्लाई', en: 'Direct supply to Dudhi meat shops' }],
     threats: [
       { hi: 'दाने का दाम बढ़ना', en: 'Rising feed prices' },
       { hi: 'बीमारी फैलने पर बाज़ार बंद', en: 'Market closure during a disease scare' },

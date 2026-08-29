@@ -13,11 +13,17 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (!s.village || !s.business || s.capital == null) return;
     let live = true;
-    MOCK_api
-      .feasibility({ villageId: s.village, businessId: s.business, radiusKm: s.radiusKm, capital: s.capital })
+    MOCK_api.feasibility({
+      villageId: s.village,
+      businessId: s.business,
+      radiusKm: s.radiusKm,
+      capital: s.capital,
+    })
       .then(() => live && nav.replace('feasibility'))
       .catch(() => live && setFailed(true));
-    return () => { live = false; };
+    return () => {
+      live = false;
+    };
   }, [s.village, s.business, s.capital, s.radiusKm, nav]);
 
   return (
@@ -37,19 +43,49 @@ export default function LoadingScreen() {
         </div>
         <div className="skel" style={{ height: '90px', borderRadius: '14px' }} />
 
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', paddingBottom: '6px' }}>
+        <div
+          style={{
+            marginTop: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '10px',
+            paddingBottom: '6px',
+          }}
+        >
           {failed ? (
             <>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--rust)' }}>
                 <T hi="रिपोर्ट नहीं बन सकी" en="The report could not be built" />
               </div>
-              <button onClick={() => nav.go('category')} style={{ background: 'var(--saffron)', color: '#fff', border: 0, borderRadius: '10px', padding: '11px 18px', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
+              <button
+                onClick={() => nav.go('category')}
+                style={{
+                  background: 'var(--saffron)',
+                  color: '#fff',
+                  border: 0,
+                  borderRadius: '10px',
+                  padding: '11px 18px',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
                 <T hi="दोबारा कोशिश कीजिए" en="Try again" />
               </button>
             </>
           ) : (
             <>
-              <div style={{ width: '34px', height: '34px', borderRadius: '50%', border: '3px solid var(--navy-tint)', borderTopColor: 'var(--saffron)', animation: 'spin .9s linear infinite' }} />
+              <div
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  border: '3px solid var(--navy-tint)',
+                  borderTopColor: 'var(--saffron)',
+                  animation: 'spin .9s linear infinite',
+                }}
+              />
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--navy)' }}>
                 <T hi="आपकी रिपोर्ट बन रही है…" en="Building your report…" />
               </div>

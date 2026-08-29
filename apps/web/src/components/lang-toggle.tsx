@@ -33,10 +33,18 @@ export function LangToggle() {
         boxShadow: 'var(--e2)',
       }}
     >
-      <button onClick={() => setLang('en')} style={{ ...pill(lang === 'en'), fontSize: '12px' }} aria-label="English">
+      <button
+        onClick={() => setLang('en')}
+        style={{ ...pill(lang === 'en'), fontSize: '12px' }}
+        aria-label="English"
+      >
         EN
       </button>
-      <button onClick={() => setLang('hi')} style={{ ...pill(lang === 'hi'), fontSize: '13px' }} aria-label="हिंदी">
+      <button
+        onClick={() => setLang('hi')}
+        style={{ ...pill(lang === 'hi'), fontSize: '13px' }}
+        aria-label="हिंदी"
+      >
         हिं
       </button>
     </div>

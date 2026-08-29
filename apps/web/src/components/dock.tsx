@@ -5,10 +5,27 @@ import { useNav, useStartCheck } from '@/lib/nav';
 import { T } from './bilingual';
 
 const ICONS = {
-  home: <><rect x="3" y="3" width="7" height="9" rx="1" /><rect x="14" y="3" width="7" height="5" rx="1" /><rect x="14" y="12" width="7" height="9" rx="1" /><rect x="3" y="16" width="7" height="5" rx="1" /></>,
+  home: (
+    <>
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </>
+  ),
   add: <path d="M12 5v14M5 12h14" />,
-  doc: <><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></>,
-  gear: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
+  doc: (
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+    </>
+  ),
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+    </>
+  ),
 };
 
 export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings' }) {
@@ -21,17 +38,50 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
     { id: 'settings', go: () => nav.go('settings'), icon: ICONS.gear, hi: 'सेटिंग्स', en: 'Settings' },
   ];
   return (
-    <nav style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-around', borderTop: '1px solid var(--line)', paddingTop: '10px', gap: '4px' }}>
+    <nav
+      style={{
+        marginTop: 'auto',
+        display: 'flex',
+        justifyContent: 'space-around',
+        borderTop: '1px solid var(--line)',
+        paddingTop: '10px',
+        gap: '4px',
+      }}
+    >
       {tabs.map((t) => {
         const on = t.id === active;
         return (
           <button
             key={t.id}
             onClick={t.go}
-            style={{ background: 'transparent', border: 0, cursor: 'pointer', fontFamily: 'var(--sans)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: on ? 'var(--navy)' : 'var(--faint)', padding: '4px 10px', minHeight: '44px' }}
+            style={{
+              background: 'transparent',
+              border: 0,
+              cursor: 'pointer',
+              fontFamily: 'var(--sans)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '3px',
+              color: on ? 'var(--navy)' : 'var(--faint)',
+              padding: '4px 10px',
+              minHeight: '44px',
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">{t.icon}</svg>
-            <span style={{ fontSize: '9.5px', fontWeight: on ? 700 : 400 }}><T hi={t.hi} en={t.en} /></span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            >
+              {t.icon}
+            </svg>
+            <span style={{ fontSize: '9.5px', fontWeight: on ? 700 : 400 }}>
+              <T hi={t.hi} en={t.en} />
+            </span>
           </button>
         );
       })}

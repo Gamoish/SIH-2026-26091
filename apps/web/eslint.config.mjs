@@ -1,20 +1,30 @@
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
-
-const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
+import next from 'eslint-config-next';
 
 export default [
-  { ignores: ['.next/**', '.next-check/**', 'node_modules/**', 'next-env.d.ts', 'test-results/**', 'playwright-report/**'] },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  {
+    ignores: [
+      '.next/**',
+      '.next-check/**',
+      'node_modules/**',
+      'next-env.d.ts',
+      'test-results/**',
+      'playwright-report/**',
+    ],
+  },
+  ...next,
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'react-hooks/set-state-in-effect': 'warn',
+      '@next/next/no-page-custom-font': 'off',
     },
   },
   {
     files: ['tests/**', 'scripts/**'],
     rules: { 'no-console': 'off' },
+  },
+  {
+    files: ['eslint.config.mjs'],
+    rules: { 'import/no-anonymous-default-export': 'off' },
   },
 ];

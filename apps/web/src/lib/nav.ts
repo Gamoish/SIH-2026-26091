@@ -6,9 +6,26 @@ import { useSession } from '@/hooks/use-session';
 import type { Session } from '@/types';
 
 export type Slug =
-  | 'language' | 'phone' | 'otp' | 'social' | 'location' | 'capital' | 'category'
-  | 'loading' | 'feasibility' | 'report' | 'swot' | 'competitors' | 'pricing'
-  | 'scheme' | 'emi' | 'share' | 'home' | 'saved' | 'settings' | 'empty';
+  | 'language'
+  | 'phone'
+  | 'otp'
+  | 'social'
+  | 'location'
+  | 'capital'
+  | 'category'
+  | 'loading'
+  | 'feasibility'
+  | 'report'
+  | 'swot'
+  | 'competitors'
+  | 'pricing'
+  | 'scheme'
+  | 'emi'
+  | 'share'
+  | 'home'
+  | 'saved'
+  | 'settings'
+  | 'empty';
 
 export const ONBOARDING: Slug[] = ['language', 'phone', 'otp', 'social', 'location', 'capital', 'category'];
 

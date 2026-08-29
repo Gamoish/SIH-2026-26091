@@ -1,8 +1,31 @@
+# dependencies
 node_modules/
+.pnpm-store/
+
+# builds
 .next*/
-.env.local
+out/
+dist/
 *.tsbuildinfo
+
+# test output
 test-results/
 playwright-report/
+blob-report/
+playwright/.cache/
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# local agent/tooling notes
 CLAUDE.md
 PRD.md

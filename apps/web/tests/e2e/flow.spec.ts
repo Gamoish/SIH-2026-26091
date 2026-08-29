@@ -7,11 +7,24 @@ const pill = (p: Page) => p.locator('body > div').last();
 
 async function onboard(
   page: Page,
-  opts: { phone?: string; name?: string; social?: string; village?: string; radius?: string; capital?: string; business?: string } = {},
+  opts: {
+    phone?: string;
+    name?: string;
+    social?: string;
+    village?: string;
+    radius?: string;
+    capital?: string;
+    business?: string;
+  } = {},
 ) {
   const {
-    phone = '9876543210', name = 'Suresh Kharwar', social = 'Scheduled Tribe',
-    village = 'Jarha', radius = '10 km', capital = '22000', business = 'Leaf plates',
+    phone = '9876543210',
+    name = 'Suresh Kharwar',
+    social = 'Scheduled Tribe',
+    village = 'Jarha',
+    radius = '10 km',
+    capital = '22000',
+    business = 'Leaf plates',
   } = opts;
 
   await page.goto('/');
@@ -78,7 +91,13 @@ test('a first-time user reaches a report and a repayment plan', async ({ page })
 });
 
 test('the numbers follow the input rather than a fixed demo case', async ({ page }) => {
-  await onboard(page, { social: 'Scheduled Caste', capital: '11000', business: 'Tailoring', village: 'Myorpur', radius: '5 km' });
+  await onboard(page, {
+    social: 'Scheduled Caste',
+    capital: '11000',
+    business: 'Tailoring',
+    village: 'Myorpur',
+    radius: '5 km',
+  });
 
   await page.goto('/screens/scheme');
   await expect(page.getByText('NSFDC Term Loan')).toBeVisible();

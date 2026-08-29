@@ -76,11 +76,12 @@ export function buildReport(opts: {
     pricing: { suggested: round(suggested), low: round(suggested * 0.85), high: round(suggested * 1.2) },
     score,
     verdict: score >= 60 ? 'good' : 'check',
-    limiter: score >= 60
-      ? ('none' as const)
-      : totalCompetitors === 0
-        ? ('thin-market' as const)
-        : ('crowded' as const),
+    limiter:
+      score >= 60
+        ? ('none' as const)
+        : totalCompetitors === 0
+          ? ('thin-market' as const)
+          : ('crowded' as const),
     estimatedAnnualRevenue: Math.round(projectCost * business.annualRevenueRatio),
     swot: {
       strengths: business.strengths,

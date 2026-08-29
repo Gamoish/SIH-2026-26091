@@ -16,8 +16,7 @@ export type SendOtpResponse = {
 
 export type VerifyOtpRequest = { requestId: string; phone: string; code: string };
 export type VerifyOtpResponse =
-  | { ok: true; token: string }
-  | { ok: false; error: 'invalid_code' | 'expired' };
+  { ok: true; token: string } | { ok: false; error: 'invalid_code' | 'expired' };
 
 export type FeasibilityRequest = {
   villageId: string;

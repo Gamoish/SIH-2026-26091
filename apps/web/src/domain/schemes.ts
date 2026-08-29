@@ -25,7 +25,8 @@ export const SCHEMES: SchemeRow[] = [
     tenureMonths: 48,
     moratoriumMonths: 6,
     beneficiaryPct: 10,
-    source: 'Product design spec (P4/D7 comparison table) — TODO: re-confirm against the NSFDC term-loan circular before any real application.',
+    source:
+      'Product design spec (P4/D7 comparison table) — TODO: re-confirm against the NSFDC term-loan circular before any real application.',
   },
   {
     code: 'NSTFDC',
@@ -39,7 +40,8 @@ export const SCHEMES: SchemeRow[] = [
     tenureMonths: 48,
     moratoriumMonths: 6,
     beneficiaryPct: 10,
-    source: 'Product design spec (P4/D7 scheme card) — TODO: re-confirm against the NSTFDC term-loan circular before any real application.',
+    source:
+      'Product design spec (P4/D7 scheme card) — TODO: re-confirm against the NSTFDC term-loan circular before any real application.',
   },
   {
     code: 'NBCFDC',
@@ -53,7 +55,8 @@ export const SCHEMES: SchemeRow[] = [
     tenureMonths: null,
     moratoriumMonths: null,
     beneficiaryPct: null,
-    source: 'TODO: confirm rate, tenure, moratorium and contribution percent from the NBCFDC scheme documents.',
+    source:
+      'TODO: confirm rate, tenure, moratorium and contribution percent from the NBCFDC scheme documents.',
   },
 ];
 

@@ -1,11 +1,22 @@
 {
   "name": "disha",
+  "version": "0.1.0",
   "private": true,
+  "description": "Hyper-local business feasibility and government loan-scheme advisor for rural micro-entrepreneurs",
+  "license": "MIT",
+  "packageManager": "pnpm@11.15.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
     "lint": "pnpm --filter web lint",
+    "format": "pnpm --filter web format",
+    "format:check": "pnpm --filter web format:check",
     "typecheck": "pnpm --filter web typecheck",
-    "test": "pnpm --filter web test"
+    "test": "pnpm --filter web test",
+    "e2e": "pnpm --filter web exec playwright test"
   }
 }

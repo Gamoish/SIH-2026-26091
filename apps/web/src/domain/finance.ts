@@ -50,8 +50,9 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
   const scheme = schemeFor(social);
   if (!scheme) return { unavailable: true, scheme: null, missing: ['scheme'] };
 
-  const missing = (['interestPct', 'tenureMonths', 'moratoriumMonths', 'beneficiaryPct'] as const)
-    .filter((k) => scheme[k] == null);
+  const missing = (['interestPct', 'tenureMonths', 'moratoriumMonths', 'beneficiaryPct'] as const).filter(
+    (k) => scheme[k] == null,
+  );
   if (missing.length) return { unavailable: true, scheme, missing };
 
   const interestPct = scheme.interestPct!;
@@ -71,7 +72,11 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
   const years: YearRow[] = [];
   let balance = amortised;
   let totalRepaid = 0;
-  for (let m = 1, y = { year: 1, paid: 0, interest: 0, instalments: 0, hasGrace: false }; m <= tenureMonths; m++) {
+  for (
+    let m = 1, y = { year: 1, paid: 0, interest: 0, instalments: 0, hasGrace: false };
+    m <= tenureMonths;
+    m++
+  ) {
     if (m <= moratoriumMonths) {
       y.hasGrace = true;
     } else {

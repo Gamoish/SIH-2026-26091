@@ -44,7 +44,20 @@ export default function PhoneScreen() {
       />
 
       <div style={{ flex: 1, padding: '20px 20px 22px', display: 'flex', flexDirection: 'column' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', border: `2px solid ${error ? 'var(--rust)' : 'var(--navy)'}`, borderRadius: '14px', padding: '15px 16px', background: '#fff', boxShadow: error ? '0 0 0 4px var(--rust-tint)' : '0 0 0 4px var(--navy-tint),var(--e2)', marginTop: '18px', cursor: 'text' }}>
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            border: `2px solid ${error ? 'var(--rust)' : 'var(--navy)'}`,
+            borderRadius: '14px',
+            padding: '15px 16px',
+            background: '#fff',
+            boxShadow: error ? '0 0 0 4px var(--rust-tint)' : '0 0 0 4px var(--navy-tint),var(--e2)',
+            marginTop: '18px',
+            cursor: 'text',
+          }}
+        >
           <span style={{ fontSize: '22px', fontWeight: 700 }}>+91</span>
           <span style={{ width: '1px', height: '26px', background: 'var(--line)' }} />
           <input
@@ -57,12 +70,33 @@ export default function PhoneScreen() {
             onKeyDown={(e) => e.key === 'Enter' && submit()}
             placeholder="98765 43210"
             aria-label={t('मोबाइल नंबर', 'Mobile number')}
-            style={{ flex: 1, minWidth: 0, border: 0, outline: 'none', fontSize: '22px', fontWeight: 700, color: 'var(--text)', letterSpacing: '.02em', fontFamily: 'var(--sans)', background: 'transparent' }}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              border: 0,
+              outline: 'none',
+              fontSize: '22px',
+              fontWeight: 700,
+              color: 'var(--text)',
+              letterSpacing: '.02em',
+              fontFamily: 'var(--sans)',
+              background: 'transparent',
+            }}
           />
         </label>
 
-        <div style={{ marginTop: '10px', minHeight: '18px', fontSize: '12px', color: error ? 'var(--rust)' : 'var(--muted)' }}>
-          {error ?? (digits.length > 0 && !isValid(digits) ? <T hi="10 अंकों का नंबर डालिए (6–9 से शुरू)" en="Enter a 10-digit number starting 6–9" /> : null)}
+        <div
+          style={{
+            marginTop: '10px',
+            minHeight: '18px',
+            fontSize: '12px',
+            color: error ? 'var(--rust)' : 'var(--muted)',
+          }}
+        >
+          {error ??
+            (digits.length > 0 && !isValid(digits) ? (
+              <T hi="10 अंकों का नंबर डालिए (6–9 से शुरू)" en="Enter a 10-digit number starting 6–9" />
+            ) : null)}
         </div>
 
         <Primary onClick={submit} disabled={!isValid(digits) || sending} style={{ marginTop: 'auto' }}>

@@ -15,7 +15,12 @@ export function useCase(): {
   const report = useMemo(
     () =>
       s.village && s.business && s.capital != null
-        ? buildReport({ villageId: s.village, businessId: s.business, radiusKm: s.radiusKm, capital: s.capital })
+        ? buildReport({
+            villageId: s.village,
+            businessId: s.business,
+            radiusKm: s.radiusKm,
+            capital: s.capital,
+          })
         : null,
     [s.village, s.business, s.capital, s.radiusKm],
   );
