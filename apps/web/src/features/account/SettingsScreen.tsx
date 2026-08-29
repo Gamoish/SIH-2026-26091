@@ -1,0 +1,83 @@
+'use client';
+import React from 'react';
+import { useSession } from '@/hooks/use-session';
+import { useNav } from '@/lib/nav';
+import { Dock, Header, T, useT } from '@/components';
+
+export default function SettingsScreen() {
+  const { s, set, reset } = useSession();
+  const nav = useNav();
+  const t = useT();
+
+  const logout = () => {
+    if (!confirm(t('लॉग आउट करें? आपकी जाँच इस फ़ोन से हट जाएगी।', 'Log out? Your check will be removed from this phone.'))) return;
+    reset();
+    nav.replace('language');
+  };
+
+  return (
+    <div className="dc-phone">
+      <Header onBack={() => nav.go('home')} title={<T hi="सेटिंग्स" en="Settings" />} />
+
+      <div style={{ flex: 1, padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+        <div style={{ background: '#fff', border: '1px solid var(--line)', borderRadius: '12px', padding: '12px 14px', boxShadow: 'var(--e1)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2.2"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" /></svg>
+            <div style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}><T hi="भाषा" en="Language" /></div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+            {(['hi', 'en'] as const).map((code) => {
+              const on = s.lang === code;
+              return (
+                <button
+                  key={code}
+                  onClick={() => set({ lang: code })}
+                  style={{ flex: 1, minHeight: '42px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 700, background: on ? 'var(--navy)' : '#fff', color: on ? '#fff' : 'var(--text)', border: on ? '2px solid var(--navy)' : '1px solid var(--line)' }}
+                >
+                  {code === 'hi' ? 'हिंदी' : 'English'}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <Line hi="फ़ोन नंबर" en="Phone number" value={s.phone ? `+91 ${s.phone}` : '—'} />
+        <Line hi="आपका वर्ग" en="Your category" value={s.social ?? '—'} onClick={() => nav.go('social')} />
+
+        <button
+          onClick={() => nav.go('saved')}
+          style={{ width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--line)', borderRadius: '12px', padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--e1)', cursor: 'pointer', minHeight: '50px' }}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2.2"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 8h10M7 12h5" /></svg>
+          <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}><T hi="सहेजे आवेदन" en="Saved applications" /></span>
+          <span style={{ fontSize: '9.5px', fontWeight: 700, color: 'var(--navy)', background: 'var(--navy-tint)', borderRadius: '20px', padding: '2px 8px' }}>{s.savedAt ? 1 : 0}</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2.4"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+
+        <button
+          onClick={logout}
+          style={{ marginTop: 'auto', width: '100%', background: '#fff', border: '1px solid var(--rust-tint)', borderRadius: '12px', padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--e1)', cursor: 'pointer', minHeight: '50px' }}
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" strokeWidth="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></svg>
+          <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--rust)' }}><T hi="लॉग आउट" en="Log out" /></span>
+        </button>
+
+        <Dock active="settings" />
+      </div>
+    </div>
+  );
+}
+
+function Line({ hi, en, value, onClick }: { hi: string; en: string; value: string; onClick?: () => void }) {
+  const Tag = onClick ? 'button' : 'div';
+  return (
+    <Tag
+      onClick={onClick}
+      style={{ width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--line)', borderRadius: '12px', padding: '13px 14px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--e1)', cursor: onClick ? 'pointer' : 'default', minHeight: '50px', fontFamily: 'var(--sans)', color: 'var(--text)' }}
+    >
+      <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}><T hi={hi} en={en} /></span>
+      <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>{value}</span>
+      {onClick ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2.4"><path d="M9 6l6 6-6 6" /></svg> : null}
+    </Tag>
+  );
+}
