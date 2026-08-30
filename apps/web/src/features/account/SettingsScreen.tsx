@@ -150,9 +150,9 @@ export default function SettingsScreen() {
             <T hi="लॉग आउट" en="Log out" />
           </span>
         </button>
-
-        <Dock active="settings" />
       </div>
+
+      <Dock active="settings" />
     </div>
   );
 }

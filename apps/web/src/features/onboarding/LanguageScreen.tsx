@@ -48,18 +48,23 @@ export default function LanguageScreen() {
             boxShadow: 'var(--e2)',
           }}
         >
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 3v9l6 3" />
-            <circle cx="12" cy="12" r="9" />
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" role="presentation">
+            <circle cx="12" cy="12" r="9.1" stroke="#fff" strokeWidth="1.5" />
+            <g stroke="#fff" strokeWidth="1.1" strokeLinecap="round">
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(0 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(30 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(60 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(90 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(120 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(150 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(180 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(210 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(240 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(270 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(300 12 12)" />
+              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(330 12 12)" />
+            </g>
+            <circle cx="12" cy="12" r="1.7" fill="#fff" />
           </svg>
           <div
             style={{

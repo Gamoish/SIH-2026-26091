@@ -40,11 +40,16 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
   return (
     <nav
       style={{
-        marginTop: 'auto',
+        // The last band in a min-height:100dvh frame, so it is already flush
+        // with the bottom edge: full-bleed, no floating gap.
+        // ponytail: not sticky - these screens never outrun the viewport, and
+        // sticky here double-paints in Chromium. If a dock screen ever scrolls,
+        // give the content area its own overflow-y instead.
         display: 'flex',
         justifyContent: 'space-around',
-        borderTop: '1px solid var(--line)',
-        paddingTop: '10px',
+        background: 'var(--navy)',
+        borderTop: '1px solid var(--navy-800)',
+        padding: '8px 6px calc(8px + env(safe-area-inset-bottom))',
         gap: '4px',
       }}
     >
@@ -63,7 +68,7 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
               flexDirection: 'column',
               alignItems: 'center',
               gap: '3px',
-              color: on ? 'var(--navy)' : 'var(--faint)',
+              color: on ? '#fff' : '#8FB0D6',
               padding: '4px 10px',
               minHeight: '44px',
             }}

@@ -179,9 +179,9 @@ export default function HomeScreen() {
           title={<T hi="आपके सभी आवेदन" en="All your applications" />}
           sub={<T hi={`${done ? 1 : 0} आवेदन`} en={`${done ? 1 : 0} application`} />}
         />
-
-        <Dock active="home" />
       </div>
+
+      <Dock active="home" />
     </div>
   );
 }

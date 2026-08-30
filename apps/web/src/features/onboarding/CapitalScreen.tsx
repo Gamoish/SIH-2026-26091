@@ -7,27 +7,18 @@ import { label } from '@/domain/feasibility';
 import { MOCK_VILLAGES } from '@/data/villages';
 import { MOCK_BUSINESSES } from '@/data/businesses';
 import { inr } from '@/lib/format';
-import { Header, Primary, Steps, T } from '@/components';
-
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', '⌫'];
+import { Header, Primary, Steps, T, useT } from '@/components';
 
 export default function CapitalScreen() {
   const { s, set } = useSession();
   const nav = useNav();
+  const t = useT();
   const [digits, setDigits] = useState(s.capital != null ? String(s.capital) : '');
 
   const capital = digits === '' ? 0 : Number(digits);
   const plan = s.social && capital > 0 ? planLoan(capital, s.social) : null;
   const village = MOCK_VILLAGES.find((v) => v.id === s.village);
   const business = s.business ? MOCK_BUSINESSES[s.business] : null;
-
-  const press = (k: string) => {
-    setDigits((d) => {
-      if (k === '⌫') return d.slice(0, -1);
-      const next = (d + k).replace(/^0+(?=\d)/, '');
-      return next.length > 8 ? d : next;
-    });
-  };
 
   const submit = () => {
     if (capital <= 0) return;
@@ -130,27 +121,52 @@ export default function CapitalScreen() {
           <div style={{ fontSize: '12.5px', color: 'var(--muted)' }}>
             <T hi="आपकी अपनी पूँजी" en="Your own capital" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '4px', minHeight: '42px' }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', minHeight: '48px' }}
+          >
             <span
               style={{
                 fontSize: '34px',
                 fontWeight: 700,
                 color: capital ? 'var(--navy-dark)' : 'var(--faint)',
-                letterSpacing: '-.01em',
+                flex: 'none',
               }}
             >
-              {capital ? inr(capital) : '₹0'}
+              ₹
             </span>
-            <span
+            <input
+              value={digits}
+              onChange={(e) =>
+                setDigits(
+                  e.target.value
+                    .replace(/\D/g, '')
+                    .replace(/^0+(?=\d)/, '')
+                    .slice(0, 8),
+                )
+              }
+              inputMode="numeric"
+              type="text"
+              autoFocus
+              placeholder="0"
+              aria-label={t('अपनी पूँजी, रुपये में', 'Your own capital, in rupees')}
               style={{
-                width: '3px',
-                height: '30px',
-                background: 'var(--saffron)',
-                borderRadius: '2px',
-                marginLeft: '3px',
-                animation: 'blink 1s step-end infinite',
+                flex: 1,
+                minWidth: 0,
+                width: '100%',
+                border: 0,
+                outline: 'none',
+                background: 'transparent',
+                padding: 0,
+                fontFamily: 'var(--sans)',
+                fontSize: '34px',
+                fontWeight: 700,
+                color: 'var(--navy-dark)',
+                letterSpacing: '-.01em',
               }}
             />
+            {capital > 0 ? (
+              <span style={{ fontSize: '12px', color: 'var(--muted)', flex: 'none' }}>{inr(capital)}</span>
+            ) : null}
           </div>
         </div>
 
@@ -248,29 +264,7 @@ export default function CapitalScreen() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '7px', marginTop: 'auto' }}>
-          {KEYS.map((k) => (
-            <button
-              key={k}
-              onClick={() => press(k)}
-              style={{
-                minHeight: '44px',
-                border: '1px solid var(--line)',
-                background: k === '⌫' ? 'var(--bg)' : '#fff',
-                borderRadius: '10px',
-                fontSize: '18px',
-                fontWeight: 600,
-                color: k === '⌫' ? 'var(--muted)' : 'var(--text)',
-                cursor: 'pointer',
-                boxShadow: k === '⌫' ? 'none' : 'var(--e1)',
-              }}
-            >
-              {k}
-            </button>
-          ))}
-        </div>
-
-        <Primary onClick={submit} disabled={capital <= 0} arrow>
+        <Primary onClick={submit} disabled={capital <= 0} arrow style={{ marginTop: 'auto' }}>
           <T hi="आगे · कारोबार चुनिए" en="Next · choose business" />
         </Primary>
       </div>

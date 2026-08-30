@@ -58,3 +58,35 @@ first request, which under parallel workers looks like a test failure.
   `useCase()`; they never hold their own copy of an answer.
 - Both languages render into the DOM and CSS hides one, so switching is instant.
 - Mock data is `MOCK_`-prefixed and lives only in `src/data/`.
+
+## The monument motif
+
+Every screen carries its own Indian monument as a faint silhouette at the bottom,
+above a thin tricolour strip — Taj Mahal on the capital step, Charminar on phone
+entry, Brihadeeswarar Temple on SWOT, and so on. Nineteen screens, nineteen
+monuments, no repeats.
+
+- `public/monuments/*.svg` — one silhouette each, all on a shared `0 0 640 130`
+  canvas with a common baseline so they read as one family.
+- `src/lib/monuments.ts` — the screen-to-monument map.
+- `app/screens/layout.tsx` — sets `--monument` per route, so no screen knows
+  about any of this.
+- `src/styles/globals.css` — `.dc-phone::before` masks the SVG and colours it
+  from `--navy`; `::after` draws the tricolour.
+
+Because it is a CSS mask, the SVGs are plain shapes and the tone comes from a
+variable. A white fill inside one would render **solid**, not as a hole — a mask
+reads alpha. Cut holes with a single `fill-rule="evenodd"` path instead (see
+`jantar-mantar.svg`); `tests/monuments.test.mjs` guards against the mistake, along
+with missing files, orphans and duplicate assignments.
+
+Both layers are `pointer-events: none` at `z-index: 0`, with `.dc-phone > *`
+lifted to `z-index: 1`, so the motif can never intercept a tap or sit over the
+CTA. Hidden in print. A screen with no mapping falls back to `public/skyline.svg`,
+a combined strip.
+
+`--skyline-h` is deliberately taller than the monuments themselves. The band is
+anchored to the bottom of the frame, and the CTA plus its padding occupy roughly
+the lowest 86px — at a shorter height the whole silhouette hid behind the button
+on screens whose monument sits low, such as Sanchi Stupa. Shrinking it will make
+those screens look empty again.

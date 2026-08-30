@@ -3,7 +3,6 @@ import { test, expect, type Page } from '@playwright/test';
 const OTP = '1234';
 
 const screen = (p: Page) => p.locator('.dc-phone');
-const pill = (p: Page) => p.locator('body > div').last();
 
 async function onboard(
   page: Page,
@@ -52,7 +51,7 @@ async function onboard(
   await page.getByRole('button', { name: /Next · enter capital/ }).click();
 
   await expect(page).toHaveURL(/\/screens\/capital/);
-  for (const d of capital) await page.getByRole('button', { name: d, exact: true }).click();
+  await page.getByLabel('Your own capital, in rupees').fill(capital);
   await page.getByRole('button', { name: /Next · choose business/ }).click();
 
   await expect(page).toHaveURL(/\/screens\/category/);
@@ -156,9 +155,27 @@ test('language persists across navigation and reload', async ({ page }) => {
 
   await page.reload();
   await expect(page.getByText('Enter your mobile number')).toBeVisible();
+});
 
-  await pill(page).getByRole('button', { name: 'हिंदी' }).click();
-  await expect(page.getByText('अपना मोबाइल नंबर डालिए')).toBeVisible();
+test('language is changed from Settings once it has been picked', async ({ page }) => {
+  await onboard(page);
+
+  // the floating corner toggle is gone from every screen
+  for (const slug of FLOW) {
+    await page.goto(`/screens/${slug}`);
+    await expect(page.getByLabel('हिंदी'), `${slug} still shows the corner toggle`).toHaveCount(0);
+    await expect(page.getByLabel('English'), `${slug} still shows the corner toggle`).toHaveCount(0);
+  }
+
+  // ...and Settings is where language now lives
+  await page.goto('/screens/settings');
+  await page.getByRole('button', { name: 'हिंदी', exact: true }).click();
+  await expect(page.getByText('सेटिंग्स').first()).toBeVisible();
+
+  await page.goto('/screens/home');
+  await expect(page.getByText('नमस्ते')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('नमस्ते')).toBeVisible();
 });
 
 test('browser back and forward move between real routes', async ({ page }) => {
@@ -231,5 +248,163 @@ test('no fake phone chrome anywhere', async ({ page }) => {
   for (const path of ['feasibility', 'report', 'scheme', 'emi', 'share', 'home', 'settings']) {
     await page.goto(`/screens/${path}`);
     await expect(page.getByText('9:41')).toHaveCount(0);
+  }
+});
+
+test('the monument motif is decoration only', async ({ page }) => {
+  await page.goto('/screens/language');
+  await screen(page).getByRole('button', { name: 'English' }).click();
+  await expect(page).toHaveURL(/\/screens\/phone/);
+
+  const frame = page.locator('.dc-phone');
+  await frame.waitFor();
+  const skyline = await frame.evaluate((el) => {
+    const s = getComputedStyle(el, '::before');
+    const mask = s.getPropertyValue('mask-image') || s.getPropertyValue('-webkit-mask-image');
+    return { mask, opacity: s.opacity, events: s.pointerEvents };
+  });
+  expect(skyline.mask).toContain('/monuments/');
+  expect(Number(skyline.opacity)).toBeGreaterThan(0.05);
+  expect(Number(skyline.opacity)).toBeLessThan(0.2);
+  expect(skyline.events).toBe('none');
+
+  const tricolor = await frame.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(tricolor).toContain('gradient');
+
+  const flag = await frame.evaluate((el) => {
+    const s = getComputedStyle(el.firstElementChild!, '::before');
+    return { bg: s.backgroundImage, events: s.pointerEvents };
+  });
+  expect(flag.bg).toContain('flag-corner.svg');
+  expect(flag.events).toBe('none');
+
+  await page.getByLabel('Mobile number').fill('9876543210');
+  await page.getByRole('button', { name: 'Send OTP' }).click();
+  await expect(page).toHaveURL(/\/screens\/otp/);
+});
+
+test('the monument changes from screen to screen', async ({ page }) => {
+  await onboard(page);
+
+  const maskOf = async () => {
+    const frame = page.locator('.dc-phone');
+    await frame.waitFor();
+    return frame.evaluate((el) => {
+      const s = getComputedStyle(el, '::before');
+      return s.getPropertyValue('mask-image') || s.getPropertyValue('-webkit-mask-image');
+    });
+  };
+
+  const seen = new Map<string, string>();
+  for (const slug of ['feasibility', 'report', 'swot', 'competitors', 'pricing', 'scheme', 'emi']) {
+    await page.goto(`/screens/${slug}`);
+    await expect(page).toHaveURL(new RegExp(`/screens/${slug}`));
+    const file = (await maskOf()).match(/monuments\/([a-z-]+)\.svg/)?.[1];
+    expect(file, `${slug} resolved no monument`).toBeTruthy();
+    expect(seen.has(file!), `${slug} reuses ${file} from ${seen.get(file!)}`).toBe(false);
+    seen.set(file!, slug);
+  }
+  expect(seen.size).toBe(7);
+});
+
+const FLOW = [
+  'language',
+  'phone',
+  'otp',
+  'social',
+  'location',
+  'capital',
+  'category',
+  'feasibility',
+  'report',
+  'swot',
+  'competitors',
+  'pricing',
+  'scheme',
+  'emi',
+  'share',
+  'home',
+  'saved',
+  'settings',
+];
+
+test('the decorations get their own space and shift nothing', async ({ page }) => {
+  await onboard(page);
+
+  for (const slug of FLOW) {
+    await page.goto(`/screens/${slug}`);
+    const frame = page.locator('.dc-phone');
+    await frame.waitFor();
+
+    const box = await frame.evaluate((el) => {
+      const bar = el.firstElementChild as HTMLElement;
+      const cs = getComputedStyle(bar, '::before');
+      const r = el.getBoundingClientRect();
+      return {
+        flagBg: cs.backgroundImage,
+        flagW: parseFloat(cs.width),
+        flagZ: cs.zIndex,
+        flagEvents: cs.pointerEvents,
+        padTop: parseFloat(getComputedStyle(el).paddingTop),
+        padBottom: parseFloat(getComputedStyle(el).paddingBottom),
+        width: r.width,
+        // content box: the desktop frame carries a 1px border
+        innerLeft: r.left + parseFloat(getComputedStyle(el).borderLeftWidth),
+        innerWidth: el.clientWidth,
+        top: r.top,
+        bottom: r.bottom,
+        barTop: bar.getBoundingClientRect().top,
+      };
+    });
+
+    // 1. the corner flag is on every screen, is corner-sized, sits behind the
+    //    bar's own icons, and adds no height: the frame has no top padding and
+    //    the top bar still starts flush with the top of the frame.
+    expect(box.flagBg, `${slug} has no corner flag`).toContain('flag-corner.svg');
+    expect(box.flagW, `${slug}: the flag is not a corner accent`).toBeLessThanOrEqual(96);
+    expect(box.flagZ, `${slug}: the flag is painted over the header icons`).toBe('-1');
+    expect(box.flagEvents, `${slug}: the flag swallows taps`).toBe('none');
+    expect(box.padTop, `${slug}: the flag pushed the header down`).toBe(0);
+    expect(box.barTop - box.top, `${slug}: the header was shifted down`).toBeLessThanOrEqual(1);
+
+    // 2. the dock, where a screen has one, is flush with the bottom edge of the
+    //    frame - no floating gap - and the skyline band sits above it.
+    const edge = box.bottom - box.padBottom;
+    const nav = frame.locator(':scope > nav');
+    const dock = (await nav.count()) ? await nav.boundingBox() : null;
+    if (dock) {
+      expect(
+        Math.abs(dock.y + dock.height - edge),
+        `${slug}: the dock floats off the bottom edge`,
+      ).toBeLessThanOrEqual(1);
+      expect(dock.x, `${slug}: the dock is inset from the frame edge`).toBeLessThanOrEqual(box.innerLeft + 1);
+      expect(dock.width, `${slug}: the dock is not full-bleed`).toBeGreaterThanOrEqual(box.innerWidth - 1);
+    }
+
+    // 3. the skyline gets a full-height band of its own at the monument's own
+    //    proportions (640x130), and nothing reaches into it from either side.
+    const skylineH = box.width / (640 / 130);
+    expect(skylineH, `${slug}: the skyline band is a thin strip`).toBeGreaterThan(80);
+    const skylineBottom = edge - (dock?.height ?? 0);
+    const skylineTop = skylineBottom - skylineH;
+    for (const child of await frame.locator(':scope > *:not(nav)').all()) {
+      const r = await child.boundingBox();
+      if (!r) continue;
+      expect(r.y + r.height, `${slug}: content overlaps the skyline`).toBeLessThanOrEqual(skylineTop + 1);
+    }
+  }
+});
+
+test('the capital screen uses the native keyboard, not a drawn keypad', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/screens/capital');
+
+  const amount = page.getByLabel('Your own capital, in rupees');
+  await expect(amount).toHaveAttribute('inputmode', 'numeric');
+  await amount.fill('22000');
+  await expect(page.getByText('₹22,000', { exact: true })).toBeVisible();
+
+  for (const k of ['1', '7', '00', '⌫']) {
+    await expect(page.getByRole('button', { name: k, exact: true })).toHaveCount(0);
   }
 });

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { SessionProvider } from '@/hooks/use-session';
-import { LangToggle } from '@/components/lang-toggle';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -27,10 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <SessionProvider>
-          {children}
-          <LangToggle />
-        </SessionProvider>
+        {/* no global language toggle: the language screen is the picker, and
+            after that language is changed from Settings */}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

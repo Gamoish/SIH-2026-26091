@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 48" width="480" height="48" fill="none" role="presentation">
+  <g stroke-width="12.5">
+    <path d="M0 12 Q60 5 120 12 T240 12 T360 12 T480 12" stroke="#FF9933"/>
+    <path d="M0 24 Q60 17 120 24 T240 24 T360 24 T480 24" stroke="#FFFFFF"/>
+    <path d="M0 36 Q60 29 120 36 T240 36 T360 36 T480 36" stroke="#138808"/>
+  </g>
+  <circle cx="240" cy="24" r="12.4" fill="#FFFFFF"/>
+  <g stroke="#0A2545" stroke-width="1.1" stroke-linecap="round">
+    <circle cx="240" cy="24" r="9.6" stroke-width="1.5"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(0 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(15 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(30 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(45 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(60 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(75 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(90 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(105 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(120 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(135 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(150 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(165 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(180 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(195 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(210 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(225 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(240 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(255 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(270 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(285 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(300 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(315 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(330 240 24)"/>
+    <line x1="240" y1="15.4" x2="240" y2="18.8" transform="rotate(345 240 24)"/>
+  </g>
+  <circle cx="240" cy="24" r="1.9" fill="#0A2545"/>
+</svg>

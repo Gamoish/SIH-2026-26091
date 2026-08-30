@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 130" width="640" height="130" fill="#000">
+  <g id="taj-mahal">
+    <rect x="8" y="122" width="144" height="8" />
+    <rect x="36" y="84" width="86" height="38" />
+    <path d="M79 46 C67 55 60 65 60 73 C60 79 68 84 79 84 C90 84 98 79 98 73 C98 65 91 55 79 46 Z" />
+    <rect x="77.8" y="35" width="2.4" height="12" />
+    <circle cx="79" cy="33" r="2.8" />
+    <path d="M48 70 C44 74 42 78 42 81 C42 83 45 84 48 84 C51 84 54 83 54 81 C54 78 52 74 48 70 Z" />
+    <path d="M110 70 C106 74 104 78 104 81 C104 83 107 84 110 84 C113 84 116 83 116 81 C116 78 114 74 110 70 Z" />
+    <g>
+      <rect x="10" y="62" width="7" height="60" />
+      <path d="M10 62 C10 56 17 56 17 62 Z" />
+      <rect x="12.9" y="53" width="1.2" height="10" />
+      <rect x="21" y="62" width="7" height="60" />
+      <path d="M21 62 C21 56 28 56 28 62 Z" />
+      <rect x="23.9" y="53" width="1.2" height="10" />
+      <rect x="134" y="62" width="7" height="60" />
+      <path d="M134 62 C134 56 141 56 141 62 Z" />
+      <rect x="136.9" y="53" width="1.2" height="10" />
+      <rect x="145" y="62" width="7" height="60" />
+      <path d="M145 62 C145 56 152 56 152 62 Z" />
+      <rect x="147.9" y="53" width="1.2" height="10" />
+    </g>
+  </g>
+
+  <g id="qutub-minar">
+    <path d="M168 130 L172 58 L186 58 L190 130 Z" />
+    <rect x="169" y="104" width="20" height="2.5" />
+    <rect x="170" y="84" width="18" height="2.5" />
+    <path d="M172 58 C172 51 186 51 186 58 Z" />
+    <rect x="178.4" y="44" width="1.6" height="9" />
+    <rect x="193" y="104" width="22" height="26" />
+    <path d="M197 104 C197 95 211 95 211 104 Z" />
+  </g>
+
+  <g id="india-gate">
+    <rect x="238" y="76" width="20" height="54" />
+    <rect x="302" y="76" width="20" height="54" />
+    <path d="M258 100 A22 20 0 0 1 302 100 L302 76 L258 76 Z" />
+    <rect x="232" y="64" width="96" height="12" />
+    <rect x="241" y="57" width="78" height="7" />
+    <rect x="272" y="50" width="16" height="7" />
+  </g>
+
+  <g id="charminar">
+    <rect x="355" y="92" width="90" height="38" />
+    <rect x="365" y="74" width="70" height="18" />
+    <path d="M400 59 C393 66 389 70 389 74 L411 74 C411 70 407 66 400 59 Z" />
+    <rect x="399" y="50" width="2" height="10" />
+    <g>
+      <rect x="347" y="62" width="8" height="68" />
+      <path d="M347 62 C347 55 355 55 355 62 Z" />
+      <rect x="350.3" y="51" width="1.4" height="11" />
+      <rect x="362" y="62" width="8" height="68" />
+      <path d="M362 62 C362 55 370 55 370 62 Z" />
+      <rect x="365.3" y="51" width="1.4" height="11" />
+      <rect x="430" y="62" width="8" height="68" />
+      <path d="M430 62 C430 55 438 55 438 62 Z" />
+      <rect x="433.3" y="51" width="1.4" height="11" />
+      <rect x="445" y="62" width="8" height="68" />
+      <path d="M445 62 C445 55 453 55 453 62 Z" />
+      <rect x="448.3" y="51" width="1.4" height="11" />
+    </g>
+  </g>
+
+  <g id="red-fort">
+    <rect x="470" y="100" width="164" height="30" />
+    <g>
+      <rect x="472" y="94" width="6" height="6" />
+      <rect x="486" y="94" width="6" height="6" />
+      <rect x="500" y="94" width="6" height="6" />
+      <rect x="514" y="94" width="6" height="6" />
+      <rect x="584" y="94" width="6" height="6" />
+      <rect x="598" y="94" width="6" height="6" />
+      <rect x="612" y="94" width="6" height="6" />
+      <rect x="626" y="94" width="6" height="6" />
+    </g>
+    <rect x="478" y="84" width="24" height="46" />
+    <path d="M479 84 C479 73 501 73 501 84 Z" />
+    <rect x="489.4" y="65" width="1.2" height="9" />
+    <rect x="602" y="84" width="24" height="46" />
+    <path d="M603 84 C603 73 625 73 625 84 Z" />
+    <rect x="613.4" y="65" width="1.2" height="9" />
+    <rect x="528" y="68" width="54" height="32" />
+    <path d="M534 68 C534 59 548 59 548 68 Z" />
+    <path d="M562 68 C562 59 576 59 576 68 Z" />
+    <rect x="547" y="58" width="16" height="10" />
+    <path d="M548 58 C548 49 562 49 562 58 Z" />
+    <rect x="554.2" y="30" width="1.6" height="20" />
+    <path d="M555.8 32 L570 35.5 L555.8 39 Z" />
+  </g>
+</svg>

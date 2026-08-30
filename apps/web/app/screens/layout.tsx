@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { redirectFor } from '@/lib/nav';
+import { monumentVar } from '@/lib/monuments';
 
 export default function ScreensLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -17,5 +18,20 @@ export default function ScreensLayout({ children }: { children: React.ReactNode 
   }, [to, router]);
 
   if (!ready || to) return null;
-  return <>{children}</>;
+
+  const monument = monumentVar(slug);
+
+  return (
+    <div
+      data-screen={slug}
+      style={
+        {
+          display: 'contents',
+          ...(monument ? { '--monument': monument } : {}),
+        } as React.CSSProperties
+      }
+    >
+      {children}
+    </div>
+  );
 }

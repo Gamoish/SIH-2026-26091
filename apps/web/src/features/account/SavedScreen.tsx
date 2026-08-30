@@ -123,9 +123,9 @@ export default function SavedScreen() {
             <T hi="नई जाँच जोड़ें" en="Add a new check" />
           </span>
         </button>
-
-        <Dock active="saved" />
       </div>
+
+      <Dock active="saved" />
     </div>
   );
 }
