@@ -40,11 +40,11 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
   return (
     <nav
       style={{
-        // The last band in a min-height:100dvh frame, so it is already flush
-        // with the bottom edge: full-bleed, no floating gap.
-        // ponytail: not sticky - these screens never outrun the viewport, and
-        // sticky here double-paints in Chromium. If a dock screen ever scrolls,
-        // give the content area its own overflow-y instead.
+        // the last band in a min-height:100dvh frame, so it is already flush
+        // with the bottom edge - full-bleed, no floating gap; sticky keeps it
+        // anchored there if a screen's content ever outruns the viewport
+        position: 'sticky',
+        bottom: 0,
         display: 'flex',
         justifyContent: 'space-around',
         background: 'var(--navy)',
