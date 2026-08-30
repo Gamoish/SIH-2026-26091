@@ -63,7 +63,7 @@ first request, which under parallel workers looks like a test failure.
 
 Every screen carries its own Indian monument as a faint silhouette at the bottom,
 above a thin tricolour strip — Taj Mahal on the capital step, Charminar on phone
-entry, Brihadeeswarar Temple on SWOT, and so on. Nineteen screens, nineteen
+entry, Brihadeeswarar Temple on SWOT, and so on. Twenty-one screens, twenty-one
 monuments, no repeats.
 
 - `public/monuments/*.svg` — one silhouette each, all on a shared `0 0 640 130`
@@ -73,6 +73,29 @@ monuments, no repeats.
   about any of this.
 - `src/styles/globals.css` — `.dc-phone::before` masks the SVG and colours it
   from `--navy`; `::after` draws the tricolour.
+
+## Editing a profile, without reopening the first run
+
+`language`, `phone`, `otp` and `social` are first-run screens: they establish who
+the account is and are seen exactly once. `lib/nav.ts` lists them in
+`FIRST_RUN_ONLY`, and `firstRunBlock()` sends a logged-in user home if they ever
+try to open one — by deep link, by browser back, or from a row in Settings.
+
+Editing those fields later goes through purpose-built screens instead, which
+share styling with the first-run steps but no navigation with them:
+
+- name and phone → a `Sheet` bottom-sheet on the Settings screen itself, so the
+  edit is never a route and can never be deep-linked. Changing the phone number
+  re-verifies it by OTP in the sheet, because the phone number _is_ the login.
+- photo and category → `screens/edit-photo` and `screens/edit-category`, full
+  screens because a preview and a scheme explanation need the room.
+
+`firstRunBlock()` is applied by `app/screens/layout.tsx` on route _entry_ only,
+not on every state change. The last identity step is the one that makes the
+account exist, so a guard that also watched state would throw the user off that
+screen at the moment they completed it — cancelling their own move to the next
+step. `redirectFor()` still runs on every render for the ordinary flow
+prerequisites.
 
 Because it is a CSS mask, the SVGs are plain shapes and the tone comes from a
 variable. A white fill inside one would render **solid**, not as a hole — a mask

@@ -60,7 +60,7 @@ export default function SchemeScreen() {
             </div>
           </div>
           <button
-            onClick={() => nav.go('social')}
+            onClick={() => nav.go('edit-category')}
             style={{
               background: '#fff',
               border: '1px solid var(--line)',

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 130" width="640" height="130" fill="#000">
+  <path fill-rule="evenodd" d="M182 127 L346 127 L346 24 Z M300 118 L332 118 L332 82 Z"/>
+  <path d="M96 127 A64 64 0 0 1 224 127 L211 127 A51 51 0 0 0 109 127 Z"/>
+  <path d="M404 127 A64 64 0 0 1 532 127 L519 127 A51 51 0 0 0 417 127 Z"/>
+  <rect x="338" y="18" width="16" height="7"/>
+  <rect x="345" y="4" width="2.4" height="14"/>
+  <circle cx="346" cy="3" r="2.6"/>
+  <rect x="152" y="112" width="42" height="15"/>
+  <rect x="446" y="112" width="42" height="15"/>
+  <rect x="0" y="127" width="640" height="3"/>
+</svg>

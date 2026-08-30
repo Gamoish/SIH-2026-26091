@@ -9,6 +9,7 @@ const EMPTY: Session = {
   lang: 'hi',
   name: '',
   phone: '',
+  photo: null,
   verified: false,
   social: null,
   village: null,

@@ -34,6 +34,8 @@ const SCREENS = [
   'home',
   'saved',
   'settings',
+  'edit-photo',
+  'edit-category',
   'empty',
 ];
 

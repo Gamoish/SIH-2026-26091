@@ -210,7 +210,7 @@ test('a finished onboarding step redirects home if opened directly', async ({ pa
   await page.getByRole('button', { name: 'Go to home' }).click();
   await expect(page).toHaveURL(/\/screens\/home/);
 
-  for (const step of ['phone', 'otp', 'location', 'capital', 'category', 'loading']) {
+  for (const step of ['language', 'phone', 'otp', 'social', 'location', 'capital', 'category', 'loading']) {
     await page.goto(`/screens/${step}`);
     await expect(page).toHaveURL(/\/screens\/home/);
   }
@@ -407,4 +407,92 @@ test('the capital screen uses the native keyboard, not a drawn keypad', async ({
   for (const k of ['1', '7', '00', '⌫']) {
     await expect(page.getByRole('button', { name: k, exact: true })).toHaveCount(0);
   }
+});
+
+const FIRST_RUN = /\/screens\/(language|phone|otp|social)/;
+
+test('no Settings row can reopen a first-run screen', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/screens/settings');
+
+  // the category row is the one that used to route straight into onboarding
+  await page.getByRole('button', { name: /Your category/ }).click();
+  await expect(page).toHaveURL(/\/screens\/edit-category/);
+  await expect(page).not.toHaveURL(FIRST_RUN);
+  await expect(page.getByText('Change your category')).toBeVisible();
+
+  await page.goBack();
+  await page.getByRole('button', { name: /^Photo/ }).click();
+  await expect(page).toHaveURL(/\/screens\/edit-photo/);
+  await expect(page).not.toHaveURL(FIRST_RUN);
+});
+
+test('a first-run screen is unreachable once the account exists', async ({ page }) => {
+  await onboard(page);
+
+  for (const slug of ['language', 'phone', 'otp', 'social']) {
+    await page.goto(`/screens/${slug}`);
+    await expect(page, `${slug} is still reachable when logged in`).toHaveURL(/\/screens\/home/);
+  }
+});
+
+test('the scheme screen edits the category without reopening onboarding', async ({ page }) => {
+  await onboard(page, { social: 'Other Backward Class' });
+  await page.goto('/screens/scheme');
+
+  await page.getByRole('button', { name: /Change your category/ }).click();
+  await expect(page).toHaveURL(/\/screens\/edit-category/);
+  await expect(page).not.toHaveURL(FIRST_RUN);
+});
+
+test('name and phone are edited in a sheet, not a screen', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/screens/settings');
+
+  await page.getByRole('button', { name: /^Name/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/screens\/settings/);
+
+  await dialog.getByLabel('Your name').fill('Meena Devi');
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText('Meena Devi')).toBeVisible();
+
+  // the new name reaches the sheet the bank sees
+  await page.goto('/screens/share');
+  await expect(page.getByText('Meena Devi (ST)')).toBeVisible();
+});
+
+test('a phone change is re-verified by OTP inside the sheet', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/screens/settings');
+
+  await page.getByRole('button', { name: /Phone number/ }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('New mobile number').fill('9000000001');
+  await dialog.getByRole('button', { name: 'Send OTP' }).click();
+
+  await dialog.getByLabel('OTP code').fill('9999');
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog.getByText('That code is wrong — try again')).toBeVisible();
+  await expect(page).toHaveURL(/\/screens\/settings/);
+
+  await dialog.getByLabel('OTP code').fill(OTP);
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText('+91 9000000001')).toBeVisible();
+});
+
+test('changing the category from Settings moves the scheme', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/screens/scheme');
+  await expect(page.getByText('NSTFDC Term Loan')).toBeVisible();
+
+  await page.goto('/screens/edit-category');
+  await page.getByRole('button', { name: /Scheduled Caste/ }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await page.goto('/screens/scheme');
+  await expect(page.getByText('NSFDC Term Loan')).toBeVisible();
 });

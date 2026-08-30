@@ -1,13 +1,19 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
-import { Dock, Header, T, useT } from '@/components';
+import { CATEGORIES } from '@/lib/categories';
+import { Avatar, Dock, Header, T, useT } from '@/components';
+import NameSheet from './edit/NameSheet';
+import PhoneSheet from './edit/PhoneSheet';
 
 export default function SettingsScreen() {
   const { s, set, reset } = useSession();
   const nav = useNav();
   const t = useT();
+  const [sheet, setSheet] = useState<'name' | 'phone' | null>(null);
+
+  const category = CATEGORIES.find((c) => c.id === s.social);
 
   const logout = () => {
     if (
@@ -30,6 +36,34 @@ export default function SettingsScreen() {
       <div
         style={{ flex: 1, padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: '9px' }}
       >
+        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--faint)', padding: '2px 2px 1px' }}>
+          <T hi="आपकी जानकारी" en="Your profile" />
+        </div>
+
+        <Line
+          hi="फ़ोटो"
+          en="Photo"
+          onClick={() => nav.go('edit-photo')}
+          right={<Avatar photo={s.photo} name={s.name} size={30} />}
+        />
+        <Line hi="नाम" en="Name" value={s.name || '—'} onClick={() => setSheet('name')} />
+        <Line
+          hi="फ़ोन नंबर"
+          en="Phone number"
+          value={s.phone ? `+91 ${s.phone}` : '—'}
+          onClick={() => setSheet('phone')}
+        />
+        <Line
+          hi="आपका वर्ग"
+          en="Your category"
+          value={category ? t(category.hi, category.en) : '—'}
+          onClick={() => nav.go('edit-category')}
+        />
+
+        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--faint)', padding: '8px 2px 1px' }}>
+          <T hi="ऐप" en="App" />
+        </div>
+
         <div
           style={{
             background: '#fff',
@@ -80,9 +114,6 @@ export default function SettingsScreen() {
             })}
           </div>
         </div>
-
-        <Line hi="फ़ोन नंबर" en="Phone number" value={s.phone ? `+91 ${s.phone}` : '—'} />
-        <Line hi="आपका वर्ग" en="Your category" value={s.social ?? '—'} onClick={() => nav.go('social')} />
 
         <button
           onClick={() => nav.go('saved')}
@@ -150,6 +181,9 @@ export default function SettingsScreen() {
             <T hi="लॉग आउट" en="Log out" />
           </span>
         </button>
+
+        <NameSheet open={sheet === 'name'} onClose={() => setSheet(null)} />
+        <PhoneSheet open={sheet === 'phone'} onClose={() => setSheet(null)} />
       </div>
 
       <Dock active="settings" />
@@ -157,7 +191,19 @@ export default function SettingsScreen() {
   );
 }
 
-function Line({ hi, en, value, onClick }: { hi: string; en: string; value: string; onClick?: () => void }) {
+function Line({
+  hi,
+  en,
+  value,
+  right,
+  onClick,
+}: {
+  hi: string;
+  en: string;
+  value?: string;
+  right?: React.ReactNode;
+  onClick?: () => void;
+}) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag
@@ -182,7 +228,7 @@ function Line({ hi, en, value, onClick }: { hi: string; en: string; value: strin
       <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}>
         <T hi={hi} en={en} />
       </span>
-      <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>{value}</span>
+      {right ?? <span style={{ fontSize: '12.5px', color: 'var(--muted)' }}>{value}</span>}
       {onClick ? (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2.4">
           <path d="M9 6l6 6-6 6" />

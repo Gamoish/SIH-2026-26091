@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
+import { isOnboarded } from '@/lib/nav';
 
 export default function Entry() {
   const router = useRouter();
@@ -10,8 +11,11 @@ export default function Entry() {
 
   useEffect(() => {
     if (!ready) return;
-    router.replace(s.verified ? '/screens/home' : '/screens/language');
-  }, [ready, s.verified, router]);
+    // resume where they stopped: an account goes home, a half-finished
+    // first run goes back to the step it died on, never to the top
+    const at = isOnboarded(s) ? 'home' : s.verified ? 'social' : 'language';
+    router.replace(`/screens/${at}`);
+  }, [ready, s, router]);
 
   return null;
 }

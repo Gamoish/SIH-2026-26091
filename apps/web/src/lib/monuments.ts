@@ -20,6 +20,8 @@ export const MONUMENTS: Record<Slug, string> = {
   home: 'amber-fort',
   saved: 'humayuns-tomb',
   settings: 'meenakshi-temple',
+  'edit-photo': 'gol-gumbaz',
+  'edit-category': 'jantar-mantar',
   empty: 'amber-fort',
 };
 

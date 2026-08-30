@@ -10,6 +10,7 @@ export type Session = {
   lang: Lang;
   name: string;
   phone: string;
+  photo: string | null;
   verified: boolean;
   social: SocialCategory | null;
   village: string | null;
