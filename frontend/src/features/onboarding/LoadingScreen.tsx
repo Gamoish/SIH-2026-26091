@@ -11,7 +11,14 @@ export default function LoadingScreen() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!s.village || !s.business || s.capital == null) return;
+    // A village with no demo fixture behind it has no figures for the engine to
+    // work from. Say so straight away: returning here left the screen shimmering
+    // for ever, because nothing would ever navigate or fail.
+    if (!s.business || s.capital == null) return; // the route guard redirects
+    if (!s.village) {
+      setFailed(true);
+      return;
+    }
     let live = true;
     MOCK_api.feasibility({
       villageId: s.village,
@@ -56,10 +63,10 @@ export default function LoadingScreen() {
           {failed ? (
             <>
               <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--rust)' }}>
-                <T hi="रिपोर्ट नहीं बन सकी" en="The report could not be built" />
+                <T hi="इस गाँव के लिए अभी आँकड़े नहीं हैं" en="There are no figures for this village yet" />
               </div>
               <button
-                onClick={() => nav.go('category')}
+                onClick={() => nav.go('location')}
                 style={{
                   background: 'var(--saffron)',
                   color: '#fff',
@@ -71,7 +78,7 @@ export default function LoadingScreen() {
                   cursor: 'pointer',
                 }}
               >
-                <T hi="दोबारा कोशिश कीजिए" en="Try again" />
+                <T hi="गाँव बदलिए" en="Change village" />
               </button>
             </>
           ) : (

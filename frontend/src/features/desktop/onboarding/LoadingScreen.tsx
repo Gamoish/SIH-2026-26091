@@ -27,7 +27,14 @@ export default function LoadingScreen() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!s.village || !s.business || s.capital == null) return;
+    // A village with no demo fixture behind it has no figures for the engine to
+    // work from. Say so straight away: returning here left the screen shimmering
+    // for ever, because nothing would ever navigate or fail.
+    if (!s.business || s.capital == null) return; // the route guard redirects
+    if (!s.village) {
+      setFailed(true);
+      return;
+    }
     let live = true;
     MOCK_api.feasibility({
       villageId: s.village,

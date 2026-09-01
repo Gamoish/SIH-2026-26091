@@ -560,3 +560,39 @@ test('changing the category from Settings moves the scheme', async ({ page }) =>
   await page.goto('/screens/scheme');
   await expect(page.getByText('NSFDC Term Loan')).toBeVisible();
 });
+
+/**
+ * A village picked from the real directory has an LGD code and no demo
+ * fixture, so `buildReport()` has nothing to work from. It must say so.
+ *
+ * This regressed once as a permanent shimmer: the effect bailed out early on
+ * the missing fixture id, so it neither navigated nor failed and the screen
+ * waited for ever.
+ */
+test('a village with no fixture fails honestly instead of hanging', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'disha.session.v1',
+      JSON.stringify({
+        lang: 'en',
+        name: 'Suresh',
+        phone: '9876543210',
+        photo: null,
+        verified: true,
+        social: 'ST',
+        village: null,
+        villageLgdCode: 'C11-214157',
+        villageName: 'Adhavra',
+        tehsil: 'Dudhi',
+        radiusKm: 5,
+        capital: 22000,
+        business: 'leaf-plates',
+        savedAt: null,
+      }),
+    );
+  });
+
+  await page.goto('/screens/loading');
+  await expect(page.getByText(/no figures for this village yet/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /Change village/i })).toBeVisible();
+});
