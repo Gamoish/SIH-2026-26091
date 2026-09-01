@@ -1,0 +1,73 @@
+/* Design tokens. The single source of colour, type and spacing values -
+   mirrored from the design canvas in design/. Nothing here selects an element */
+:root {
+  --navy: #123b6d;
+  --navy-dark: #0e2e54;
+  --navy-800: #0a2545;
+  --navy-tint: #cfddf0;
+  --navy-tint2: #e4ecf7;
+  --steel: #2f80c9;
+  --teal: #12688f;
+  --teal-tint: #cfe6f0;
+  --teal-line: #96c3d8;
+  --saffron: #e0670a;
+  --saffron-soft: #f27e12;
+  --saffron-tint: #f6dbbc;
+  --bg: #ffffff;
+  --panel: #f3f1ec;
+  --white: #ffffff;
+  --card: #ffffff;
+  --line: #d8d3c4;
+  --line-soft: #e6e2d6;
+  --green: #127e40;
+  --green-tint: #d3ebda;
+  --green-line: #9bcfac;
+  --sage: #4e6b45;
+  --sage-tint: #dde7d3;
+  --sage-line: #afc2a0;
+  --amber: #966009;
+  --amber-tint: #f4e4bf;
+  --amber-line: #d9bc78;
+  --rust: #a9321f;
+  --rust-tint: #f0d4cd;
+  --rust-soft: #be3a24;
+  --text: #141c26;
+  --muted: #4e5a66;
+  --faint: #6b7580;
+  --saffron-flag: #ff9933;
+  --green-flag: #138808;
+  /* the monument canvas is 640x130; the skyline band derives its height from
+     that ratio so a silhouette is never stretched or cropped to fit */
+  --skyline-ratio: 640 / 130;
+  --tricolor-h: 6px;
+  /* kept under the height of the shortest top bar, so the accent never spills
+     past it and gets clipped by the content below */
+  --flag-size: 54px;
+  --sans: 'IBM Plex Sans', 'IBM Plex Sans Devanagari', system-ui, sans-serif;
+  --serif: 'IBM Plex Serif', Georgia, serif;
+  --e1: 0 1px 2px rgba(18, 59, 109, 0.12);
+  --e2: 0 2px 5px rgba(18, 59, 109, 0.1), 0 8px 20px rgba(18, 59, 109, 0.1);
+  --e3: 0 8px 18px rgba(18, 59, 109, 0.14), 0 22px 46px rgba(18, 59, 109, 0.18);
+  --ledger:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 25px,
+      rgba(18, 59, 109, 0.05) 25px,
+      rgba(18, 59, 109, 0.05) 26px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 25px,
+      rgba(18, 59, 109, 0.03) 25px,
+      rgba(18, 59, 109, 0.03) 26px
+    );
+  --ledger-ink: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 25px,
+    rgba(255, 255, 255, 0.05) 25px,
+    rgba(255, 255, 255, 0.05) 26px
+  );
+}

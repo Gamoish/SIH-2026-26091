@@ -1,0 +1,97 @@
+/* The phone layout (/screens/*): the .dc-phone frame, its monument skyline,
+   tricolor rule and flag corner, and the breakpoints that widen the frame */
+.dc-phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  /* only the bottom tricolor rule is padding; it is painted as a background
+     layer so both pseudo-elements stay free for the decorations */
+  padding-bottom: var(--tricolor-h);
+  background:
+    linear-gradient(
+        to bottom,
+        var(--saffron-flag) 0 33.34%,
+        #ffffff 33.34% 66.67%,
+        var(--green-flag) 66.67% 100%
+      )
+      bottom center / 100% var(--tricolor-h) no-repeat,
+    var(--bg);
+}
+
+/* The skyline is a real flex item, ordered after every screen's content, so it
+   owns its space instead of living under the CTA. aspect-ratio keeps the
+   silhouette at the monument canvas proportions - never squashed to fit. */
+.dc-phone::before {
+  content: '';
+  pointer-events: none;
+  order: 1;
+  flex: none;
+  width: 100%;
+  aspect-ratio: var(--skyline-ratio);
+  background-color: var(--navy);
+  opacity: 0.18;
+  -webkit-mask-image: var(--monument, url('/skyline.svg'));
+  mask-image: var(--monument, url('/skyline.svg'));
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: bottom center;
+  mask-position: bottom center;
+}
+
+.dc-phone > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* the dock is the last band in the frame, below the skyline, so the two never
+   overlap or squeeze each other */
+.dc-phone > nav {
+  order: 2;
+  flex: none;
+}
+
+/* Corner accent, on the top bar of whatever screen this is. It is absolutely
+   positioned at z-index -1, so it paints over that bar's own background but
+   *under* its icons and text: it takes no layout space, adds no height, and
+   moves nothing. Attaching it to the first child means every screen gets it
+   without a single per-screen edit. */
+.dc-phone > *:first-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: -1;
+  width: var(--flag-size);
+  height: var(--flag-size);
+  background: url('/flag-corner.svg') top right / contain no-repeat;
+  pointer-events: none;
+}
+@media (min-width: 720px) {
+  :root {
+    --tricolor-h: 7px;
+    --flag-size: 62px;
+  }
+  body {
+    padding: 24px 0;
+  }
+  .dc-phone {
+    max-width: 640px;
+    min-height: calc(100dvh - 48px);
+    border: 1px solid var(--line-soft);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--e3);
+    font-size: 108%;
+  }
+}
+@media (min-width: 1024px) {
+  .dc-phone {
+    max-width: 720px;
+  }
+}

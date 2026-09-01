@@ -1,0 +1,7 @@
+/* The one stylesheet the app imports. Order is load-bearing: tokens define the
+   variables the layouts read, and utilities ends with the print block, which
+   overrides both layouts at equal specificity and therefore must come last. */
+@import './tokens.css';
+@import './phone.css';
+@import './desktop.css';
+@import './utilities.css';

@@ -32,3 +32,6 @@ PRD.md
 
 # local screenshot scratch
 apps/web/shots/
+
+# knowledge-graph tool output (regenerable)
+graphify-out/

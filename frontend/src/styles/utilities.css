@@ -1,0 +1,160 @@
+/* Cross-layout rules: reset, page base, keyframes, the [data-lang] switch,
+   buttons, reduced-motion and print.
+
+   Imported LAST on purpose - the print block restyles both .dc-phone and
+   .dc-desk at equal specificity, so it only wins by source order */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #d8d0bb;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--navy);
+}
+::selection {
+  background: rgba(224, 103, 10, 0.24);
+}
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pulsedot {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes drawline {
+  from {
+    stroke-dashoffset: 640;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -180px 0;
+  }
+  100% {
+    background-position: 180px 0;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+[data-lang='en'] .l-hi {
+  display: none !important;
+}
+[data-lang='hi'] .l-en {
+  display: none !important;
+}
+.skel {
+  background: linear-gradient(90deg, #dce2ea 8%, #eef2f6 22%, #dce2ea 40%);
+  background-size: 360px 100%;
+  animation: shimmer 1.3s linear infinite;
+  border-radius: 5px;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+body {
+  background: var(--bg);
+  background-image: var(--ledger);
+}
+
+button {
+  font-family: var(--sans);
+}
+button:disabled {
+  cursor: not-allowed;
+}
+.cta:hover {
+  background: var(--saffron-soft);
+}
+.cta:active {
+  background: #b8540a;
+  transform: translateY(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+  }
+  .dc-phone {
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    min-height: 0;
+    font-size: 100%;
+    padding: 0;
+    background: #fff;
+  }
+  .no-print,
+  nav,
+  .dc-desk-side,
+  .dc-desk-top,
+  .dc-phone > div:first-child {
+    display: none !important;
+  }
+  .dc-desk {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .dc-desk-body {
+    padding: 0;
+  }
+  .dc-phone::before,
+  .dc-phone::after {
+    display: none !important;
+  }
+  .print-card {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  [data-lang='en'] .l-hi,
+  [data-lang='hi'] .l-en {
+    display: none !important;
+  }
+}

@@ -1,6 +1,6 @@
 packages:
-  - 'apps/*'
-  - 'services/*'
+  - 'frontend'
+  - 'backend'
 
 allowBuilds:
   unrs-resolver: true

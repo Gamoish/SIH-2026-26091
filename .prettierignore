@@ -1,7 +1,8 @@
 node_modules
 .next
-.next-check
 test-results
 playwright-report
 pnpm-lock.yaml
 design
+
+.next*/

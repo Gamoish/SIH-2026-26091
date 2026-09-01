@@ -57,7 +57,7 @@ pnpm e2e           # full user flow, phone and desktop viewports
 ## Repository layout
 
 ```
-apps/web/            Next.js frontend (PWA, offline-capable)
+frontend/            Next.js frontend (PWA, offline-capable)
   app/               routes — thin, one re-export each
   src/
     components/      shared UI primitives
@@ -77,13 +77,13 @@ docs/                architecture and decisions
 
 Two engines, kept deliberately apart.
 
-**The financial engine** (`apps/web/src/domain/finance.ts`) is pure arithmetic
+**The financial engine** (`frontend/src/domain/finance.ts`) is pure arithmetic
 over scheme rows and the capital the user entered. No model call, no network
 call, no randomness — the same inputs always produce the same rupees. That is
 what makes it auditable and testable, and it is why loan numbers are never
 mocked even while everything around them is.
 
-**The feasibility engine** (`apps/web/src/domain/feasibility.ts`) retrieves
+**The feasibility engine** (`frontend/src/domain/feasibility.ts`) retrieves
 first and phrases second. Every figure is computed before `narrate()` turns it
 into a sentence, so the narration layer can only describe numbers it was handed.
 When the real retrieval pipeline and its grounded LLM land, that boundary stays

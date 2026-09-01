@@ -1,6 +1,0 @@
-node_modules
-.next
-.next-check
-test-results
-playwright-report
-next-env.d.ts

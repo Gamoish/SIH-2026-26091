@@ -1,0 +1,82 @@
+/* ---------------------------------------------------------------------------
+   Desktop layout (/desktop). The same user, session and engines as /screens,
+   laid out for a 1440px viewport. Every value here is a token from tokens.css.
+   --------------------------------------------------------------------------- */
+
+/* --- post-onboarding chrome: fixed rail + scrolling body ------------------ */
+.dc-desk {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--bg);
+  background-image: var(--ledger);
+}
+.dc-desk-side {
+  width: 264px;
+  flex: none;
+  background: var(--navy-800);
+  background-image: var(--ledger-ink);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 0;
+}
+.dc-desk-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.dc-desk-body {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+/* both onboarding chromes; a hook for tests and print rules */
+.dc-onb {
+  min-height: 100dvh;
+}
+.dc-desk-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--e1);
+}
+
+.navitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: #9fb6d3;
+  font-size: 14px;
+  text-decoration: none;
+}
+.navitem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.navitem[aria-current='page'] {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-weight: 700;
+}
+.rowh {
+  text-decoration: none;
+  color: inherit;
+}
+.rowh:hover {
+  background: var(--navy-tint2);
+}
+
+/* Below the desktop design width the rail folds away rather than crushing the
+   multi-column bodies; the phone layout at /screens is the small-screen answer. */
+@media (max-width: 900px) {
+  .dc-desk-side {
+    display: none;
+  }
+  .dc-desk-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

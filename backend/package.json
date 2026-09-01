@@ -1,0 +1,28 @@
+{
+  "name": "@disha/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Disha app API: phone + OTP auth, onboarding profiles, applications",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",
+    "start": "node --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",
+    "migrate": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/migrate.ts",
+    "import:villages": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/import-villages.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --no-warnings tests/unit.test.mjs",
+    "import:census": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/import-census.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "fastify": "^5.2.1",
+    "jose": "^6.0.10",
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.3"
+  }
+}
