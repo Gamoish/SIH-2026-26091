@@ -121,3 +121,34 @@
   -webkit-mask-position: bottom center;
   mask-position: bottom center;
 }
+
+/* --- the flag corner, ported from the phone ------------------------------ --
+   The phone hangs `/flag-corner.svg` off the top-right of whatever bar heads
+   the screen (`.dc-phone > *:first-child::before`). The same mark, the same
+   asset, on the desktop chrome that plays that part: the rail layout's main
+   column, the onboarding top bar, and - since it has no bar - the split
+   layout's question column.
+
+   Absolute at z-index 0 so it paints over the bar's own background but takes
+   no layout space and moves nothing, exactly as the phone's does. */
+.dc-flag {
+  position: relative;
+}
+.dc-flag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 0;
+  width: var(--flag-size);
+  height: var(--flag-size);
+  background: url('/flag-corner.svg') top right / contain no-repeat;
+  pointer-events: none;
+}
+/* On the rail chrome the flag hangs off the page corner rather than a bar, so
+   it has to clear the body and the side panel - both of which paint their own
+   opaque backgrounds. It stays pointer-events: none, and the corner is empty
+   of text on every rail screen, so nothing is covered. */
+.dc-desk.dc-flag::before {
+  z-index: 3;
+}

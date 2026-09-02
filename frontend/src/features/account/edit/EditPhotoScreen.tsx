@@ -4,35 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { Header, Primary, Secondary, T, useT } from '@/components';
-
-/** The session is persisted to localStorage, so the photo has to stay small.
- *  256px square at JPEG q0.8 lands around 15-20KB.
- *  ponytail: fixed centre crop, no pinch-to-reposition. Add an interactive
- *  cropper only if users actually complain about the framing. */
-const SIZE = 256;
-
-function toSquareDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const canvas = document.createElement('canvas');
-      canvas.width = SIZE;
-      canvas.height = SIZE;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject(new Error('no 2d context'));
-      const side = Math.min(img.width, img.height);
-      ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, SIZE, SIZE);
-      resolve(canvas.toDataURL('image/jpeg', 0.8));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('not an image'));
-    };
-    img.src = url;
-  });
-}
+import { toSquareDataUrl } from '@/lib/photo';
 
 /**
  * Pick or remove the profile picture. A full screen rather than a sheet because

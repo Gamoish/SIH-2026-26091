@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
 import { tokenStore } from '@/lib/api';
-import { T, useT } from '@/components';
+import { AvatarPicker, T, useT } from '@/components';
 import { rememberLayout } from '@/lib/layout';
 import { DesktopShell } from '../shell';
 
@@ -13,9 +13,11 @@ import { DesktopShell } from '../shell';
  * D-P8. One flex column of rows on the `--panel` ground - not cards in
  * columns.
  *
- * Editing name, photo and category still goes through the phone's dedicated
- * edit screens: there is no desktop artboard for those, and duplicating the
- * edit flows would be two places to keep correct instead of one.
+ * The profile row heads it: the photo is updatable here (the file dialog is
+ * one click away on a desktop, so the avatar itself is the control), with the
+ * name and number beside it. Changing the *name* and the category still goes
+ * through the phone's dedicated edit screens - there is no desktop artboard
+ * for those, and duplicating those flows would be two places to keep correct.
  */
 export default function SettingsScreen() {
   const { s, set, reset } = useSession();
@@ -38,6 +40,36 @@ export default function SettingsScreen() {
       gap={20}
       title={<T hi="सेटिंग्स" en="Settings" />}
     >
+      {/* the account itself, at the head of the list */}
+      <div
+        style={{
+          background: '#fff',
+          border: '1px solid var(--line)',
+          borderRadius: '14px',
+          padding: '20px 22px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '18px',
+          boxShadow: 'var(--e1)',
+        }}
+      >
+        <AvatarPicker size={64} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '19px', fontWeight: 700 }}>{s.name || '—'}</div>
+          <div style={{ fontSize: '13.5px', color: 'var(--muted)', marginTop: '2px' }}>
+            {s.phone ? `+91 ${s.phone}` : '—'}
+          </div>
+        </div>
+        <span style={{ flex: 1 }} />
+        <a
+          href="/screens/settings"
+          onClick={() => rememberLayout('phone')}
+          style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--navy)' }}
+        >
+          <T hi="नाम बदलिए" en="Change name" />
+        </a>
+      </div>
+
       <Row
         icon={
           <>

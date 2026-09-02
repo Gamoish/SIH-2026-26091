@@ -143,3 +143,38 @@ test('mobile-only edit screens open in the phone layout from a desktop session',
   await expect(page).toHaveURL(/\/screens\/edit-category/);
   await expect(page.locator('.dc-phone')).toBeVisible();
 });
+
+test('the profile picture can be changed from the desktop rail', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/settings');
+
+  // the name and number are on the account row, not just the rail
+  const phone = await page.evaluate(() => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').phone);
+  await expect(page.getByText(`+91 ${phone}`).first()).toBeVisible();
+
+  const before = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').photo,
+  );
+  expect(before).toBeNull();
+
+  // a 2x2 red PNG is enough: the crop runs through a canvas either way
+  await page
+    .locator('input[type="file"]')
+    .first()
+    .setInputFiles({
+      name: 'me.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFUlEQVR4nGP8z8DAwMDAxMAAAAAA//8DAAIDAQGkGZ4hAAAAAElFTkSuQmCC',
+        'base64',
+      ),
+    });
+
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').photo))
+    .toMatch(/^data:image\/jpeg;base64,/);
+
+  // and it is the same photo on the phone layout - one session, one field
+  await page.goto('/screens/settings');
+  await expect(page.locator('img[alt=""]').first()).toBeVisible();
+});

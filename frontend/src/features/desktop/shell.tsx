@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { T, Avatar } from '@/components';
+import { T, AvatarPicker } from '@/components';
 import { useSession } from '@/hooks/use-session';
 import { ONBOARDING, type Slug } from '@/lib/nav';
 
@@ -172,7 +172,7 @@ export function SplitShell({
         </aside>
 
         <main
-          className="dc-monument"
+          className="dc-monument dc-flag"
           style={{
             flex: 1,
             minWidth: 0,
@@ -230,6 +230,7 @@ export function TopBarShell({
     >
       <Tricolour />
       <div
+        className="dc-flag"
         style={{
           background: 'var(--navy)',
           color: '#fff',
@@ -356,7 +357,7 @@ export function DesktopShell({
   const path = usePathname();
 
   return (
-    <div className="dc-desk">
+    <div className="dc-desk dc-flag">
       <aside className="dc-desk-side">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 22px 18px' }}>
           <Ashoka />
@@ -407,21 +408,33 @@ export function DesktopShell({
 
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
             margin: '0 22px',
             padding: '14px 0 2px',
             borderTop: '1px solid rgba(255,255,255,.12)',
           }}
         >
-          <Avatar photo={s.photo} name={s.name} size={32} />
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '10.5px', color: '#B9CBE0' }}>
-              <T hi="नमस्ते" en="Hello" />
-            </div>
-            <div style={{ fontSize: '13px', fontWeight: 600 }}>{s.name || '—'}</div>
-          </div>
+          <AvatarPicker
+            size={36}
+            onDark
+            label={
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {s.name || '—'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#B9CBE0' }}>
+                  {s.phone ? `+91 ${s.phone}` : <T hi="नमस्ते" en="Hello" />}
+                </div>
+              </div>
+            }
+          />
         </div>
       </aside>
 

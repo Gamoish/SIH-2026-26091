@@ -7,5 +7,6 @@ export { Sheet, Secondary } from './sheet';
 export { Field } from './field';
 export { CategoryList, GeneralNote } from './category-list';
 export { Avatar } from './avatar';
+export { AvatarPicker } from './avatar-picker';
 export { Stat, type StatTone } from './stat';
 export { ScoreDial } from './score-dial';

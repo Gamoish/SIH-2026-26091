@@ -214,6 +214,10 @@ async function measure(page: Page) {
       monumentBand: monAfter ? Math.round(parseFloat(monAfter.height)) : null,
       monumentOnRail: !!document.querySelector('.dc-desk-side.dc-monument'),
       monumentIsolated: mon ? getComputedStyle(mon).isolation : null,
+      flag: (() => {
+        const f = document.querySelector('.dc-flag');
+        return f ? getComputedStyle(f, '::before').backgroundImage : null;
+      })(),
       shellTop: Math.round(
         (document.querySelector('.dc-desk, .dc-onb') as HTMLElement).getBoundingClientRect().top,
       ),
@@ -305,6 +309,9 @@ test.describe('desktop layout matches the design canvas', () => {
       // and pushing it the same distance below the fold.
       expect(m.shellTop, `${spec.artboard} starts flush with the top`).toBe(0);
       expect(m.pageOverflow, `${spec.artboard} fits the viewport`).toBeLessThanOrEqual(0);
+
+      // the tricolour corner, the same asset the phone hangs off its top bar
+      expect(m.flag, `${spec.artboard} carries the flag corner`).toContain('flag-corner.svg');
     });
   }
 
