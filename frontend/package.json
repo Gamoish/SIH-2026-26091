@@ -13,6 +13,8 @@
     "test": "node --experimental-strip-types --no-warnings tests/finance.test.mjs && node --experimental-strip-types --no-warnings tests/monuments.test.mjs && node --experimental-strip-types --no-warnings tests/case.test.mjs"
   },
   "dependencies": {
+    "@hugeicons/core-free-icons": "^4.3.0",
+    "@hugeicons/react": "^1.1.10",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

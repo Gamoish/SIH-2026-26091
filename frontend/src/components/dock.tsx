@@ -1,37 +1,30 @@
 'use client';
 
 import React from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Home05Icon, PlusSignIcon, File02Icon, Settings02Icon } from '@hugeicons/core-free-icons';
 import { useNav, useStartCheck } from '@/lib/nav';
 import { T } from './bilingual';
 
+/**
+ * Hugeicons (free pack, MIT) rather than hand-drawn paths.
+ *
+ * The four here were wrong, not just plain: "Home" was a four-square grid,
+ * which reads as a dashboard; "Apps" was a page; and "Settings" was a circle
+ * with eight spokes, which renders as a sun rather than a gear. All four now
+ * say what they mean, on one 24px grid with one stroke weight.
+ */
 const ICONS = {
-  home: (
-    <>
-      <rect x="3" y="3" width="7" height="9" rx="1" />
-      <rect x="14" y="3" width="7" height="5" rx="1" />
-      <rect x="14" y="12" width="7" height="9" rx="1" />
-      <rect x="3" y="16" width="7" height="5" rx="1" />
-    </>
-  ),
-  add: <path d="M12 5v14M5 12h14" />,
-  doc: (
-    <>
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-      <path d="M14 3v5h5" />
-    </>
-  ),
-  gear: (
-    <>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
-    </>
-  ),
+  home: Home05Icon,
+  add: PlusSignIcon,
+  doc: File02Icon,
+  gear: Settings02Icon,
 };
 
 export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings' }) {
   const nav = useNav();
   const startCheck = useStartCheck();
-  const tabs: { id: typeof active; go: () => void; icon: React.ReactNode; hi: string; en: string }[] = [
+  const tabs: { id: typeof active; go: () => void; icon: typeof Home05Icon; hi: string; en: string }[] = [
     { id: 'home', go: () => nav.go('home'), icon: ICONS.home, hi: 'होम', en: 'Home' },
     { id: 'new', go: startCheck, icon: ICONS.add, hi: 'नई जाँच', en: 'New check' },
     { id: 'saved', go: () => nav.go('saved'), icon: ICONS.doc, hi: 'आवेदन', en: 'Apps' },
@@ -73,17 +66,7 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
               minHeight: '44px',
             }}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-            >
-              {t.icon}
-            </svg>
+            <HugeiconsIcon icon={t.icon} size={21} strokeWidth={on ? 2.2 : 1.9} />
             <span style={{ fontSize: '9.5px', fontWeight: on ? 700 : 400 }}>
               <T hi={t.hi} en={t.en} />
             </span>
@@ -93,4 +76,3 @@ export function Dock({ active }: { active: 'home' | 'new' | 'saved' | 'settings'
     </nav>
   );
 }
-export const ICON = ICONS;

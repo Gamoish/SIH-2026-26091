@@ -6,7 +6,9 @@ import { useCase } from '@/hooks/use-case';
 import { isGap } from '@/domain/finance';
 import { label } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
-import { Dock, ICON, Primary, Row, T } from '@/components';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { File02Icon, PlusSignIcon, Home05Icon } from '@hugeicons/core-free-icons';
+import { Dock, Primary, Row, T } from '@/components';
 
 export default function HomeScreen() {
   const { s } = useSession();
@@ -104,16 +106,7 @@ export default function HomeScreen() {
                 margin: '0 auto 12px',
               }}
             >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--navy)"
-                strokeWidth="2"
-              >
-                {ICON.doc}
-              </svg>
+              <HugeiconsIcon icon={File02Icon} size={28} color="var(--navy)" strokeWidth={2} />
             </div>
             <div style={{ fontSize: '15px', fontWeight: 700 }}>
               <T hi="आपने अभी कोई जाँच पूरी नहीं की" en="You haven't finished a check yet" />
@@ -128,9 +121,7 @@ export default function HomeScreen() {
         )}
 
         <Primary onClick={startCheck}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
-            {ICON.add}
-          </svg>
+          <HugeiconsIcon icon={PlusSignIcon} size={17} strokeWidth={2.6} />
           <T
             hi={done ? 'नई जाँच शुरू करें' : 'पहली जाँच शुरू करें'}
             en={done ? 'Start a new check' : 'Start your first check'}
@@ -141,18 +132,7 @@ export default function HomeScreen() {
           <Row
             onClick={() => nav.go('share')}
             iconBg="var(--teal-tint)"
-            icon={
-              <svg
-                width="19"
-                height="19"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--teal)"
-                strokeWidth="2.2"
-              >
-                {ICON.doc}
-              </svg>
-            }
+            icon={<HugeiconsIcon icon={File02Icon} size={19} color="var(--teal)" strokeWidth={2.2} />}
             title={<T hi="बैंक वाला सारांश" en="The bank summary" />}
             sub={new Date(s.savedAt!).toLocaleDateString(s.lang === 'en' ? 'en-IN' : 'hi-IN', {
               day: 'numeric',
@@ -164,18 +144,7 @@ export default function HomeScreen() {
 
         <Row
           onClick={() => nav.go('saved')}
-          icon={
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--muted)"
-              strokeWidth="2.2"
-            >
-              {ICON.home}
-            </svg>
-          }
+          icon={<HugeiconsIcon icon={Home05Icon} size={19} color="var(--muted)" strokeWidth={2.2} />}
           title={<T hi="आपके सभी आवेदन" en="All your applications" />}
           sub={<T hi={`${done ? 1 : 0} आवेदन`} en={`${done ? 1 : 0} application`} />}
         />

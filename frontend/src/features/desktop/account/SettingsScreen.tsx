@@ -5,6 +5,15 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
 import { tokenStore } from '@/lib/api';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  Globe02Icon,
+  SmartPhone01Icon,
+  UserCircleIcon,
+  File02Icon,
+  HelpCircleIcon,
+  Logout01Icon,
+} from '@hugeicons/core-free-icons';
 import { AvatarPicker, T, useT } from '@/components';
 import { rememberLayout } from '@/lib/layout';
 import { DesktopShell } from '../shell';
@@ -70,15 +79,7 @@ export default function SettingsScreen() {
         </a>
       </div>
 
-      <Row
-        icon={
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" />
-          </>
-        }
-        label={<T hi="भाषा" en="Language" />}
-      >
+      <Row icon={Globe02Icon} label={<T hi="भाषा" en="Language" />}>
         <div style={{ display: 'flex', gap: '8px' }}>
           {(['hi', 'en'] as const).map((code) => {
             const on = s.lang === code;
@@ -106,39 +107,18 @@ export default function SettingsScreen() {
         </div>
       </Row>
 
-      <Row
-        icon={
-          <>
-            <rect x="7" y="2" width="10" height="20" rx="2" />
-            <path d="M11 18h2" />
-          </>
-        }
-        label={<T hi="फ़ोन नंबर" en="Phone number" />}
-      >
+      <Row icon={SmartPhone01Icon} label={<T hi="फ़ोन नंबर" en="Phone number" />}>
         <span style={{ fontSize: '15px', fontWeight: 600 }}>{s.phone ? `+91 ${s.phone}` : '—'}</span>
       </Row>
 
-      <Row
-        icon={
-          <>
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21a8 8 0 0 1 16 0" />
-          </>
-        }
-        label={<T hi="आपका वर्ग" en="Your category" />}
-      >
+      <Row icon={UserCircleIcon} label={<T hi="आपका वर्ग" en="Your category" />}>
         <span style={{ fontSize: '15px', fontWeight: 600 }}>
           {category ? t(category.hi, category.en) : '—'}
         </span>
       </Row>
 
       <Row
-        icon={
-          <>
-            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-            <path d="M14 3v5h5" />
-          </>
-        }
+        icon={File02Icon}
         label={<T hi="सहेजे आवेदन" en="Saved applications" />}
         onClick={() => nav.go('saved')}
       >
@@ -156,15 +136,7 @@ export default function SettingsScreen() {
         </span>
       </Row>
 
-      <Row
-        icon={
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="M9.5 9.5a2.5 2.5 0 1 1 3 2.5v1.5M12 17h.01" />
-          </>
-        }
-        label={<T hi="मदद व सहायता" en="Help & support" />}
-      >
+      <Row icon={HelpCircleIcon} label={<T hi="मदद व सहायता" en="Help & support" />}>
         <a
           href="/screens/settings"
           onClick={() => rememberLayout('phone')}
@@ -174,16 +146,7 @@ export default function SettingsScreen() {
         </a>
       </Row>
 
-      <Row
-        danger
-        icon={
-          <>
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <path d="M16 17l5-5-5-5M21 12H9" />
-          </>
-        }
-        label={<T hi="लॉग आउट" en="Log out" />}
-      >
+      <Row danger icon={Logout01Icon} label={<T hi="लॉग आउट" en="Log out" />}>
         {confirming ? (
           <div style={{ display: 'flex', gap: '10px' }}>
             <button onClick={logout} style={BTN.danger}>
@@ -236,7 +199,7 @@ function Row({
   onClick,
   danger,
 }: {
-  icon: React.ReactNode;
+  icon: typeof Globe02Icon;
   label: React.ReactNode;
   children?: React.ReactNode;
   onClick?: () => void;
@@ -257,17 +220,13 @@ function Row({
         cursor: onClick ? 'pointer' : 'default',
       }}
     >
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={danger ? 'var(--rust)' : 'var(--navy)'}
-        strokeWidth="2.1"
+      <HugeiconsIcon
+        icon={icon}
+        size={20}
+        color={danger ? 'var(--rust)' : 'var(--navy)'}
+        strokeWidth={2}
         style={{ flex: 'none' }}
-      >
-        {icon}
-      </svg>
+      />
       <span
         style={{
           flex: 1,

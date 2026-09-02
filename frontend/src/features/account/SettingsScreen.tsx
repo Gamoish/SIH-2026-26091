@@ -5,6 +5,8 @@ import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
 import { tokenStore } from '@/lib/api';
 import { DESKTOP_QUERY, rememberLayout } from '@/lib/layout';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Globe02Icon, File02Icon, ComputerIcon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { Avatar, Dock, Header, T, useT } from '@/components';
 import NameSheet from './edit/NameSheet';
 import PhoneSheet from './edit/PhoneSheet';
@@ -91,17 +93,7 @@ export default function SettingsScreen() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--navy)"
-              strokeWidth="2.2"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18" />
-            </svg>
+            <HugeiconsIcon icon={Globe02Icon} size={19} color="var(--navy)" strokeWidth={2.2} />
             <div style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}>
               <T hi="भाषा" en="Language" />
             </div>
@@ -149,10 +141,7 @@ export default function SettingsScreen() {
             minHeight: '50px',
           }}
         >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2.2">
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path d="M7 8h10M7 12h5" />
-          </svg>
+          <HugeiconsIcon icon={File02Icon} size={19} color="var(--navy)" strokeWidth={2.2} />
           <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600 }}>
             <T hi="सहेजे आवेदन" en="Saved applications" />
           </span>
@@ -190,17 +179,7 @@ export default function SettingsScreen() {
               minHeight: '50px',
             }}
           >
-            <svg
-              width="19"
-              height="19"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--navy)"
-              strokeWidth="2.2"
-            >
-              <rect x="2" y="4" width="20" height="13" rx="2" />
-              <path d="M8 21h8M12 17v4" />
-            </svg>
+            <HugeiconsIcon icon={ComputerIcon} size={19} color="var(--navy)" strokeWidth={2.2} />
             <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600, textAlign: 'left' }}>
               <T hi="बड़ी स्क्रीन पर लौटिए" en="Back to the desktop view" />
             </span>
@@ -234,10 +213,7 @@ export default function SettingsScreen() {
             minHeight: '50px',
           }}
         >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--rust)" strokeWidth="2.2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <path d="M16 17l5-5-5-5M21 12H9" />
-          </svg>
+          <HugeiconsIcon icon={Logout01Icon} size={19} color="var(--rust)" strokeWidth={2.2} />
           <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--rust)' }}>
             <T hi="लॉग आउट" en="Log out" />
           </span>

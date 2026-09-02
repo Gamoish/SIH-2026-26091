@@ -121,7 +121,9 @@ test('a mobile-only screen does not file a desktop visitor as a phone user', asy
   // desktop visitor whose first URL was an edit screen was filed as a phone
   // user for a year, with every later navigation sent to the phone tree.
   await page.goto('/screens/edit-photo');
-  expect(await cookieValue(page)).toBe('desktop');
+  // the reconciler writes the cookie from an effect, so this has to be polled -
+  // reading once after `goto` races hydration
+  await expect.poll(() => cookieValue(page)).toBe('desktop');
 
   // the next ordinary navigation must therefore go back to the desktop tree
   await page.goto('/screens/language');
