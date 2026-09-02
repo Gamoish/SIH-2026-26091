@@ -359,12 +359,32 @@ export function DesktopShell({
   return (
     <div className="dc-desk dc-flag">
       <aside className="dc-desk-side">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 22px 18px' }}>
-          <Ashoka />
-          <div style={{ fontSize: '16px', fontWeight: 700 }}>
-            उद्यम साथी{' '}
-            <span style={{ fontSize: '10.5px', color: '#B9CBE0', fontWeight: 500 }}>Udyam Sathi</span>
-          </div>
+        {/* Who is signed in, at the head of the rail: on a desktop the account
+            is the thing you act on, and the flag corner already marks the page
+            as the service's. The wordmark keeps its place at the foot. */}
+        <div style={{ padding: '0 22px 18px' }}>
+          <AvatarPicker
+            size={44}
+            onDark
+            label={
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: '14.5px',
+                    fontWeight: 700,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {s.name || '—'}
+                </div>
+                <div style={{ fontSize: '11px', color: '#B9CBE0' }}>
+                  {s.phone ? `+91 ${s.phone}` : <T hi="नमस्ते" en="Hello" />}
+                </div>
+              </div>
+            }
+          />
         </div>
 
         <nav style={{ padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -408,33 +428,19 @@ export function DesktopShell({
 
         <div
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
             margin: '0 22px',
             padding: '14px 0 2px',
             borderTop: '1px solid rgba(255,255,255,.12)',
           }}
         >
-          <AvatarPicker
-            size={36}
-            onDark
-            label={
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {s.name || '—'}
-                </div>
-                <div style={{ fontSize: '11px', color: '#B9CBE0' }}>
-                  {s.phone ? `+91 ${s.phone}` : <T hi="नमस्ते" en="Hello" />}
-                </div>
-              </div>
-            }
-          />
+          <Ashoka size={24} />
+          <div style={{ fontSize: '13px', fontWeight: 700 }}>
+            उद्यम साथी{' '}
+            <span style={{ fontSize: '10px', color: '#B9CBE0', fontWeight: 500 }}>Udyam Sathi</span>
+          </div>
         </div>
       </aside>
 
