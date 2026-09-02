@@ -80,3 +80,44 @@
     padding-right: 16px;
   }
 }
+
+/* --- the monument, ported from the phone -------------------------------- --
+   Same slug -> same silhouette as /screens, from the same `monumentVar()` and
+   the same 24 SVGs; only the placement differs, because a desktop content area
+   is a wide short box rather than a tall narrow one.
+
+   The phone gives the skyline its own flex row at full width. Here it is a
+   `z-index: -1` pseudo pinned to the bottom of the content area: it paints over
+   that area's own background but under every child, so it fills the dead space
+   below short content without ever pushing or competing with real content. The
+   whole silhouette is `contain`ed rather than stretched, so a narrow body (one
+   with a side panel) scales it down instead of cropping it. */
+.dc-monument {
+  position: relative;
+  /* the pseudo below sits at z-index -1 so every child paints over it. That
+     only works inside a stacking context: without one it would drop behind
+     this element's own opaque background and vanish entirely. */
+  isolation: isolate;
+}
+.dc-monument::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* tall enough to read as a skyline on a 900px-high viewport, capped so it
+     never becomes the loudest thing on a short screen */
+  height: clamp(120px, 22vh, 200px);
+  pointer-events: none;
+  background-color: var(--navy);
+  opacity: 0.13;
+  -webkit-mask-image: var(--monument, url('/skyline.svg'));
+  mask-image: var(--monument, url('/skyline.svg'));
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: bottom center;
+  mask-position: bottom center;
+}

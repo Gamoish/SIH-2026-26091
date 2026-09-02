@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { NavBase, firstRunBlock, redirectFor, type Slug } from '@/lib/nav';
+import { monumentVar } from '@/lib/monuments';
 import { LayoutReconciler } from '@/components/layout-reconciler';
 
 /**
@@ -46,5 +47,23 @@ function Guard({ slug, children }: { slug: string; children: React.ReactNode }) 
   }, [to, router]);
 
   if (!ready || to) return null;
-  return <>{children}</>;
+
+  // The same slug -> monument lookup the phone layout uses, set the same way:
+  // a `display: contents` wrapper carries the custom property down to whichever
+  // shell the screen renders, so no screen has to know it has a monument.
+  const monument = monumentVar(slug);
+
+  return (
+    <div
+      data-screen={slug}
+      style={
+        {
+          display: 'contents',
+          ...(monument ? { '--monument': monument } : {}),
+        } as React.CSSProperties
+      }
+    >
+      {children}
+    </div>
+  );
 }

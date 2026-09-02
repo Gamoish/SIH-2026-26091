@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { MONUMENTS } from '../../src/lib/monuments';
 
 /**
  * Layout regression against `design/Disha Desktop.dc.html`.
@@ -13,6 +14,8 @@ import { test, expect, type Page } from '@playwright/test';
  * diff here is either a real regression or a deliberate redesign, and both
  * should be visible in review.
  */
+
+import type { Slug } from '../../src/lib/nav';
 
 type Chrome = 'split' | 'topbar' | 'rail';
 
@@ -197,6 +200,9 @@ async function measure(page: Page) {
       .filter((e) => getComputedStyle(e).display === 'grid')
       .map((e) => getComputedStyle(e).gridTemplateColumns.split(' ').filter(Boolean).length);
     const active = document.querySelector('a[aria-current="page"]');
+    // the monument is a ::after on the content area; read what it really paints
+    const mon = document.querySelector('.dc-monument');
+    const monAfter = mon ? getComputedStyle(mon, '::after') : null;
     return {
       asides,
       padding: body ? getComputedStyle(body).padding : null,
@@ -204,6 +210,10 @@ async function measure(page: Page) {
       activeBg: active ? getComputedStyle(active).backgroundColor : null,
       hasRail: !!document.querySelector('.dc-desk-side'),
       hasOnb: !!document.querySelector('.dc-onb'),
+      monument: monAfter ? (monAfter.maskImage ?? monAfter.webkitMaskImage) : null,
+      monumentBand: monAfter ? Math.round(parseFloat(monAfter.height)) : null,
+      monumentOnRail: !!document.querySelector('.dc-desk-side.dc-monument'),
+      monumentIsolated: mon ? getComputedStyle(mon).isolation : null,
       railWidth: document.querySelector('.dc-desk-side')
         ? px((document.querySelector('.dc-desk-side') as HTMLElement).getBoundingClientRect().width)
         : null,
@@ -269,6 +279,21 @@ test.describe('desktop layout matches the design canvas', () => {
       if (spec.chrome === 'rail' && m.activeBg) {
         expect(m.activeBg, 'active rail item is saffron').toBe(SAFFRON);
       }
+
+      // The monument, ported from the phone: the same slug paints the same
+      // silhouette in the content area of whichever chrome the screen uses.
+      // Asserted on the rendered pseudo-element, because the class being
+      // present proves nothing - an earlier pass had it invisible behind the
+      // content area's own background.
+      expect(m.monument, `${spec.artboard} paints ${MONUMENTS[spec.slug as Slug]}`).toContain(
+        `${MONUMENTS[spec.slug as Slug]}.svg`,
+      );
+      expect(m.monumentBand, 'the monument band has real height').toBeGreaterThan(100);
+      expect(m.monumentOnRail, 'the monument belongs to the content area, not the rail').toBe(false);
+      // the layer sits at z-index -1, which only paints above the content
+      // area's own background inside a stacking context - without this the
+      // mask still computes correctly and nothing is visible
+      expect(m.monumentIsolated, 'the content area isolates, so the monument is visible').toBe('isolate');
     });
   }
 

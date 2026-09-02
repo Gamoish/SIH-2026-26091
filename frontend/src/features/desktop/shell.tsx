@@ -172,6 +172,7 @@ export function SplitShell({
         </aside>
 
         <main
+          className="dc-monument"
           style={{
             flex: 1,
             minWidth: 0,
@@ -252,6 +253,7 @@ export function TopBarShell({
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <main
+          className="dc-monument"
           style={{
             flex: 1,
             minWidth: 0,
@@ -427,7 +429,7 @@ export function DesktopShell({
         <Tricolour />
         <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
           <div
-            className="dc-desk-body"
+            className="dc-desk-body dc-monument"
             style={{
               flex: 1,
               minWidth: 0,
