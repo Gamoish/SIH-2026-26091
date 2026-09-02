@@ -178,3 +178,28 @@ test('the profile picture can be changed from the desktop rail', async ({ page }
   await page.goto('/screens/settings');
   await expect(page.locator('img[alt=""]').first()).toBeVisible();
 });
+
+test('finishing a case files it to the database, and the list reads it back', async ({ page }) => {
+  await onboard(page);
+
+  // the share sheet is what files the case
+  await page.goto('/desktop/share');
+  await expect(page.getByText('Feasibility summary')).toBeVisible();
+
+  // The list screen fetches GET /api/applications, so a row appearing here is
+  // proof the case reached Postgres - the session alone could not produce it.
+  await page.goto('/desktop/saved');
+  await expect(page.getByText('Leaf plates')).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText('/ 100')).toBeVisible();
+
+  // and it survives this browser forgetting the case entirely
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}');
+    localStorage.setItem(
+      'disha.session.v1',
+      JSON.stringify({ ...s, business: null, savedAt: null, capital: null }),
+    );
+  });
+  await page.goto('/desktop/saved');
+  await expect(page.getByText('Leaf plates')).toBeVisible();
+});

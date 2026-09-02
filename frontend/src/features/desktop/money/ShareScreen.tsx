@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useCase } from '@/hooks/use-case';
+import { saveCase } from '@/lib/save-case';
 import { isGap } from '@/domain/finance';
 import { label, narrate } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
@@ -21,9 +22,32 @@ export default function ShareScreen() {
   const t = useT();
   const { report, plan } = useCase();
 
+  // Filing the case is what makes it exist beyond this browser: `savedAt` is
+  // only the local marker that stops it being filed again on a later visit. If
+  // the write fails the marker is not set, so the next visit retries rather
+  // than showing a case the applications list has never heard of.
+  //
+  // The ref is not redundant with `savedAt`: setting session state is async, so
+  // a second run of this effect - React's development double-invoke, or any
+  // re-render before the state lands - passed the `savedAt` check and filed the
+  // same case twice. The ref closes in the same tick the request starts.
+  const filing = useRef(false);
   useEffect(() => {
-    if (!s.savedAt) set({ savedAt: new Date().toISOString() });
-  }, [s.savedAt, set]);
+    if (s.savedAt || !report || filing.current) return;
+    filing.current = true;
+    let live = true;
+    saveCase({ report, plan })
+      .then((id) => {
+        if (live && id) set({ savedAt: new Date().toISOString() });
+      })
+      .catch(() => {
+        // offline or unauthenticated: let the next visit try again
+        filing.current = false;
+      });
+    return () => {
+      live = false;
+    };
+  }, [s.savedAt, set, report, plan]);
 
   if (!report) return null;
   const money = plan && !isGap(plan) ? plan : null;

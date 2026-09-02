@@ -15,7 +15,15 @@ export async function buildServer(): Promise<FastifyInstance> {
     },
   });
 
-  await app.register(cors, { origin: env.corsOrigin, credentials: true });
+  // `methods` is not optional in practice: @fastify/cors defaults to
+  // GET,HEAD,POST, so the browser's preflight refused every PUT and PATCH -
+  // which is every write the onboarding flow makes. The frontend swallowed the
+  // resulting network error, so onboarding_profiles simply stayed empty.
+  await app.register(cors, {
+    origin: env.corsOrigin,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
 
   app.get('/health', async () => ({ ok: true, env: env.nodeEnv }));
 

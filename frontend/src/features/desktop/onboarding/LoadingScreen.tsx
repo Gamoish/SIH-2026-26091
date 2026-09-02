@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
-import { useCase } from '@/hooks/use-case';
-import { label } from '@/domain/feasibility';
-import { num } from '@/lib/format';
 import { MOCK_api } from '@/data/stubs/mock-api';
-import { Primary, ScoreDial, T } from '@/components';
+import { Primary, T } from '@/components';
 import { TopBarShell, Legend } from '../shell';
 
 /**
@@ -15,15 +12,15 @@ import { TopBarShell, Legend } from '../shell';
  * `1.3fr 1fr` headline row and `1fr 1fr` SWOT grid the report screen uses, so
  * the layout does not jump when the wait ends.
  *
- * Every figure shown is already real. By this point the session holds village,
- * business and capital, so `caseFrom()` can compute; the wait is the
- * feasibility call, not the arithmetic. A slot is a shimmer only while its
- * value genuinely is not known yet - never a fake number counting up.
+ * Everything on it is a shimmer. `caseFrom()` could compute most of these
+ * figures on the spot, and an earlier pass did show them - which made this
+ * read as the finished report, so advancing to the real one looked like the
+ * page changing by itself. A loading screen has one job: look like one. No
+ * fake numbers counting up either.
  */
 export default function LoadingScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { report } = useCase();
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -93,28 +90,10 @@ export default function LoadingScreen() {
       <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '20px' }}>
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            {report ? (
-              <ScoreDial score={report.score} size={112} />
-            ) : (
-              <div className="skel" style={{ width: '112px', height: '112px', borderRadius: '50%' }} />
-            )}
+            <div className="skel" style={{ width: '112px', height: '112px', borderRadius: '50%' }} />
             <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: '9px' }}>
-              {report ? (
-                <>
-                  <div style={{ fontSize: '18px', fontWeight: 700 }}>
-                    {label(report.business.name, s.lang)}
-                  </div>
-                  <div style={{ fontSize: '14px', color: 'var(--muted)' }}>
-                    {label(report.village.name, s.lang)}, {report.village.block} · {report.radiusKm}{' '}
-                    <T hi="किमी" en="km" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Bar w="70%" h={18} />
-                  <Bar w="45%" h={13} />
-                </>
-              )}
+              <Bar w="70%" h={18} />
+              <Bar w="45%" h={13} />
             </div>
           </div>
         </Card>
@@ -123,19 +102,11 @@ export default function LoadingScreen() {
           <Caps>
             <T hi="बाज़ार पहुँच" en="Market reach" />
           </Caps>
-          {report ? (
-            <div style={{ display: 'grid', gap: '7px', marginTop: '8px' }}>
-              <Fact k={<T hi="लोग" en="People" />} v={num(report.marketReach.population)} />
-              <Fact k={<T hi="गाँव" en="Villages" />} v={String(report.marketReach.villages)} />
-              <Fact k={<T hi="प्रतियोगी" en="Competitors" />} v={String(report.totalCompetitors)} />
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gap: '10px', marginTop: '10px' }}>
-              <Bar w="80%" />
-              <Bar w="65%" />
-              <Bar w="72%" />
-            </div>
-          )}
+          <div style={{ display: 'grid', gap: '10px', marginTop: '10px' }}>
+            <Bar w="80%" />
+            <Bar w="65%" />
+            <Bar w="72%" />
+          </div>
         </Card>
       </div>
 
@@ -157,20 +128,10 @@ export default function LoadingScreen() {
                 ][i]
               }
             </Caps>
-            {report ? (
-              <ul style={{ margin: '8px 0 0', paddingLeft: '18px', display: 'grid', gap: '6px' }}>
-                {report.swot[key].map((it) => (
-                  <li key={it.en} style={{ fontSize: '13.5px', lineHeight: 1.5, color: 'var(--text)' }}>
-                    {label(it, s.lang)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div style={{ display: 'grid', gap: '9px', marginTop: '10px' }}>
-                <Bar w="90%" />
-                <Bar w="75%" />
-              </div>
-            )}
+            <div style={{ display: 'grid', gap: '9px', marginTop: '10px' }}>
+              <Bar w="90%" />
+              <Bar w="75%" />
+            </div>
           </Card>
         ))}
       </div>
@@ -198,15 +159,6 @@ function Caps({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-    </div>
-  );
-}
-
-function Fact({ k, v }: { k: React.ReactNode; v: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', fontSize: '13.5px' }}>
-      <span style={{ flex: 1, color: 'var(--muted)' }}>{k}</span>
-      <span style={{ fontWeight: 700 }}>{v}</span>
     </div>
   );
 }

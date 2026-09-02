@@ -13,11 +13,12 @@ type State =
 /**
  * D-P9. The applications this account has filed.
  *
- * The canvas shows a score, a scheme code, a business name and an "In review"
- * status on each row. `GET /api/applications` returns none of those - its
- * status enum is `draft | complete` - so this screen renders only fields the
- * endpoint actually sends. Showing a computed score against someone's filed
- * application would be inventing a figure the server never agreed to.
+ * Every field here comes off the row the endpoint sends. The score, business
+ * and village are read out of the stored `feasibility_report` - the report as
+ * it was when the case was filed, not one recomputed now, which could differ
+ * from what the applicant actually submitted. A row filed before that JSON was
+ * stored simply shows less. The canvas's "In review" state is still not shown:
+ * the status enum is `draft | complete` and there is no review stage to report.
  */
 export default function SavedScreen() {
   const { s } = useSession();
@@ -100,8 +101,31 @@ export default function SavedScreen() {
   );
 }
 
+/**
+ * Pull the display fields out of a stored report. It is `unknown` by type and
+ * jsonb by column, and rows filed by an older build may hold a different shape,
+ * so every field is optional and nothing here throws.
+ */
+function storedReport(report: unknown, lang: 'hi' | 'en') {
+  if (!report || typeof report !== 'object') return null;
+  const r = report as {
+    score?: unknown;
+    business?: { name?: Record<string, string> };
+    village?: { name?: Record<string, string>; block?: unknown };
+  };
+  const pick = (v: Record<string, string> | undefined) =>
+    v && typeof v[lang] === 'string' ? v[lang] : undefined;
+  return {
+    score: typeof r.score === 'number' ? r.score : undefined,
+    business: pick(r.business?.name),
+    village: pick(r.village?.name),
+    block: typeof r.village?.block === 'string' ? r.village.block : undefined,
+  };
+}
+
 function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
   const done = app.status === 'complete';
+  const saved = storedReport(app.feasibility_report, lang);
   const filed = new Date(app.created_at);
   const when = Number.isNaN(filed.getTime())
     ? null
@@ -141,17 +165,20 @@ function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '15.5px', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-          {app.id.slice(0, 8)}
+        <div style={{ fontSize: '15.5px', fontWeight: 700 }}>
+          {saved?.business ?? (
+            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{app.id.slice(0, 8)}</span>
+          )}
         </div>
         <div style={{ fontSize: '13.5px', color: 'var(--muted)', marginTop: '3px' }}>
-          {when}
-          {app.feasibility_report ? (
+          {saved?.village ? (
             <>
+              {saved.village}
+              {saved.block ? `, ${saved.block}` : ''}
               {' · '}
-              <T hi="रिपोर्ट संलग्न" en="report attached" />
             </>
           ) : null}
+          {when}
           {app.financial_roadmap ? (
             <>
               {' · '}
@@ -160,6 +187,15 @@ function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
           ) : null}
         </div>
       </div>
+
+      {saved?.score != null ? (
+        <div style={{ textAlign: 'right', flex: 'none' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--navy-dark)' }}>
+            {saved.score}
+            <span style={{ fontSize: '12px', color: 'var(--faint)', fontWeight: 600 }}> / 100</span>
+          </div>
+        </div>
+      ) : null}
 
       <span
         style={{
