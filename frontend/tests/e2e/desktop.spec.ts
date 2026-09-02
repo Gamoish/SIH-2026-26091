@@ -203,3 +203,42 @@ test('finishing a case files it to the database, and the list reads it back', as
   await page.goto('/desktop/saved');
   await expect(page.getByText('Leaf plates')).toBeVisible();
 });
+
+test('the score counts up to the real figure, and the accessible name does not', async ({ page }) => {
+  await onboard(page);
+  await expect(page).toHaveURL(/\/desktop\/feasibility/);
+
+  const dial = page.locator('[role="img"]').first();
+  const label = await dial.getAttribute('aria-label');
+  expect(label).toMatch(/^\d+ \/ 100$/);
+  const score = Number(label!.split(' ')[0]);
+
+  // The digits come from a CSS counter driven by --tally, which the animation
+  // walks up to --tally-to. `content` serialises as the unresolved
+  // `counter(tally)`, so the animated property is the thing to measure: it has
+  // to settle on the engine's figure, not near it.
+  await expect
+    .poll(async () =>
+      Number(
+        await page
+          .locator('.tally')
+          .first()
+          .evaluate((el) => getComputedStyle(el).getPropertyValue('--tally')),
+      ),
+    )
+    .toBe(score);
+
+  // --tally-to was handed the real number in the first place
+  const to = await page
+    .locator('.tally')
+    .first()
+    .evaluate((el) => getComputedStyle(el).getPropertyValue('--tally-to').trim());
+  expect(Number(to)).toBe(score);
+
+  // and the counter actually paints - an empty element would satisfy the above
+  const painted = await page
+    .locator('.tally')
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().width);
+  expect(painted, 'the digits render').toBeGreaterThan(20);
+});

@@ -46,9 +46,11 @@ export function Sheet({
         alignItems: 'center',
         background: 'rgba(10, 37, 69, .44)',
       }}
+      className="sheet-scrim"
     >
       <div
         ref={panel}
+        className="sheet-panel"
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}

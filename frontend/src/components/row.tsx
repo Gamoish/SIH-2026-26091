@@ -17,6 +17,7 @@ export function Row({
 }) {
   return (
     <button
+      className="press"
       onClick={onClick}
       style={{
         width: '100%',

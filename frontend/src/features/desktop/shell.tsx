@@ -105,6 +105,7 @@ function Steps({ at }: { at?: Slug }) {
       {ONBOARDING.map((slug, n) => (
         <span
           key={slug}
+          className="step-dot"
           style={{
             width: n === i ? '26px' : '8px',
             height: '8px',
@@ -254,7 +255,7 @@ export function TopBarShell({
 
       <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <main
-          className="dc-monument"
+          className="dc-monument reveal"
           style={{
             flex: 1,
             minWidth: 0,
@@ -448,7 +449,7 @@ export function DesktopShell({
         <Tricolour />
         <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
           <div
-            className="dc-desk-body dc-monument"
+            className="dc-desk-body dc-monument reveal"
             style={{
               flex: 1,
               minWidth: 0,

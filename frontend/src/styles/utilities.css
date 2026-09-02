@@ -158,3 +158,98 @@ button:disabled {
     display: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Motion: the five interaction transitions.
+
+   Written here rather than pulled from transitions.dev - its snippets are only
+   reachable through `npx transitions-pro`, which this environment refuses along
+   with every other package install. Same shape as what that catalogue ships:
+   plain CSS, compositor-friendly properties (transform/opacity) only, motion
+   tokens as custom properties, no runtime.
+
+   Reduced motion is NOT re-declared per rule. The global block above already
+   clamps every animation- and transition-duration to 0.01ms with !important,
+   so each of these degrades to its end state. Verified by measurement, not by
+   inspection - see `motion` in tests/e2e/flow.spec.ts.
+   --------------------------------------------------------------------------- */
+:root {
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-1: 0.12s; /* press: must feel instant */
+  --dur-2: 0.2s; /* reveal, scrim */
+  --dur-3: 0.28s; /* panels, progress */
+  --dur-4: 0.9s; /* the score counting up */
+}
+
+/* 1. Hover and press feedback, for any interactive surface. `.cta` above keeps
+      its own colours; this adds the movement both it and plain cards want. */
+.press {
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out),
+    background-color var(--dur-2) var(--ease-out);
+}
+.press:hover {
+  box-shadow: var(--e2);
+}
+.press:active {
+  transform: translateY(1px);
+}
+
+/* 2. The sheet, rising from the bottom edge it is anchored to. */
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes sheet-rise {
+  from {
+    transform: translateY(16px);
+    opacity: 0.4;
+  }
+}
+.sheet-scrim {
+  animation: scrim-in var(--dur-2) var(--ease-out) both;
+}
+.sheet-panel {
+  animation: sheet-rise var(--dur-3) var(--ease-out) both;
+}
+
+/* 3. Skeleton to content. Opacity only, deliberately: the layout harness
+      measures geometry the instant a route settles, and a transform here would
+      make every artboard assertion race the animation. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+  }
+}
+.reveal {
+  animation: reveal var(--dur-2) ease-out both;
+}
+
+/* 4. The score counting up. `--tally-to` is set inline from the real figure, so
+      the animation still cannot invent a number it was not given. */
+@property --tally {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+@keyframes tally {
+  to {
+    --tally: var(--tally-to);
+  }
+}
+.tally {
+  counter-reset: tally var(--tally);
+  animation: tally var(--dur-4) var(--ease-out) both;
+}
+.tally::after {
+  content: counter(tally);
+}
+
+/* 5. The onboarding step bar filling as the flow advances. */
+.step-dot {
+  transition:
+    width var(--dur-3) var(--ease-out),
+    background-color var(--dur-3) var(--ease-out);
+}

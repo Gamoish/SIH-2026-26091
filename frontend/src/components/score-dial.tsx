@@ -20,14 +20,31 @@ export function ScoreDial({
   const num = Math.round(size * 0.355);
   const body = (
     <>
-      <div style={{ fontSize: `${num}px`, fontWeight: 700, lineHeight: ring ? 1 : 0.85 }}>{score}</div>
+      {/* the digits are drawn by `.tally`'s counter so they can count up; the
+          accessible name below carries the real figure, which never animates */}
+      <div
+        className="tally"
+        style={
+          {
+            fontSize: `${num}px`,
+            fontWeight: 700,
+            lineHeight: ring ? 1 : 0.85,
+            '--tally-to': score,
+          } as React.CSSProperties
+        }
+      />
       <div style={{ fontSize: `${Math.max(11, Math.round(size * 0.064))}px`, color: '#B9CCE5' }}>
         {ring ? '/ 100' : '/100'}
       </div>
     </>
   );
 
-  if (!ring) return <div style={{ textAlign: 'center', color: '#fff' }}>{body}</div>;
+  if (!ring)
+    return (
+      <div role="img" aria-label={`${score} / 100`} style={{ textAlign: 'center', color: '#fff' }}>
+        {body}
+      </div>
+    );
 
   return (
     <div

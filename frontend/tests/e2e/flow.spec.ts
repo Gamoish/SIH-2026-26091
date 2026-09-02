@@ -596,3 +596,58 @@ test('a village with no fixture fails honestly instead of hanging', async ({ pag
   await expect(page.getByText(/no figures for this village yet/i)).toBeVisible();
   await expect(page.getByRole('button', { name: /Change village/i })).toBeVisible();
 });
+
+/**
+ * The five interaction transitions degrade under `prefers-reduced-motion`.
+ *
+ * utilities.css declares none of them per-rule: they rely on the one global
+ * block clamping every animation- and transition-duration to 0.01ms. That is
+ * only true if the block really does reach them, which is a claim about the
+ * cascade, so it is measured rather than read.
+ */
+test('every transition is clamped under reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/screens/language');
+
+  const durations = await page.evaluate(() => {
+    const probe = (cls: string, prop: 'animationDuration' | 'transitionDuration') => {
+      const el = document.createElement('div');
+      el.className = cls;
+      document.body.appendChild(el);
+      const v = getComputedStyle(el)[prop];
+      el.remove();
+      return v;
+    };
+    return {
+      press: probe('press', 'transitionDuration'),
+      scrim: probe('sheet-scrim', 'animationDuration'),
+      panel: probe('sheet-panel', 'animationDuration'),
+      reveal: probe('reveal', 'animationDuration'),
+      tally: probe('tally', 'animationDuration'),
+      step: probe('step-dot', 'transitionDuration'),
+    };
+  });
+
+  // 0.01ms, however many properties each rule lists. Parsed rather than string
+  // matched: the browser serialises it as `1e-05s`.
+  for (const [name, value] of Object.entries(durations)) {
+    for (const part of value.split(',')) {
+      expect(parseFloat(part), `${name} is clamped`).toBeLessThanOrEqual(0.0001);
+    }
+  }
+});
+
+test('the transitions are live when motion is not reduced', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/screens/language');
+
+  const live = await page.evaluate(() => {
+    const el = document.createElement('div');
+    el.className = 'reveal';
+    document.body.appendChild(el);
+    const v = getComputedStyle(el).animationDuration;
+    el.remove();
+    return v;
+  });
+  expect(parseFloat(live), 'reveal animates normally').toBeGreaterThan(0.05);
+});

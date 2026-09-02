@@ -19,7 +19,7 @@ export function Primary({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={disabled ? undefined : 'cta'}
+      className={disabled ? undefined : 'cta press'}
       style={{
         width: '100%',
         background: disabled ? 'var(--line)' : 'var(--saffron)',
