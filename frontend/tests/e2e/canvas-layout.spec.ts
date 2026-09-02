@@ -214,6 +214,10 @@ async function measure(page: Page) {
       monumentBand: monAfter ? Math.round(parseFloat(monAfter.height)) : null,
       monumentOnRail: !!document.querySelector('.dc-desk-side.dc-monument'),
       monumentIsolated: mon ? getComputedStyle(mon).isolation : null,
+      shellTop: Math.round(
+        (document.querySelector('.dc-desk, .dc-onb') as HTMLElement).getBoundingClientRect().top,
+      ),
+      pageOverflow: Math.round(document.documentElement.scrollHeight - window.innerHeight),
       railWidth: document.querySelector('.dc-desk-side')
         ? px((document.querySelector('.dc-desk-side') as HTMLElement).getBoundingClientRect().width)
         : null,
@@ -294,6 +298,13 @@ test.describe('desktop layout matches the design canvas', () => {
       // area's own background inside a stacking context - without this the
       // mask still computes correctly and nothing is visible
       expect(m.monumentIsolated, 'the content area isolates, so the monument is visible').toBe('isolate');
+
+      // The desktop chrome starts at the very top and fits the viewport. A
+      // `body { padding: 24px 0 }` in the phone stylesheet's wide-screen block
+      // used to leak here, banding every desktop screen with blank space above
+      // and pushing it the same distance below the fold.
+      expect(m.shellTop, `${spec.artboard} starts flush with the top`).toBe(0);
+      expect(m.pageOverflow, `${spec.artboard} fits the viewport`).toBeLessThanOrEqual(0);
     });
   }
 

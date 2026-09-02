@@ -77,10 +77,12 @@
     --tricolor-h: 7px;
     --flag-size: 62px;
   }
-  body {
-    padding: 24px 0;
-  }
   .dc-phone {
+    /* the breathing room that floats the frame as a card. It used to be
+       `body { padding: 24px 0 }`, which is global: every /desktop screen got a
+       blank 24px band above it and was pushed the same distance below the fold.
+       On the frame itself it does the same job and leaks nowhere. */
+    margin: 24px auto;
     max-width: 640px;
     min-height: calc(100dvh - 48px);
     border: 1px solid var(--line-soft);
