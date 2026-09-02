@@ -1,9 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
 import { tokenStore } from '@/lib/api';
+import { DESKTOP_QUERY, rememberLayout } from '@/lib/layout';
 import { Avatar, Dock, Header, T, useT } from '@/components';
 import NameSheet from './edit/NameSheet';
 import PhoneSheet from './edit/PhoneSheet';
@@ -15,6 +16,20 @@ export default function SettingsScreen() {
   const [sheet, setSheet] = useState<'name' | 'phone' | null>(null);
 
   const category = CATEGORIES.find((c) => c.id === s.social);
+
+  // Desktop Settings links here for the edits it has no screen for, and that
+  // link writes the phone preference so middleware stops bouncing the visitor
+  // back. Nothing wrote it the other way, so that was a one-way door: a desktop
+  // visitor ended up on the phone layout for good, with no control to return.
+  // Shown only on a screen wide enough for the desktop layout to make sense, so
+  // an actual phone never sees it.
+  const [wide, setWide] = useState(false);
+  useEffect(() => setWide(window.matchMedia(DESKTOP_QUERY).matches), []);
+
+  const backToDesktop = () => {
+    rememberLayout('desktop');
+    window.location.assign('/desktop/settings');
+  };
 
   const logout = () => {
     if (
@@ -157,6 +172,50 @@ export default function SettingsScreen() {
             <path d="M9 6l6 6-6 6" />
           </svg>
         </button>
+
+        {wide ? (
+          <button
+            onClick={backToDesktop}
+            style={{
+              width: '100%',
+              background: '#fff',
+              border: '1px solid var(--line)',
+              borderRadius: '12px',
+              padding: '13px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: 'var(--e1)',
+              cursor: 'pointer',
+              minHeight: '50px',
+            }}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--navy)"
+              strokeWidth="2.2"
+            >
+              <rect x="2" y="4" width="20" height="13" rx="2" />
+              <path d="M8 21h8M12 17v4" />
+            </svg>
+            <span style={{ flex: 1, fontSize: '13.5px', fontWeight: 600, textAlign: 'left' }}>
+              <T hi="बड़ी स्क्रीन पर लौटिए" en="Back to the desktop view" />
+            </span>
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--faint)"
+              strokeWidth="2.4"
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        ) : null}
 
         <button
           onClick={logout}

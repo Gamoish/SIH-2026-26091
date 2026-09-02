@@ -59,9 +59,38 @@ test('mobile-only screens are left alone on a desktop client', async ({ page }) 
   // There is no desktop counterpart for these, so redirecting would be a dead
   // end. They render in the phone layout, which is what desktop Settings links
   // to on purpose.
+  //
+  // The session is seeded because these screens are behind `isOnboarded`:
+  // without it the guard sends the visitor to `language` and the test proves
+  // nothing about the mobile-only rule. It used to accept `/screens/language`
+  // as a pass, which quietly allowed a desktop visitor to be dropped into the
+  // phone tree - see the filing test below.
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'disha.session.v1',
+      JSON.stringify({
+        lang: 'en',
+        name: 'Suresh Kharwar',
+        phone: '9876543210',
+        photo: null,
+        verified: true,
+        social: 'ST',
+        village: 'jarha',
+        villageLgdCode: null,
+        villageName: 'Jarha',
+        tehsil: 'Dudhi',
+        radiusKm: 5,
+        capital: 22000,
+        business: 'leaf-plates',
+        savedAt: null,
+      }),
+    );
+  });
+
   for (const slug of ['edit-photo', 'edit-category']) {
     await page.goto(`/screens/${slug}`);
-    await expect(page).toHaveURL(new RegExp(`/screens/${slug}|/screens/language`));
+    await expect(page).toHaveURL(new RegExp(`/screens/${slug}$`));
+    await expect(page.locator('.dc-phone')).toBeVisible();
   }
 });
 
@@ -83,4 +112,54 @@ test('an explicit choice outranks the user-agent', async ({ page, context }) => 
   await page.goto('/desktop/language');
   await expect(page).toHaveURL(/\/screens\/language/);
   await expect(page.locator('.dc-phone')).toBeVisible();
+});
+
+test('a mobile-only screen does not file a desktop visitor as a phone user', async ({ page }) => {
+  // `targetFor` returns null for two different reasons - already in the right
+  // tree, and "this slug has no twin in your tree" - and the reconciler used to
+  // record the tree it was standing in rather than what the viewport said. A
+  // desktop visitor whose first URL was an edit screen was filed as a phone
+  // user for a year, with every later navigation sent to the phone tree.
+  await page.goto('/screens/edit-photo');
+  expect(await cookieValue(page)).toBe('desktop');
+
+  // the next ordinary navigation must therefore go back to the desktop tree
+  await page.goto('/screens/language');
+  await expect(page).toHaveURL(/\/desktop\/language/);
+});
+
+test('the hop to the phone layout is reversible', async ({ page }) => {
+  // Desktop Settings links into the phone tree for the edits it has no screen
+  // for, and that link writes the phone preference so middleware stops bouncing
+  // the visitor back. Nothing wrote it the other way, so it was a one-way door.
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'disha.session.v1',
+      JSON.stringify({
+        lang: 'en',
+        name: 'Suresh Kharwar',
+        phone: '9876543210',
+        photo: null,
+        verified: true,
+        social: 'ST',
+        village: 'jarha',
+        villageLgdCode: null,
+        villageName: 'Jarha',
+        tehsil: 'Dudhi',
+        radiusKm: 5,
+        capital: 22000,
+        business: 'leaf-plates',
+        savedAt: null,
+      }),
+    );
+  });
+
+  await page.goto('/desktop/settings');
+  await page.getByRole('link', { name: /Change name/ }).click();
+  await expect(page).toHaveURL(/\/screens\/settings/);
+  expect(await cookieValue(page)).toBe('phone');
+
+  await page.getByRole('button', { name: /Back to the desktop view/ }).click();
+  await expect(page).toHaveURL(/\/desktop\/settings/);
+  expect(await cookieValue(page)).toBe('desktop');
 });

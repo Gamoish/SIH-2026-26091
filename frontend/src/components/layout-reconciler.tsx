@@ -38,9 +38,12 @@ export function LayoutReconciler({ children }: { children: React.ReactNode }) {
     const actual: Layout = window.matchMedia(DESKTOP_QUERY).matches ? 'desktop' : 'phone';
     const to = targetFor(pathname, actual);
 
-    // Record either way: the next request then skips user-agent sniffing, and
-    // a later resize keeps the visitor on the layout they were last using.
-    rememberLayout(to ? actual : here);
+    // Record the viewport's answer, not the tree they happen to be standing in.
+    // `targetFor` returns null for two different reasons - already in the right
+    // tree, or on a slug the other tree does not have - and recording `here`
+    // conflated them: a desktop visitor whose first URL was /screens/edit-photo
+    // was filed as a phone user for a year.
+    rememberLayout(actual);
 
     if (!to) {
       setSettled(true);
