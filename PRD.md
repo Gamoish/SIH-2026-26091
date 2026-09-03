@@ -114,3 +114,4 @@ scheme" in one flow.
   hand-checked villages, not fabricated numbers
 - A judge can go from language selection to final "show this to the bank"
   screen without needing anything explained to them
+
