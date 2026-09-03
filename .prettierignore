@@ -3,6 +3,5 @@ node_modules
 test-results
 playwright-report
 pnpm-lock.yaml
-design
 
 .next*/
