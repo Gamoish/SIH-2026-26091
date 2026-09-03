@@ -211,12 +211,14 @@ it at the backend deployment's URL.
 
 Vercel deploys a Node server with no adapter and no `vercel.json`: it finds
 `src/server.ts`, sees the `listen()` call made during module startup, and routes
-requests to it through an internal port. `src/server.ts` is a one-line
-re-export of `src/index.ts`, which stays the entrypoint everywhere else.
+requests to it through an internal port. Detection does not follow imports, so
+`src/server.ts` constructs the Fastify app itself and is the only
+`server`/`index`/`app` file under `src/` - it is the entrypoint everywhere else
+too (`pnpm dev`, `pnpm start`, Docker, Playwright).
 
 Set `CORS_ORIGIN` to the frontend deployment's URL. The frontend calls the API
 cross-origin (`NEXT_PUBLIC_API_URL` is an absolute URL), so the allow-list in
-`src/http.ts` is load-bearing in production, not just locally.
+`src/server.ts` is load-bearing in production, not just locally.
 
 Required environment variables: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, and
 either `OTP_PROVIDER_KEY` or - outside production only - `OTP_DEV_MODE=true`.

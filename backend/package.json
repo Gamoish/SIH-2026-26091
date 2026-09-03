@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Udyam Sathi app API: phone + OTP auth, onboarding profiles, applications",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",
-    "start": "node --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",
+    "dev": "node --watch --env-file-if-exists=.env.local --experimental-strip-types src/server.ts",
+    "start": "node --env-file-if-exists=.env.local --experimental-strip-types src/server.ts",
     "migrate": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/migrate.ts",
     "import:villages": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/import-villages.ts",
     "typecheck": "tsc --noEmit",

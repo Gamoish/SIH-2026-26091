@@ -76,7 +76,7 @@ export default defineConfig({
     {
       // The real API. Auth is server-side now, so the suite needs it running.
       // Requires a migrated database: `pnpm api:migrate`.
-      command: 'node --experimental-strip-types ../backend/src/index.ts',
+      command: 'node --experimental-strip-types ../backend/src/server.ts',
       url: 'http://localhost:4001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
