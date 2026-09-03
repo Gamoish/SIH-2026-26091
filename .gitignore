@@ -22,6 +22,9 @@ playwright/.cache/
 .e2e-minted
 
 # environment
+.env
+.env.local
+.env.*.local
 
 
 # editors and OS

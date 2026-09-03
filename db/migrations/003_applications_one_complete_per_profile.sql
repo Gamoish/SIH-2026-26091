@@ -1,0 +1,28 @@
+-- One completed application per onboarding profile.
+--
+-- Filing a case is a two-step client operation: POST the application, then
+-- record `savedAt` in the browser so the next visit does not file it again.
+-- Those two steps are not atomic, and the gap is a real one - the request can
+-- succeed while the user navigates away before the response lands, which
+-- destroys the page's JavaScript context and the marker with it. The row is
+-- written; the client never learns it. The next visit to the share screen files
+-- the same case a second time.
+--
+-- That was invisible against a local Postgres, where the round trip was under a
+-- millisecond, and became reproducible the moment the database moved to
+-- Supabase. Rather than trying to win the race on the client - which is a race,
+-- and so is only ever won most of the time - this makes losing it harmless: a
+-- re-file collides with this index and the insert path upserts instead. See the
+-- ON CONFLICT clause in backend/src/routes/applications.ts.
+--
+-- Partial, on `status = 'complete'`, for two reasons. A draft is a work in
+-- progress and a profile may legitimately accumulate several. And "a new check"
+-- creates a *new* onboarding profile (POST /api/onboarding/profile), so one
+-- completed application per profile is the product's own model, not a
+-- restriction added on top of it.
+--
+-- Deliberately not CONCURRENTLY: that cannot run inside a transaction, and
+-- scripts/migrate.ts wraps every migration in one. The table is small and this
+-- is not a hot-path lock.
+CREATE UNIQUE INDEX IF NOT EXISTS applications_one_complete_per_profile_idx
+  ON applications (onboarding_profile_id) WHERE status = 'complete';

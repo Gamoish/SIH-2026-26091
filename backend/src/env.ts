@@ -3,9 +3,23 @@
  * process here rather than surfacing as a 500 on the auth path later.
  */
 
+/**
+ * Every misconfiguration found, not just the first.
+ *
+ * This used to throw on the earliest problem, which is fine when you are
+ * watching a local process start and can fix-and-restart in seconds. On a
+ * serverless host each attempt is a full redeploy, so one-error-at-a-time
+ * turns a three-variable mistake into three deploy cycles. Collect, then fail
+ * once with the whole list.
+ */
+const problems: string[] = [];
+
 const required = (name: string): string => {
   const v = process.env[name];
-  if (!v) throw new Error(`${name} is required. Copy .env.example to .env.local and fill it in.`);
+  if (!v) {
+    problems.push(`${name} is required. Copy .env.example to .env.local and fill it in.`);
+    return '';
+  }
   return v;
 };
 
@@ -20,7 +34,7 @@ const isProduction = NODE_ENV === 'production';
  */
 const otpDevMode = process.env.OTP_DEV_MODE === 'true';
 if (otpDevMode && isProduction) {
-  throw new Error('OTP_DEV_MODE=true is refused in production: it prints login codes to the log.');
+  problems.push('OTP_DEV_MODE=true is refused in production: it prints login codes to the log.');
 }
 
 /**
@@ -30,10 +44,10 @@ if (otpDevMode && isProduction) {
  */
 const otpDevEcho = process.env.OTP_DEV_ECHO === 'true';
 if (otpDevEcho && isProduction) {
-  throw new Error('OTP_DEV_ECHO=true is refused in production: it returns login codes to the caller.');
+  problems.push('OTP_DEV_ECHO=true is refused in production: it returns login codes to the caller.');
 }
 if (otpDevEcho && !otpDevMode) {
-  throw new Error('OTP_DEV_ECHO=true requires OTP_DEV_MODE=true.');
+  problems.push('OTP_DEV_ECHO=true requires OTP_DEV_MODE=true.');
 }
 
 /**
@@ -48,29 +62,43 @@ if (otpDevEcho && !otpDevMode) {
  */
 const otpFixedCode = process.env.OTP_DEV_FIXED_CODE ?? '';
 if (otpFixedCode && isProduction) {
-  throw new Error('OTP_DEV_FIXED_CODE is refused in production: it makes every login code guessable.');
+  problems.push('OTP_DEV_FIXED_CODE is refused in production: it makes every login code guessable.');
 }
 if (otpFixedCode && !otpDevMode) {
-  throw new Error('OTP_DEV_FIXED_CODE requires OTP_DEV_MODE=true.');
+  problems.push('OTP_DEV_FIXED_CODE requires OTP_DEV_MODE=true.');
 }
 if (otpFixedCode && !/^\d{4}$/.test(otpFixedCode)) {
-  throw new Error('OTP_DEV_FIXED_CODE must be exactly 4 digits.');
+  problems.push('OTP_DEV_FIXED_CODE must be exactly 4 digits.');
 }
 
+const databaseUrl = required('DATABASE_URL');
 const jwtSecret = required('JWT_SECRET');
-if (isProduction && jwtSecret.length < 32) {
-  throw new Error('JWT_SECRET must be at least 32 characters in production.');
+if (isProduction && jwtSecret && jwtSecret.length < 32) {
+  problems.push('JWT_SECRET must be at least 32 characters in production.');
 }
 
 if (isProduction && !otpDevMode && !process.env.OTP_PROVIDER_KEY) {
-  throw new Error('OTP_PROVIDER_KEY is required in production: no SMS provider is configured.');
+  problems.push('OTP_PROVIDER_KEY is required in production: no SMS provider is configured.');
+}
+
+/**
+ * One loud, complete failure. The prefix is deliberately greppable: on Vercel
+ * this is what you search the function log for, and a module-load throw is
+ * otherwise indistinguishable from any other 500.
+ */
+if (problems.length > 0) {
+  throw new Error(
+    `[env] refusing to start - ${problems.length} configuration problem(s):\n` +
+      problems.map((m) => `  - ${m}`).join('\n'),
+  );
 }
 
 export const env = {
   nodeEnv: NODE_ENV,
   isProduction,
-  port: Number(process.env.API_PORT ?? 4000),
-  databaseUrl: required('DATABASE_URL'),
+  /** PORT is what every managed host assigns; API_PORT is the local knob. */
+  port: Number(process.env.PORT ?? process.env.API_PORT ?? 4000),
+  databaseUrl,
   jwtSecret,
   jwtIssuer: 'udyam-sathi-api',
   /** How long a session token is good for. */

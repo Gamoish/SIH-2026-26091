@@ -42,10 +42,8 @@ async function globalTeardown() {
   // Stored in E.164; minted as a bare 10-digit number.
   const e164 = numbers.map((n) => `+91${n}`);
 
-  const client = new Client({
-    connectionString:
-      process.env.DATABASE_URL ?? 'postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi',
-  });
+  // playwright.config.ts loads backend/.env.local and fails fast if this is unset.
+  const client = new Client({ connectionString: process.env.DATABASE_URL });
 
   try {
     await client.connect();

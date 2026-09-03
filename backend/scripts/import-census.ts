@@ -22,7 +22,7 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pool } from '../src/db.ts';
+import { migrationPool as pool } from '../src/db.ts';
 
 const seed = join(
   dirname(fileURLToPath(import.meta.url)),

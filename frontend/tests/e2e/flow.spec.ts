@@ -651,3 +651,66 @@ test('the transitions are live when motion is not reduced', async ({ page }) => 
   });
   expect(parseFloat(live), 'reveal animates normally').toBeGreaterThan(0.05);
 });
+
+/**
+ * The client files a case, then records `savedAt` when the response arrives.
+ * Those two steps are not atomic: leaving the share screen mid-flight is a full
+ * document navigation, which destroys the page and the pending response with
+ * it. The row is written and the browser never learns it, so the next visit
+ * files the same case again.
+ *
+ * This holds the response open and leaves deliberately, which is the losing
+ * side of that race every time rather than one run in four. The client-side
+ * marker is still lost - that is the known, separate bug, asserted here so this
+ * test starts failing if it is ever fixed and this file goes stale. What must
+ * not happen is a second row: `applications_one_complete_per_profile_idx` and
+ * the ON CONFLICT upsert behind it make the re-file land on the original.
+ */
+test('leaving the share screen mid-save never files the case twice', async ({ page }) => {
+  await onboard(page);
+
+  // Let the server process the POST, then sit on the response.
+  await page.route('**/api/applications', async (route) => {
+    if (route.request().method() !== 'POST') return route.continue();
+    try {
+      const response = await route.fetch();
+      await new Promise((r) => setTimeout(r, 4000));
+      await route.fulfill({ response });
+    } catch {
+      // the page went away mid-flight - exactly what this test is arranging
+    }
+  });
+
+  await page.goto('/screens/share');
+  await page.getByRole('button', { name: 'Go to home' }).click();
+  // Leave before the response can land. A full navigation, not a router push:
+  // this is what throws the pending request away.
+  await page.goto('/screens/home');
+
+  const marker = await page.evaluate(() => {
+    const raw = localStorage.getItem('udyam.session.v1');
+    return raw ? (JSON.parse(raw).savedAt ?? null) : null;
+  });
+  expect(marker, 'the client loses its own marker - the known client-side race').toBeNull();
+
+  // Second visit: with no marker, the share screen files the very same case again.
+  await page.unroute('**/api/applications');
+  await page.goto('/screens/share');
+  const refiled = await page.waitForResponse(
+    (r) => r.url().includes('/api/applications') && r.request().method() === 'POST',
+  );
+  // The re-file must SUCCEED, not merely fail to insert. Without the upsert the
+  // unique index would reject it with a 500 and the row count below would still
+  // read 1, so this assertion is what stops the test passing for the wrong
+  // reason.
+  expect(refiled.status(), 're-filing is accepted, not rejected').toBeLessThan(300);
+
+  const token = await page.evaluate(() => localStorage.getItem('udyam.token.v1'));
+  const listed = await page.request.get(`${API}/api/applications`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  const { applications } = (await listed.json()) as { applications: { id: string; status: string }[] };
+  const complete = applications.filter((a) => a.status === 'complete');
+
+  expect(complete, 'filed twice, stored once').toHaveLength(1);
+});

@@ -34,7 +34,8 @@ Quick start (manual):
 
 ```bash
 pnpm install
-pnpm db:up        # starts Postgres
+cp .env.example backend/.env.local   # fill in the Supabase URLs and JWT_SECRET
+pnpm api:migrate  # applies db/migrations
 pnpm api:dev      # starts backend
 pnpm dev          # starts frontend
 ```
@@ -47,7 +48,7 @@ Backend API: `http://localhost:4000`
 ```
 frontend/    Next.js app — both /screens (mobile) and /desktop layouts
 backend/     Fastify API
-db/          Postgres compose file + migrations
+db/          SQL migrations + seed data
 docs/        Architecture notes
 ```
 

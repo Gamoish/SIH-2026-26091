@@ -1,7 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pool } from '../src/db.ts';
+import { migrationPool as pool } from '../src/db.ts';
 
 // migrations live in db/, one level above this package
 const dir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'db', 'migrations');

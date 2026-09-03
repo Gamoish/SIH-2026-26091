@@ -24,22 +24,25 @@ export default function ShareScreen() {
   // a second run of this effect - React's development double-invoke, or any
   // re-render before the state lands - passed the `savedAt` check and filed the
   // same case twice. The ref closes in the same tick the request starts.
+  //
+  // Deliberately NOT cancelled when this screen unmounts. The user can leave for
+  // home while the request is still open - against a remote database that is the
+  // normal case, not a race - and dropping the marker there loses a row that was
+  // written: the next visit files the same case a second time. `set` belongs to
+  // SessionProvider, which wraps every screen and outlives this one, so
+  // recording the id after unmount is exactly as safe as before it.
   const filing = useRef(false);
   useEffect(() => {
     if (s.savedAt || !report || filing.current) return;
     filing.current = true;
-    let live = true;
     saveCase({ report, plan })
       .then((id) => {
-        if (live && id) set({ savedAt: new Date().toISOString() });
+        if (id) set({ savedAt: new Date().toISOString() });
       })
       .catch(() => {
         // offline or unauthenticated: let the next visit try again
         filing.current = false;
       });
-    return () => {
-      live = false;
-    };
   }, [s.savedAt, set, report, plan]);
 
   if (!report) return null;

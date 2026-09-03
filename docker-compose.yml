@@ -4,20 +4,15 @@
 #
 #   frontend  http://localhost:3000
 #   api       http://localhost:4000
-#   postgres  localhost:5433
+#
+# The database is Supabase, not a container: put DATABASE_URL and
+# MIGRATION_DATABASE_URL in backend/.env.local (see .env.example) before
+# starting. There is no local Postgres to fall back to.
 #
 # This is an ADDITIONAL way to run the project, not a replacement. The
-# per-package workflow (`pnpm db:up`, `pnpm api:dev`, `pnpm dev`) is untouched
-# and still the faster loop for day-to-day work - see RUNNING.md.
-#
-# `include` pulls in db/docker-compose.yml rather than redefining Postgres
-# here. That file is pinned to `name: udyam-sathi` so its named volume survives, and
-# `pnpm db:up` targets it by path; duplicating the service would give the two
-# entry points two different volumes and quietly split the database in half.
+# per-package workflow (`pnpm api:dev`, `pnpm dev`) is untouched and still the
+# faster loop for day-to-day work - see RUNNING.md.
 name: udyam-sathi
-
-include:
-  - db/docker-compose.yml
 
 services:
   # One-shot. Runs to completion, then the API starts. Deliberately a separate
@@ -29,15 +24,12 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     command: ['pnpm', 'migrate']
+    # DATABASE_URL and MIGRATION_DATABASE_URL come from here. The migration runs
+    # on the session pooler; see backend/src/db.ts for why that is a separate URL.
+    env_file:
+      - backend/.env.local
     environment:
-      # In-network address: service name `db`, container port 5432. The host
-      # publishes 5433 to dodge a local Postgres, but that mapping does not
-      # apply between containers.
-      DATABASE_URL: postgresql://udyam_sathi:udyam_sathi@db:5432/udyam_sathi
       JWT_SECRET: ${JWT_SECRET:-compose-local-dev-secret-not-for-production-0123456789}
-    depends_on:
-      db:
-        condition: service_healthy
     restart: 'no'
 
   api:
@@ -48,10 +40,8 @@ services:
     # .env.local supplies the optional extras (Bhashini keys, OTP provider)
     # while the container-specific wiring below always wins.
     env_file:
-      - path: backend/.env.local
-        required: false
+      - backend/.env.local
     environment:
-      DATABASE_URL: postgresql://udyam_sathi:udyam_sathi@db:5432/udyam_sathi
       API_PORT: '4000'
       # Where the BROWSER loads the frontend from, which is what the CORS
       # check compares against - not the compose service name.
@@ -66,8 +56,6 @@ services:
     ports:
       - '4000:4000'
     depends_on:
-      db:
-        condition: service_healthy
       migrate:
         condition: service_completed_successfully
     healthcheck:

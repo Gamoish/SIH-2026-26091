@@ -59,7 +59,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [s, ready]);
 
-  const set = useCallback((patch: Partial<Session>) => setS((p) => ({ ...p, ...patch })), []);
+  // Persisted here, in the updater, and not only in the effect above. The effect
+  // needs a render to flush, and a full page navigation in that window throws the
+  // change away - which is how a filed application lost its `savedAt` marker and
+  // got filed a second time on the next visit. Writing the same value twice is
+  // harmless, so the effect stays as the backstop.
+  const set = useCallback(
+    (patch: Partial<Session>) =>
+      setS((p) => {
+        const next = { ...p, ...patch };
+        try {
+          localStorage.setItem(KEY, JSON.stringify(next));
+        } catch {}
+        return next;
+      }),
+    [],
+  );
   const reset = useCallback(() => setS(EMPTY), []);
   const value = useMemo(() => ({ s, set, reset, ready }), [s, set, reset, ready]);
 

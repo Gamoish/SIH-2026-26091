@@ -12,7 +12,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-import { pool } from '../src/db.ts';
+import { migrationPool as pool } from '../src/db.ts';
 import { extractVillages } from '../src/lib/lgd-csv.ts';
 
 const path = process.argv[2];

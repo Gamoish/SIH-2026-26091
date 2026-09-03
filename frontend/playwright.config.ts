@@ -1,5 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// The suite talks to the same database the API does, and that is now Supabase -
+// there is no local Postgres to fall back to. backend/.env.local is the one
+// place its URL lives, so read it here rather than duplicating the string.
+try {
+  process.loadEnvFile('../backend/.env.local');
+} catch {
+  // absent in CI, where DATABASE_URL is set in the environment instead
+}
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required: copy .env.example to backend/.env.local.');
+}
+
 /** Mirrors LAYOUT_COOKIE in src/lib/layout.ts. */
 const layoutCookie = (value: 'phone' | 'desktop') => ({
   name: 'udyam.layout',
@@ -63,15 +75,14 @@ export default defineConfig({
   webServer: [
     {
       // The real API. Auth is server-side now, so the suite needs it running.
-      // Requires Postgres: `pnpm db:up` then `pnpm api:migrate`.
+      // Requires a migrated database: `pnpm api:migrate`.
       command: 'node --experimental-strip-types ../backend/src/index.ts',
       url: 'http://localhost:4001/health',
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
       env: {
         API_PORT: '4001',
-        DATABASE_URL:
-          process.env.DATABASE_URL ?? 'postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi',
+        DATABASE_URL: process.env.DATABASE_URL,
         JWT_SECRET: 'e2e-only-secret-not-used-anywhere-else-0123456789',
         OTP_DEV_MODE: 'true',
         // returns the code in the response; env.ts refuses this in production

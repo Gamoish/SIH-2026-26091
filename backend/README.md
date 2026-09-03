@@ -6,14 +6,17 @@ Fastify + PostgreSQL. No AI anywhere in this service.
 ## Running it
 
 ```bash
-pnpm db:up                     # Postgres on host port 5433 (db/docker-compose.yml)
-cp .env.example backend/.env.local   # then fill in JWT_SECRET
+cp .env.example backend/.env.local   # fill in the Supabase URLs and JWT_SECRET
 pnpm api:migrate
 pnpm api:dev                   # http://localhost:4000
 ```
 
-Host port **5433**, not 5432, so the container cannot shadow a Postgres you may
-already have running locally.
+The database is Supabase; there is no local Postgres. Two URLs, on purpose:
+`DATABASE_URL` is the **transaction** pooler (`:6543`) the server runs on, and
+`MIGRATION_DATABASE_URL` is the **session** pooler (`:5432`) the migration and
+import scripts use, because those hold one connection across a whole
+transaction. See `src/db.ts`; `MIGRATION_DATABASE_URL` falls back to
+`DATABASE_URL` when unset, which is what CI does against a throwaway Postgres.
 
 ## The village list
 
