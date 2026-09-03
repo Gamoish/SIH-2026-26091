@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { nextPhone } from './minted';
 
 /**
  * The desktop tree, end to end. Runs under the `desktop` project, which seeds
@@ -10,9 +11,6 @@ import { test, expect, type Page } from '@playwright/test';
  */
 
 const API = 'http://localhost:4001';
-
-/** A fresh number per test, so parallel workers never share an OTP bucket. */
-const nextPhone = () => `9${String(Math.floor(Math.random() * 1e9)).padStart(9, '0')}`;
 
 async function currentCode(page: Page, phone: string): Promise<string> {
   const res = await page.request.post(`${API}/api/auth/request-otp`, { data: { phone_number: phone } });

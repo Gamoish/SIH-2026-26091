@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { nextPhone } from './minted';
 
 const API = 'http://localhost:4001';
 
@@ -7,7 +8,6 @@ const API = 'http://localhost:4001';
  * throttle bucket. Randomised rather than sequential: workers are separate
  * processes with their own module state, so any counter-based scheme collides.
  */
-const nextPhone = () => `9${String(Math.floor(Math.random() * 1e9)).padStart(9, '0')}`;
 
 /** Read the current code for a number. OTP_DEV_ECHO returns it; production refuses that flag. */
 async function currentCode(page: Page, phone: string): Promise<string> {

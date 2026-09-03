@@ -14,6 +14,12 @@ const layoutCookie = (value: 'phone' | 'desktop') => ({
 
 export default defineConfig({
   testDir: './tests/e2e',
+  /**
+   * Deletes the accounts this run created. The suite signs up through the real
+   * OTP flow, so without this every run leaves users, profiles, applications
+   * and OTP rows behind permanently. See tests/e2e/teardown.ts.
+   */
+  globalTeardown: './tests/e2e/teardown.ts',
   fullyParallel: true,
   reporter: [['list']],
   use: {
@@ -64,7 +70,8 @@ export default defineConfig({
       timeout: 60_000,
       env: {
         API_PORT: '4001',
-        DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi',
+        DATABASE_URL:
+          process.env.DATABASE_URL ?? 'postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi',
         JWT_SECRET: 'e2e-only-secret-not-used-anywhere-else-0123456789',
         OTP_DEV_MODE: 'true',
         // returns the code in the response; env.ts refuses this in production
