@@ -311,3 +311,123 @@ test('onboarding goes back a step by button, and only where the guards allow it'
   // lands somewhere else is worse than none, so it is not rendered.
   await expect(back).toHaveCount(0);
 });
+
+/**
+ * A returning user on a NEW browser - the case that had no coverage.
+ *
+ * The session lives in localStorage, so a fresh browser starts empty. Before
+ * restoreServerSession() ran on OTP verification, the guards had nothing to
+ * read and walked a fully-onboarded user back through onboarding from the
+ * social step. Both layouts were wrong identically, which is why every
+ * existing test passed: they all reuse one browser context.
+ *
+ * Uses a real LGD village, not a demo fixture. Only a real selection carries an
+ * lgd_code, and the code is the only thing the location step persists - a
+ * fixture-backed choice has nothing to restore.
+ */
+for (const [layout, base] of [
+  ['phone', '/screens'],
+  ['desktop', '/desktop'],
+] as const) {
+  test(`a returning ${layout} user on a fresh browser resumes instead of restarting`, async ({ browser }) => {
+    const phone = nextPhone();
+    const cookie = {
+      name: 'udyam.layout',
+      value: layout,
+      domain: 'localhost',
+      path: '/',
+      expires: -1,
+      httpOnly: false,
+      secure: false,
+      sameSite: 'Lax' as const,
+    };
+
+    // --- first visit: onboard far enough to have a server-side profile
+    const first = await browser.newContext({ storageState: { cookies: [cookie], origins: [] } });
+    const p1 = await first.newPage();
+    await p1.goto(`${base}/language`);
+    await expect(async () => {
+      const english = p1.getByRole('button', { name: 'English' });
+      if (await english.count()) await english.click({ timeout: 2000 }).catch(() => {});
+      await expect(p1).toHaveURL(new RegExp(`${base}/phone`), { timeout: 2000 });
+    }).toPass({ timeout: 20_000 });
+    await p1.getByLabel('Mobile number').fill(phone);
+    await p1.getByRole('button', { name: 'Send OTP' }).click();
+    await expect(p1).toHaveURL(new RegExp(`${base}/otp`));
+    let code = await currentCode(p1, phone);
+    for (const [i, d] of [...code].entries()) await p1.getByLabel(`Digit ${i + 1}`).fill(d);
+    await p1.getByRole('button', { name: 'Continue' }).click();
+
+    await expect(p1).toHaveURL(new RegExp(`${base}/social`));
+    await p1.getByPlaceholder(/e\.g\./).fill('Suresh Kharwar');
+    await p1.getByRole('button', { name: /Scheduled Tribe/ }).click();
+    await p1.getByRole('button', { name: layout === 'phone' ? /Next · your location/ : 'Continue' }).click();
+
+    await expect(p1).toHaveURL(new RegExp(`${base}/location`));
+    await p1.getByLabel(layout === 'phone' ? /Search for your village/ : /Village name/).fill('Adalganj');
+    const village =
+      layout === 'phone'
+        ? p1.getByRole('button', { name: /^Adalganj/ })
+        : p1.getByRole('option', { name: /^Adalganj/ });
+    await expect(village.first()).toBeVisible({ timeout: 10_000 });
+    await village.first().click();
+    await p1.getByRole('button', { name: layout === 'phone' ? /Next · enter capital/ : 'Continue' }).click();
+
+    await expect(p1).toHaveURL(new RegExp(`${base}/capital`));
+    await p1.getByLabel(layout === 'phone' ? 'Your own capital, in rupees' : /Your capital/).fill('22000');
+    await p1
+      .getByRole('button', { name: layout === 'phone' ? /Next · choose business/ : 'Continue' })
+      .click();
+    await expect(p1).toHaveURL(new RegExp(`${base}/category`));
+    await p1.getByRole('button', { name: 'Leaf plates', exact: true }).click();
+    await first.close();
+
+    // --- second visit: same number, a browser that has never seen this user
+    const second = await browser.newContext({ storageState: { cookies: [cookie], origins: [] } });
+    const p2 = await second.newPage();
+    await p2.goto(`${base}/language`);
+    await expect(async () => {
+      const english = p2.getByRole('button', { name: 'English' });
+      if (await english.count()) await english.click({ timeout: 2000 }).catch(() => {});
+      await expect(p2).toHaveURL(new RegExp(`${base}/phone`), { timeout: 2000 });
+    }).toPass({ timeout: 20_000 });
+    await p2.getByLabel('Mobile number').fill(phone);
+    await p2.getByRole('button', { name: 'Send OTP' }).click();
+    await expect(p2).toHaveURL(new RegExp(`${base}/otp`));
+    code = await currentCode(p2, phone);
+    for (const [i, d] of [...code].entries()) await p2.getByLabel(`Digit ${i + 1}`).fill(d);
+    await p2.getByRole('button', { name: 'Continue' }).click();
+
+    // The bug: this landed on /social and asked for everything again.
+    await expect(p2).toHaveURL(new RegExp(`${base}/home`), { timeout: 15_000 });
+
+    // and the server-owned fields are actually back in the session
+    const restored = await p2.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}'));
+    expect(restored.social).toBe('ST');
+    expect(restored.capital).toBe(22000);
+    expect(restored.villageLgdCode).toBeTruthy();
+    expect(restored.villageName).toBe('Adalganj');
+
+    // the identity screens stay closed for an account that already exists
+    for (const slug of ['language', 'phone', 'otp', 'social']) {
+      await p2.goto(`${base}/${slug}`);
+      await expect(p2).toHaveURL(new RegExp(`${base}/home`));
+    }
+
+    // One account, one profile. GET /api/onboarding/profile returns the NEWEST
+    // row, so if logging in again had filed a second, blank profile this would
+    // come back empty instead of carrying the village chosen on the first visit.
+    const server = await p2.evaluate(async (api) => {
+      const token = localStorage.getItem('udyam.token.v1');
+      const r = await fetch(`${api}/api/onboarding/profile`, {
+        headers: { authorization: `Bearer ${token}` },
+      });
+      return (await r.json()).profile;
+    }, API);
+    expect(server.village_name).toBe('Adalganj');
+    expect(server.category).toBe('ST');
+    expect(Number(server.capital)).toBe(22000);
+
+    await second.close();
+  });
+}

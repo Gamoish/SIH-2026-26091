@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { api, ApiError, OTP_LENGTH, type RequestOtpResult } from '@/lib/api';
+import { restoreServerSession } from '@/lib/restore-session';
 import { Header, Primary, T, useT } from '@/components';
 
 export default function OtpScreen() {
@@ -66,8 +67,17 @@ export default function OtpScreen() {
     setError(null);
     try {
       await api.verifyOtp(s.phone, filled);
-      set({ verified: true });
+      // Pull the server-owned half of the session back before navigating, so
+      // the guards on the next screen evaluate a complete session. Without it
+      // a returning user on a new browser has an empty session and is walked
+      // through onboarding again. Merged in one set() so nothing renders
+      // against a half-restored state.
+      const restored = await restoreServerSession();
+      set({ verified: true, ...restored });
       sessionStorage.removeItem('udyam.otp');
+      // Still 'social': it is the next step for a genuinely new user, and for a
+      // returning one firstRunBlock now sees a complete session and forwards
+      // them on. That keeps this identical to an intact-session visit.
       nav.go('social');
       return;
     } catch (err) {
