@@ -1,5 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
@@ -16,6 +17,7 @@ export default function SettingsScreen() {
   const nav = useNav();
   const t = useT();
   const [sheet, setSheet] = useState<'name' | 'phone' | null>(null);
+  const router = useRouter();
 
   const category = CATEGORIES.find((c) => c.id === s.social);
 
@@ -25,12 +27,16 @@ export default function SettingsScreen() {
   // visitor ended up on the phone layout for good, with no control to return.
   // Shown only on a screen wide enough for the desktop layout to make sense, so
   // an actual phone never sees it.
-  const [wide, setWide] = useState(false);
-  useEffect(() => setWide(window.matchMedia(DESKTOP_QUERY).matches), []);
+  // Measured in the initialiser, not an effect. This screen only mounts on the
+  // client - LayoutReconciler renders nothing on the server - so matchMedia is
+  // available on the first render, and the control no longer pops in a frame late.
+  const [wide] = useState(() => window.matchMedia(DESKTOP_QUERY).matches);
 
   const backToDesktop = () => {
+    // The cookie is written first: middleware reads it on the way through and
+    // would otherwise bounce this navigation straight back to the phone tree.
     rememberLayout('desktop');
-    window.location.assign('/desktop/settings');
+    router.push('/desktop/settings');
   };
 
   const logout = () => {

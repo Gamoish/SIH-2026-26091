@@ -21,17 +21,20 @@ import { TopBarShell, Legend } from '../shell';
 export default function LoadingScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const [failed, setFailed] = useState(false);
+  // Derived, not stored: a chosen village with no demo fixture behind it is a
+  // fact about the session, knowable during render. Setting it from an effect
+  // meant a wasted render pass and, worse, one frame of shimmer promising a
+  // report that was never coming.
+  const noFixture = !!s.business && s.capital != null && !s.village;
+  const [requestFailed, setRequestFailed] = useState(false);
+  const failed = requestFailed || noFixture;
 
   useEffect(() => {
     // A village with no demo fixture behind it has no figures for the engine to
     // work from. Say so straight away: returning here left the screen shimmering
     // for ever, because nothing would ever navigate or fail.
     if (!s.business || s.capital == null) return; // the route guard redirects
-    if (!s.village) {
-      setFailed(true);
-      return;
-    }
+    if (!s.village) return; // `noFixture` below already reports this
     let live = true;
     MOCK_api.feasibility({
       villageId: s.village,
@@ -39,8 +42,8 @@ export default function LoadingScreen() {
       radiusKm: s.radiusKm,
       capital: s.capital,
     })
-      .then((r) => live && (r ? nav.replace('feasibility') : setFailed(true)))
-      .catch(() => live && setFailed(true));
+      .then((r) => live && (r ? nav.replace('feasibility') : setRequestFailed(true)))
+      .catch(() => live && setRequestFailed(true));
     return () => {
       live = false;
     };

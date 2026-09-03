@@ -13,21 +13,22 @@ export default function OtpScreen() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [code, setCode] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-  const [req, setReq] = useState<RequestOtpResult | null>(null);
-  const [left, setLeft] = useState(0);
+  // Read straight out of sessionStorage rather than in an effect. This screen
+  // only ever mounts on the client (LayoutReconciler renders nothing on the
+  // server), so the initialiser is safe here, and it means the countdown starts
+  // at its real value on the first frame instead of flashing 00:00 for a render.
+  const [req, setReq] = useState<RequestOtpResult | null>(() => {
+    const raw = sessionStorage.getItem('udyam.otp');
+    return raw ? (JSON.parse(raw) as RequestOtpResult) : null;
+  });
+  const [left, setLeft] = useState(() => req?.expires_in_sec ?? 0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Arriving here without a pending request means the phone step was skipped.
   useEffect(() => {
-    const raw = sessionStorage.getItem('udyam.otp');
-    if (!raw) {
-      nav.replace('phone');
-      return;
-    }
-    const parsed: RequestOtpResult = JSON.parse(raw);
-    setReq(parsed);
-    setLeft(parsed.expires_in_sec);
-  }, [nav]);
+    if (!req) nav.replace('phone');
+  }, [req, nav]);
 
   useEffect(() => {
     if (left <= 0) return;

@@ -1,6 +1,14 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
+import { useHydrated } from './use-hydrated';
 import type { Lang, Session } from '@/types';
 
 export type { Lang, Session, SocialCategory, BusinessId } from '@/types';
@@ -24,6 +32,57 @@ const EMPTY: Session = {
 
 const KEY = 'udyam.session.v1';
 
+/**
+ * localStorage is the store; React subscribes to it.
+ *
+ * This used to be `useState(EMPTY)` plus an effect that read localStorage and
+ * called setState. That is the shape `react-hooks/set-state-in-effect` warns
+ * about, and the warning is right: it renders the empty session first and the
+ * real one a pass later. A lazy initialiser cannot replace it either, because
+ * this provider wraps the whole app and does render on the server, where
+ * localStorage does not exist - the client would then hydrate against markup
+ * built from a different session.
+ *
+ * `useSyncExternalStore` is the supported answer: `getServerSnapshot` returns
+ * EMPTY so the server and the hydrating client agree, and the real value is
+ * adopted immediately afterwards.
+ */
+let cache: Session | null = null;
+const listeners = new Set<() => void>();
+
+/** Cached because getSnapshot must return a stable reference or React re-renders forever. */
+function read(): Session {
+  if (cache !== null) return cache;
+  let loaded: Session = EMPTY;
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) loaded = { ...EMPTY, ...JSON.parse(raw) };
+  } catch {}
+  cache = loaded;
+  return loaded;
+}
+
+/**
+ * Written straight through to localStorage rather than from an effect. An effect
+ * needs a render to flush, and a full page navigation inside that window throws
+ * the change away - which is how a filed application lost its `savedAt` marker
+ * and got filed a second time on the next visit.
+ */
+function write(next: Session): void {
+  cache = next;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {}
+  listeners.forEach((l) => l());
+}
+
+function subscribe(l: () => void): () => void {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
+
+const serverSnapshot = () => EMPTY;
+
 type Ctx = {
   s: Session;
   set: (patch: Partial<Session>) => void;
@@ -40,42 +99,16 @@ export const useLang = () => {
 };
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const [s, setS] = useState<Session>(EMPTY);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setS({ ...EMPTY, ...JSON.parse(raw) });
-    } catch {}
-    setReady(true);
-  }, []);
+  const s = useSyncExternalStore(subscribe, read, serverSnapshot);
+  const ready = useHydrated();
 
   useEffect(() => {
     if (!ready) return;
     document.documentElement.setAttribute('data-lang', s.lang);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(s));
-    } catch {}
-  }, [s, ready]);
+  }, [s.lang, ready]);
 
-  // Persisted here, in the updater, and not only in the effect above. The effect
-  // needs a render to flush, and a full page navigation in that window throws the
-  // change away - which is how a filed application lost its `savedAt` marker and
-  // got filed a second time on the next visit. Writing the same value twice is
-  // harmless, so the effect stays as the backstop.
-  const set = useCallback(
-    (patch: Partial<Session>) =>
-      setS((p) => {
-        const next = { ...p, ...patch };
-        try {
-          localStorage.setItem(KEY, JSON.stringify(next));
-        } catch {}
-        return next;
-      }),
-    [],
-  );
-  const reset = useCallback(() => setS(EMPTY), []);
+  const set = useCallback((patch: Partial<Session>) => write({ ...read(), ...patch }), []);
+  const reset = useCallback(() => write(EMPTY), []);
   const value = useMemo(() => ({ s, set, reset, ready }), [s, set, reset, ready]);
 
   return <SessionCtx.Provider value={value}>{children}</SessionCtx.Provider>;

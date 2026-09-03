@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useHydrated } from '@/hooks/use-hydrated';
 import { usePathname, useRouter } from 'next/navigation';
 import { DESKTOP_QUERY, layoutOf, rememberLayout, storedLayout, targetFor, type Layout } from '@/lib/layout';
 
@@ -24,34 +25,42 @@ import { DESKTOP_QUERY, layoutOf, rememberLayout, storedLayout, targetFor, type 
 export function LayoutReconciler({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [settled, setSettled] = useState(false);
+  const hydrated = useHydrated();
 
-  useEffect(() => {
+  /**
+   * One decision, read by both the render and the effect below.
+   *
+   * `hydrated` is false on the server and through hydration, so localStorage and
+   * matchMedia are only ever touched on the client - and the first client render
+   * still matches the server's markup. Deriving this instead of assigning it from
+   * an effect is what keeps the resolution to a single render pass.
+   *
+   * `null` means "not decided yet"; a non-null `actual` means this visitor's
+   * viewport answered and that answer still needs recording.
+   */
+  const decision = useMemo(() => {
+    if (!hydrated) return null;
     const here = layoutOf(pathname);
 
     // Already chosen, or not one of the two trees: nothing to resolve.
-    if (here === null || storedLayout() !== null) {
-      setSettled(true);
-      return;
-    }
+    if (here === null || storedLayout() !== null) return { actual: null, to: null };
 
     const actual: Layout = window.matchMedia(DESKTOP_QUERY).matches ? 'desktop' : 'phone';
-    const to = targetFor(pathname, actual);
+    return { actual, to: targetFor(pathname, actual) };
+  }, [hydrated, pathname]);
 
+  useEffect(() => {
     // Record the viewport's answer, not the tree they happen to be standing in.
     // `targetFor` returns null for two different reasons - already in the right
     // tree, or on a slug the other tree does not have - and recording `here`
     // conflated them: a desktop visitor whose first URL was /screens/edit-photo
     // was filed as a phone user for a year.
-    rememberLayout(actual);
+    if (!decision?.actual) return;
+    rememberLayout(decision.actual);
+    if (decision.to) router.replace(decision.to);
+  }, [decision, router]);
 
-    if (!to) {
-      setSettled(true);
-      return;
-    }
-    router.replace(to);
-  }, [pathname, router]);
-
-  if (!settled) return null;
+  // Undecided, or about to navigate away: show nothing rather than the wrong tree.
+  if (!decision || decision.to) return null;
   return <>{children}</>;
 }
