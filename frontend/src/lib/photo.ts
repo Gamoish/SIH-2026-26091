@@ -7,7 +7,7 @@
  *
  * The session is persisted to localStorage, so the photo has to stay small.
  * 256px square at JPEG q0.8 lands around 15-20KB.
- * ponytail: fixed centre crop, no pinch-to-reposition. Add an interactive
+ * Deliberately a fixed centre crop, with no pinch-to-reposition. Add an interactive
  * cropper only if users actually complain about the framing.
  */
 export const PHOTO_SIZE = 256;
