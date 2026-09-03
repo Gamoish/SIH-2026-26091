@@ -38,3 +38,6 @@ apps/web/shots/
 
 # knowledge-graph tool output (regenerable)
 graphify-out/
+
+
+claude.md
