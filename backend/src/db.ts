@@ -7,20 +7,17 @@ import { env } from './env.ts';
 pg.types.setTypeParser(pg.types.builtins.NUMERIC, (v) => (v === null ? null : Number(v)));
 
 /**
- * Sized for Vercel's fluid compute, which is NOT one-request-per-instance:
- * several invocations share one Node process, so a pool of 1 would serialise
- * every query behind a single connection. It is also not a long-lived server,
- * where 10 was fine because there was exactly one process holding them.
+ * One connection per instance, for Vercel.
  *
  * The cap that matters is Supabase's: max_client_conn on the pooler is shared
  * by every warm instance at once, so the budget is (instances x max), not max.
- * A small per-instance pool keeps that product under the cap while still
- * letting concurrent requests on one instance overlap.
+ * 10 was right for a single long-lived server and would blow that budget here.
  *
- * ponytail: fixed at 3, tune if the pooler reports client-connection
- * exhaustion or queries start queueing inside an instance.
+ * ponytail: fixed at 1. Note that fluid compute runs several invocations in one
+ * process, so concurrent requests on the same instance queue behind this single
+ * connection - raise it to ~3 if the API starts serialising under load.
  */
-export const pool = new pg.Pool({ connectionString: env.databaseUrl, max: 3 });
+export const pool = new pg.Pool({ connectionString: env.databaseUrl, max: 1 });
 
 /**
  * For the migration and import scripts, which need one connection held across a
