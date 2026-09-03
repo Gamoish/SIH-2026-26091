@@ -125,3 +125,4 @@ fixture for, instead of falling back to the first village in the list. That
 fallback was safe while every village was a fixture. With real LGD villages
 selectable it would hand someone another village's market figures under their
 own village's name, which is the worst kind of wrong answer: a confident one.
+
