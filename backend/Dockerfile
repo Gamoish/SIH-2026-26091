@@ -29,3 +29,4 @@ EXPOSE 4000
 # No .env.local in the image (.dockerignore drops it). Configuration arrives
 # from compose at runtime, so one image serves every environment.
 CMD ["pnpm", "start"]
+
