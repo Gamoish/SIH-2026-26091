@@ -33,7 +33,7 @@ export default function LanguageScreen() {
   };
 
   return (
-    <SplitShell width={520}>
+    <SplitShell width={520} step="language">
       <div>
         <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0 }}>
           <T hi="अपनी भाषा चुनिए" en="Choose your language" />

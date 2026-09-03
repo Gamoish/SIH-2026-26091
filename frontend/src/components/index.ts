@@ -10,3 +10,5 @@ export { Avatar } from './avatar';
 export { AvatarPicker } from './avatar-picker';
 export { Stat, type StatTone } from './stat';
 export { ScoreDial } from './score-dial';
+export { DistrictLocator } from './district-locator';
+export { Modal } from './modal';

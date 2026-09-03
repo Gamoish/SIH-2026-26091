@@ -1,9 +1,9 @@
 {
-  "name": "@disha/backend",
+  "name": "@udyam-sathi/backend",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Disha app API: phone + OTP auth, onboarding profiles, applications",
+  "description": "Udyam Sathi app API: phone + OTP auth, onboarding profiles, applications",
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",
     "start": "node --env-file-if-exists=.env.local --experimental-strip-types src/index.ts",

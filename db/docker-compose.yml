@@ -1,15 +1,15 @@
 # Pinned so running this from db/ keeps the same project (and therefore the
 # same named volume) as when the file lived at the repo root.
-name: disha
+name: udyam-sathi
 
 services:
   db:
     image: postgres:16-alpine
-    container_name: disha-db
+    container_name: udyam-sathi-db
     environment:
-      POSTGRES_USER: disha
-      POSTGRES_PASSWORD: disha
-      POSTGRES_DB: disha
+      POSTGRES_USER: udyam_sathi
+      POSTGRES_PASSWORD: udyam_sathi
+      POSTGRES_DB: udyam_sathi
     ports:
       # 5433 on the host: a local Postgres may already own 5432, and this
       # container must never shadow it
@@ -17,7 +17,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U disha -d disha']
+      test: ['CMD-SHELL', 'pg_isready -U udyam_sathi -d udyam_sathi']
       interval: 3s
       timeout: 3s
       retries: 20

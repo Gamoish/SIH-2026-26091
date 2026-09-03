@@ -2,12 +2,13 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useSession } from '@/hooks/use-session';
+import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { saveCase } from '@/lib/save-case';
 import { isGap } from '@/domain/finance';
 import { label, narrate } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
-import { T, useT } from '@/components';
+import { Primary, T, useT } from '@/components';
 import { DesktopShell, Legend } from '../shell';
 
 /** Stable per user+village, so the same case always carries the same reference. */
@@ -19,6 +20,7 @@ const hash = (v: string) => [...v].reduce((a, c) => (a * 31 + c.charCodeAt(0)) |
  */
 export default function ShareScreen() {
   const { s, set } = useSession();
+  const nav = useNav();
   const t = useT();
   const { report, plan } = useCase();
 
@@ -96,6 +98,13 @@ export default function ShareScreen() {
           >
             <T hi="छापिए / PDF बनाइए" en="Print / save as PDF" />
           </button>
+
+          {/* This is the end of the flow. Without it the screen is a dead end:
+              the case is already filed by the effect above, but nothing says so
+              and nothing moves the user on except the rail. */}
+          <Primary onClick={() => nav.go('home')} arrow>
+            <T hi="हो गया · घर जाइए" en="Done · go to Home" />
+          </Primary>
         </>
       }
       actions={

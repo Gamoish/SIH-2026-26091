@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
  * its tree, so this is the only place the detection itself is exercised.
  */
 
-const LAYOUT_COOKIE = 'disha.layout';
+const LAYOUT_COOKIE = 'udyam.layout';
 
 const cookieValue = async (page: import('@playwright/test').Page) =>
   (await page.context().cookies()).find((c) => c.name === LAYOUT_COOKIE)?.value;
@@ -67,7 +67,7 @@ test('mobile-only screens are left alone on a desktop client', async ({ page }) 
   // phone tree - see the filing test below.
   await page.addInitScript(() => {
     localStorage.setItem(
-      'disha.session.v1',
+      'udyam.session.v1',
       JSON.stringify({
         lang: 'en',
         name: 'Suresh Kharwar',
@@ -136,7 +136,7 @@ test('the hop to the phone layout is reversible', async ({ page }) => {
   // the visitor back. Nothing wrote it the other way, so it was a one-way door.
   await page.addInitScript(() => {
     localStorage.setItem(
-      'disha.session.v1',
+      'udyam.session.v1',
       JSON.stringify({
         lang: 'en',
         name: 'Suresh Kharwar',

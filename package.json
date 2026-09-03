@@ -1,5 +1,5 @@
 {
-  "name": "disha",
+  "name": "udyam-sathi",
   "version": "0.1.0",
   "private": true,
   "description": "Hyper-local business feasibility and government loan-scheme advisor for rural micro-entrepreneurs",
@@ -9,20 +9,20 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --filter @disha/frontend dev",
-    "build": "pnpm --filter @disha/frontend build",
-    "start": "pnpm --filter @disha/frontend start",
-    "lint": "pnpm --filter @disha/frontend lint",
-    "format": "pnpm --filter @disha/frontend format",
-    "format:check": "pnpm --filter @disha/frontend format:check",
-    "typecheck": "pnpm --filter @disha/frontend typecheck && pnpm --filter @disha/backend typecheck",
-    "test": "pnpm --filter @disha/frontend test && pnpm --filter @disha/backend test",
-    "e2e": "pnpm --filter @disha/frontend exec playwright test",
+    "dev": "pnpm --filter @udyam-sathi/frontend dev",
+    "build": "pnpm --filter @udyam-sathi/frontend build",
+    "start": "pnpm --filter @udyam-sathi/frontend start",
+    "lint": "pnpm --filter @udyam-sathi/frontend lint",
+    "format": "pnpm --filter @udyam-sathi/frontend format",
+    "format:check": "pnpm --filter @udyam-sathi/frontend format:check",
+    "typecheck": "pnpm --filter @udyam-sathi/frontend typecheck && pnpm --filter @udyam-sathi/backend typecheck",
+    "test": "pnpm --filter @udyam-sathi/frontend test && pnpm --filter @udyam-sathi/backend test",
+    "e2e": "pnpm --filter @udyam-sathi/frontend exec playwright test",
     "db:up": "docker compose -f db/docker-compose.yml up -d db",
     "db:down": "docker compose -f db/docker-compose.yml down",
-    "api:dev": "pnpm --filter @disha/backend dev",
-    "api:migrate": "pnpm --filter @disha/backend migrate",
-    "api:import-villages": "pnpm --filter @disha/backend import:villages",
-    "api:import-census": "pnpm --filter @disha/backend import:census"
+    "api:dev": "pnpm --filter @udyam-sathi/backend dev",
+    "api:migrate": "pnpm --filter @udyam-sathi/backend migrate",
+    "api:import-villages": "pnpm --filter @udyam-sathi/backend import:villages",
+    "api:import-census": "pnpm --filter @udyam-sathi/backend import:census"
   }
 }

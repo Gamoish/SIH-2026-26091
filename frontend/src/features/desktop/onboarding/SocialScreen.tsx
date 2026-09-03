@@ -35,7 +35,7 @@ export default function SocialScreen() {
   };
 
   return (
-    <SplitShell>
+    <SplitShell step="social">
       <Ask
         hi="आपका नाम और वर्ग"
         en="Your name and category"

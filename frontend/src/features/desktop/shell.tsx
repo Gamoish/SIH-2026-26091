@@ -7,7 +7,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Home05Icon, File02Icon, Settings02Icon } from '@hugeicons/core-free-icons';
 import { T, AvatarPicker } from '@/components';
 import { useSession } from '@/hooks/use-session';
-import { ONBOARDING, type Slug } from '@/lib/nav';
+import { ONBOARDING, previousStep, useNav, type Slug } from '@/lib/nav';
 
 /**
  * The three chromes the canvas actually uses. They are not interchangeable:
@@ -28,6 +28,7 @@ function Tricolour() {
   return (
     <div
       aria-hidden
+      className="dc-tricolour"
       style={{
         height: '4px',
         flex: 'none',
@@ -120,6 +121,47 @@ function Steps({ at }: { at?: Slug }) {
   );
 }
 
+/**
+ * "Previous step" for the onboarding chromes.
+ *
+ * Deliberately a step move, not `router.back()`. History-back replays whatever
+ * the user did last - a redirect, a reload, an edit sheet - so it is not a
+ * reliable way back through a form. This always lands on the step before this
+ * one, or renders nothing when there is no step to offer.
+ */
+function BackStep({ step }: { step?: Slug }) {
+  const { s } = useSession();
+  const nav = useNav();
+  const prev = step ? previousStep(step, s) : null;
+  if (!prev) return null;
+
+  return (
+    <button
+      onClick={() => nav.go(prev)}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        alignSelf: 'flex-start',
+        background: 'transparent',
+        border: '1px solid var(--line)',
+        borderRadius: '10px',
+        padding: '9px 15px 9px 11px',
+        fontFamily: 'var(--sans)',
+        fontSize: '13.5px',
+        fontWeight: 600,
+        color: 'var(--muted)',
+        cursor: 'pointer',
+      }}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+        <path d="M15 6l-6 6 6 6" />
+      </svg>
+      <T hi="पिछला क़दम" en="Previous step" />
+    </button>
+  );
+}
+
 /* ------------------------------------------------------- onboarding chrome -- */
 
 /**
@@ -130,9 +172,12 @@ function Steps({ at }: { at?: Slug }) {
 export function SplitShell({
   tagline,
   width = 440,
+  step,
   children,
 }: {
   tagline?: React.ReactNode;
+  /** Enables the "Previous step" control; omit on screens outside onboarding. */
+  step?: Slug;
   /** The content column: 520px on the language picker, 440px on the forms. */
   width?: number;
   children: React.ReactNode;
@@ -195,6 +240,7 @@ export function SplitShell({
               gap: '30px',
             }}
           >
+            <BackStep step={step} />
             {children}
           </div>
         </main>
@@ -233,7 +279,7 @@ export function TopBarShell({
     >
       <Tricolour />
       <div
-        className="dc-flag"
+        className="dc-flag dc-onb-top"
         style={{
           background: 'var(--navy)',
           color: '#fff',
@@ -281,6 +327,7 @@ export function TopBarShell({
               gap: '18px',
             }}
           >
+            <BackStep step={step} />
             {children}
           </div>
         </main>
@@ -441,7 +488,10 @@ export function DesktopShell({
             }}
           >
             {title ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}>
+              <div
+                className="dc-desk-title"
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}
+              >
                 <div style={{ fontSize: '20px', fontWeight: 700, minWidth: 0 }}>{title}</div>
                 <span style={{ flex: 1 }} />
                 {actions}
@@ -451,6 +501,7 @@ export function DesktopShell({
           </div>
           {aside ? (
             <aside
+              className="dc-desk-aside"
               style={{
                 width: `${asideWidth}px`,
                 flex: 'none',

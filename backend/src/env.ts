@@ -72,7 +72,7 @@ export const env = {
   port: Number(process.env.API_PORT ?? 4000),
   databaseUrl: required('DATABASE_URL'),
   jwtSecret,
-  jwtIssuer: 'disha-api',
+  jwtIssuer: 'udyam-sathi-api',
   /** How long a session token is good for. */
   jwtTtlSeconds: Number(process.env.JWT_TTL_SECONDS ?? 60 * 60 * 24 * 30),
   otp: {
@@ -88,7 +88,7 @@ export const env = {
     maxPerWindow: 5,
     resendWindowSeconds: 900,
     providerKey: process.env.OTP_PROVIDER_KEY ?? '',
-    senderId: process.env.OTP_SENDER_ID ?? 'DISHA',
+    senderId: process.env.OTP_SENDER_ID ?? 'UDYAM',
   },
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
 } as const;

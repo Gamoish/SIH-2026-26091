@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /** Mirrors LAYOUT_COOKIE in src/lib/layout.ts. */
 const layoutCookie = (value: 'phone' | 'desktop') => ({
-  name: 'disha.layout',
+  name: 'udyam.layout',
   value,
   domain: 'localhost',
   path: '/',
@@ -64,7 +64,7 @@ export default defineConfig({
       timeout: 60_000,
       env: {
         API_PORT: '4001',
-        DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://disha:disha@localhost:5433/disha',
+        DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi',
         JWT_SECRET: 'e2e-only-secret-not-used-anywhere-else-0123456789',
         OTP_DEV_MODE: 'true',
         // returns the code in the response; env.ts refuses this in production

@@ -1,4 +1,4 @@
-# Disha app API
+# Udyam Sathi app API
 
 Phone + OTP authentication, and per-user onboarding and application storage.
 Fastify + PostgreSQL. No AI anywhere in this service.
@@ -102,7 +102,7 @@ Other properties worth knowing:
 ## Tests
 
 ```bash
-pnpm --filter @disha/backend test
+pnpm --filter @udyam-sathi/backend test
 ```
 
 Pure logic only — phone normalisation, OTP hashing, and the LGD CSV rules. No

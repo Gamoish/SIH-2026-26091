@@ -22,7 +22,7 @@ const EMPTY: Session = {
   savedAt: null,
 };
 
-const KEY = 'disha.session.v1';
+const KEY = 'udyam.session.v1';
 
 type Ctx = {
   s: Session;

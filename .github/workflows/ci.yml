@@ -34,16 +34,16 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: disha
-          POSTGRES_PASSWORD: disha
-          POSTGRES_DB: disha
+          POSTGRES_USER: udyam_sathi
+          POSTGRES_PASSWORD: udyam_sathi
+          POSTGRES_DB: udyam_sathi
         ports:
           - 5433:5432
         options: >-
-          --health-cmd "pg_isready -U disha -d disha"
+          --health-cmd "pg_isready -U udyam_sathi -d udyam_sathi"
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
-      DATABASE_URL: postgresql://disha:disha@localhost:5433/disha
+      DATABASE_URL: postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -52,16 +52,16 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @disha/frontend exec playwright install --with-deps chromium
+      - run: pnpm --filter @udyam-sathi/frontend exec playwright install --with-deps chromium
       - name: Apply migrations
         run: pnpm api:migrate
         env:
-          DATABASE_URL: postgresql://disha:disha@localhost:5433/disha
+          DATABASE_URL: postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi
           JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
       - run: pnpm e2e
         env:
           CI: true
-          DATABASE_URL: postgresql://disha:disha@localhost:5433/disha
+          DATABASE_URL: postgresql://udyam_sathi:udyam_sathi@localhost:5433/udyam_sathi
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

@@ -92,6 +92,29 @@ export function firstRunBlock(slug: string, s: Session): Slug | null {
   return isOnboarded(s) && FIRST_RUN_ONLY.includes(slug as Slug) ? 'home' : null;
 }
 
+/**
+ * The step before this one, or null when there is none to offer.
+ *
+ * Derived from ONBOARDING rather than written out again, so the order has one
+ * definition. Two cases return null on purpose:
+ *
+ *   - `language`, the first step, has nothing behind it.
+ *   - a previous step that `firstRunBlock` would bounce. Once the identity
+ *     screens are done `isOnboarded` is true, so walking back from `location`
+ *     to `social` would land on `home` instead - a back button that silently
+ *     throws you somewhere else is worse than no back button. Name and category
+ *     are editable from Settings, which is where that change belongs.
+ *
+ * A slug outside ONBOARDING (`loading`, the report screens) has no previous
+ * step here: those are not questions the user answers.
+ */
+export function previousStep(slug: string, s: Session): Slug | null {
+  const i = ONBOARDING.indexOf(slug as Slug);
+  if (i <= 0) return null;
+  const prev = ONBOARDING[i - 1];
+  return firstRunBlock(prev, s) ? null : prev;
+}
+
 export function redirectFor(slug: string, s: Session): Slug | null {
   if (BEHIND[slug as Slug]?.(s)) return 'home';
 

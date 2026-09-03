@@ -114,10 +114,63 @@ button:disabled {
 }
 
 @media print {
+  /* Print the document, not the application.
+     ---------------------------------------------------------------------
+     What this used to get wrong: the rules targeted `.dc-desk-side` and
+     `.dc-desk-top`, but the desktop shell's right-hand panel, its tricolour
+     strip and its screen-title row carried NO class at all, so nothing could
+     select them. The "printable" sheet therefore also printed the next-step
+     panel, the flag strip, the skyline watermark and the ledger grid. The
+     hooks now exist in shell.tsx; these rules use them. */
+  @page {
+    margin: 14mm;
+  }
+
   body {
     background: #fff;
     padding: 0;
   }
+
+  /* Application chrome. None of it belongs on paper. */
+  .no-print,
+  nav,
+  .dc-desk-side,
+  .dc-desk-aside,
+  .dc-desk-top,
+  .dc-desk-title,
+  .dc-onb-top,
+  .dc-tricolour,
+  .dc-phone > div:first-child {
+    display: none !important;
+  }
+
+  /* Decorative pseudo-elements: the skyline watermark and the flag corner.
+     They are backgrounds on ::before/::after, so hiding a parent does not
+     remove them - they have to be turned off by name. */
+  .dc-monument::before,
+  .dc-monument::after,
+  .dc-flag::before,
+  .dc-phone::before,
+  .dc-phone::after {
+    display: none !important;
+  }
+
+  /* Unwrap the layout: the rail and side panel are gone, so the body takes the
+     full sheet instead of keeping a column width sized around them. */
+  .dc-desk,
+  .dc-desk-main {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .dc-desk-body {
+    padding: 0;
+    background: #fff !important;
+    /* --ledger paints the faint grid; it survives `background` alone. */
+    background-image: none !important;
+  }
+
   .dc-phone {
     max-width: none;
     border: 0;
@@ -128,31 +181,17 @@ button:disabled {
     padding: 0;
     background: #fff;
   }
-  .no-print,
-  nav,
-  .dc-desk-side,
-  .dc-desk-top,
-  .dc-phone > div:first-child {
-    display: none !important;
-  }
-  .dc-desk {
-    display: block;
-    min-height: 0;
-    padding: 0;
-    background: #fff;
-  }
-  .dc-desk-body {
-    padding: 0;
-  }
-  .dc-phone::before,
-  .dc-phone::after {
-    display: none !important;
-  }
+
+  /* The sheet itself: no card chrome, and never split across a page break. */
   .print-card {
     border: 0 !important;
     box-shadow: none !important;
     padding: 0 !important;
+    max-width: none !important;
+    background: #fff !important;
+    break-inside: avoid;
   }
+
   [data-lang='en'] .l-hi,
   [data-lang='hi'] .l-en {
     display: none !important;

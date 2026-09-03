@@ -572,7 +572,7 @@ test('changing the category from Settings moves the scheme', async ({ page }) =>
 test('a village with no fixture fails honestly instead of hanging', async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
-      'disha.session.v1',
+      'udyam.session.v1',
       JSON.stringify({
         lang: 'en',
         name: 'Suresh',

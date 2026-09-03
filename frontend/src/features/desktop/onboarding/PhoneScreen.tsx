@@ -25,7 +25,7 @@ export default function PhoneScreen() {
     try {
       const res = await api.requestOtp(digits);
       set({ phone: digits, verified: false });
-      sessionStorage.setItem('disha.otp', JSON.stringify(res));
+      sessionStorage.setItem('udyam.otp', JSON.stringify(res));
       nav.go('otp');
     } catch (err) {
       const code = err instanceof ApiError ? err.code : 'request_failed';
@@ -47,7 +47,7 @@ export default function PhoneScreen() {
   };
 
   return (
-    <SplitShell>
+    <SplitShell step="phone">
       <Ask
         hi="अपना मोबाइल नंबर डालिए"
         en="Enter your mobile number"

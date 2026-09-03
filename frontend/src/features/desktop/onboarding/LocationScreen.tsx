@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { api, type Village } from '@/lib/api';
 import { MOCK_VILLAGES } from '@/data/fixtures/villages';
-import { Field, Primary, T, useT } from '@/components';
+import { DistrictLocator, Field, Primary, T, useT } from '@/components';
 import { TopBarShell, Ask } from '../shell';
 
 const RADII = [3, 5, 10];
@@ -129,6 +129,16 @@ export default function LocationScreen() {
           <Summary k={<T hi="गाँव" en="Village" />} v={selected ? selected.name : '—'} active={!!selected} />
           <Summary k={<T hi="तहसील" en="Tehsil" />} v={selected?.tehsil || '—'} active={!!selected} />
           <Summary k={<T hi="ग्राहक का दायरा" en="Customer radius" />} v={`${radiusKm} km`} active />
+
+          {/* Locates the chosen tehsil in the district. Static SVG - it draws
+              the same with the network down, which the village list cannot. */}
+          <div
+            className="dc-desk-card"
+            style={{ padding: '16px 18px', display: 'flex', justifyContent: 'center' }}
+          >
+            <DistrictLocator tehsil={selected?.tehsil} width={200} />
+          </div>
+
           <div style={{ flex: 1 }} />
           <Primary onClick={submit} disabled={!selected} arrow>
             <T hi="आगे बढ़िए" en="Continue" />
@@ -144,6 +154,11 @@ export default function LocationScreen() {
 
       <Field
         label={t('गाँव का नाम', 'Village name')}
+        // Chrome's autofill heuristic reads the label as well as the
+        // attributes, and this label contains the word "name". An explicit
+        // non-name-like `name` is what stops it offering the saved profile
+        // name here; autoComplete="off" alone is not reliably honoured.
+        name="village-search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={t('जैसे — Jaraha', 'e.g. Jaraha')}

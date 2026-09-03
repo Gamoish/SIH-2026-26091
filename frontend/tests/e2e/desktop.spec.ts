@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * The desktop tree, end to end. Runs under the `desktop` project, which seeds
- * `disha.layout=desktop` so middleware keeps every navigation on `/desktop/*`.
+ * `udyam.layout=desktop` so middleware keeps every navigation on `/desktop/*`.
  *
  * The phone flow is covered by flow.spec.ts; this is the same journey through
  * the other layout, so a screen that renders only on one of the two cannot
@@ -149,11 +149,11 @@ test('the profile picture can be changed from the desktop rail', async ({ page }
   await page.goto('/desktop/settings');
 
   // the name and number are on the account row, not just the rail
-  const phone = await page.evaluate(() => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').phone);
+  const phone = await page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').phone);
   await expect(page.getByText(`+91 ${phone}`).first()).toBeVisible();
 
   const before = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').photo,
+    () => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').photo,
   );
   expect(before).toBeNull();
 
@@ -171,7 +171,7 @@ test('the profile picture can be changed from the desktop rail', async ({ page }
     });
 
   await expect
-    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}').photo))
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').photo))
     .toMatch(/^data:image\/jpeg;base64,/);
 
   // and it is the same photo on the phone layout - one session, one field
@@ -194,9 +194,9 @@ test('finishing a case files it to the database, and the list reads it back', as
 
   // and it survives this browser forgetting the case entirely
   await page.evaluate(() => {
-    const s = JSON.parse(localStorage.getItem('disha.session.v1') ?? '{}');
+    const s = JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}');
     localStorage.setItem(
-      'disha.session.v1',
+      'udyam.session.v1',
       JSON.stringify({ ...s, business: null, savedAt: null, capital: null }),
     );
   });
@@ -241,4 +241,73 @@ test('the score counts up to the real figure, and the accessible name does not',
     .first()
     .evaluate((el) => el.getBoundingClientRect().width);
   expect(painted, 'the digits render').toBeGreaterThan(20);
+});
+
+test('the report opens its detail views in a modal, without leaving the report', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/report');
+
+  const dialog = page.locator('dialog.dc-modal');
+  await expect(dialog).toHaveCount(0);
+
+  for (const [button, marker] of [
+    ['Competitors', 'People per competitor'],
+    ['Pricing', 'Low end'],
+    ['Strengths & risks', 'Opportunities'],
+  ] as const) {
+    await page.getByRole('button', { name: button }).click();
+
+    // the point of the change: the detail is on screen and the URL has not moved
+    await expect(dialog).toBeVisible();
+    await expect(page).toHaveURL(/\/desktop\/report/);
+    await expect(dialog).toContainText(marker);
+
+    // Esc is the browser's, not ours - if <dialog> stopped being the mechanism
+    // this is what would notice.
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(page).toHaveURL(/\/desktop\/report/);
+  }
+
+  // the standalone routes still work, so deep links and the phone layout keep theirs
+  await page.goto('/desktop/competitors');
+  await expect(page.locator('.dc-desk-body')).toContainText('Village by village');
+});
+
+test('onboarding goes back a step by button, and only where the guards allow it', async ({ page }) => {
+  // Mid-check session: identity done, capital not yet answered.
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'udyam.session.v1',
+      JSON.stringify({
+        lang: 'en',
+        name: 'Suresh Kharwar',
+        phone: '9876543210',
+        photo: null,
+        verified: true,
+        social: 'ST',
+        village: 'jarha',
+        villageLgdCode: null,
+        villageName: 'Jarha',
+        tehsil: 'Dudhi',
+        radiusKm: 5,
+        capital: null,
+        business: null,
+        savedAt: null,
+      }),
+    );
+  });
+
+  const back = page.getByRole('button', { name: /Previous step/ });
+
+  // capital -> location, by the button rather than by history
+  await page.goto('/desktop/capital');
+  await expect(back).toBeVisible();
+  await back.click();
+  await expect(page).toHaveURL(/\/desktop\/location/);
+
+  // location offers no back: the step behind it is `social`, which
+  // firstRunBlock sends to home once the account exists. A back button that
+  // lands somewhere else is worse than none, so it is not rendered.
+  await expect(back).toHaveCount(0);
 });

@@ -152,3 +152,57 @@
 .dc-desk.dc-flag::before {
   z-index: 3;
 }
+
+/* ---------------------------------------------------------------- modal
+   The report's detail views open in place on desktop rather than replacing
+   the page. Built on the native <dialog>, so focus trapping, Esc-to-close,
+   inertness of the page behind and the top-layer stacking are the browser's
+   job, not ours - only the painting is here. */
+.dc-modal {
+  width: min(1040px, 92vw);
+  max-height: 88vh;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--e3);
+  color: var(--text);
+  overflow: hidden;
+}
+.dc-modal::backdrop {
+  background: rgba(11, 31, 59, 0.44);
+}
+/* The header stays put while the body scrolls under it, so the close control
+   is always reachable in a long report. */
+.dc-modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 26px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.dc-modal-body {
+  padding: 26px;
+  overflow-y: auto;
+  max-height: calc(88vh - 68px);
+}
+.dc-modal-x {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+}
+.dc-modal-x:hover {
+  background: var(--panel);
+  color: var(--text);
+}

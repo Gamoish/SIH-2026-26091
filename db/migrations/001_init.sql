@@ -1,4 +1,4 @@
--- Disha app API: initial schema.
+-- Udyam Sathi app API: initial schema.
 -- Phone + OTP auth, per-user onboarding and applications, and the LGD village
 -- reference list the location step searches against.
 

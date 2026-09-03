@@ -11,7 +11,7 @@
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
-const TOKEN_KEY = 'disha.token.v1';
+const TOKEN_KEY = 'udyam.token.v1';
 
 /** Digits in a one-time code. The server confirms this as `code_length`. */
 export const OTP_LENGTH = 4;

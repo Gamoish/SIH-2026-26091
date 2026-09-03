@@ -14,7 +14,7 @@
 
 export type Layout = 'phone' | 'desktop';
 
-export const LAYOUT_COOKIE = 'disha.layout';
+export const LAYOUT_COOKIE = 'udyam.layout';
 
 /** A year: the choice is a preference, not a session fact. */
 export const LAYOUT_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;

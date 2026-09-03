@@ -1,0 +1,19 @@
+# Build context is the repo root for both images; keep it small and keep
+# secrets out of the layers.
+node_modules
+**/node_modules
+.next
+.next-*
+**/.next
+**/.next-*
+out
+dist
+test-results
+playwright-report
+blob-report
+.git
+.env
+.env.local
+**/.env.local
+graphify-out
+design

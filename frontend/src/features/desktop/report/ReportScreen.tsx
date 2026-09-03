@@ -1,14 +1,45 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { narrate, label } from '@/domain/feasibility';
 import { isGap } from '@/domain/finance';
 import { inr, num } from '@/lib/format';
-import { Primary, ScoreDial, Stat, T } from '@/components';
+import { DistrictLocator, Modal, Primary, ScoreDial, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
+import { CompetitorsBody, CompetitorsStats } from './CompetitorsScreen';
+import { PricingBody } from './PricingScreen';
+import { SwotBody } from './SwotScreen';
+
+/**
+ * The three detail views the report links onward to. On desktop they open in a
+ * modal over the report instead of replacing it - the wide viewport has room,
+ * and losing the report to read one chart off it was the wrong trade.
+ *
+ * Their routes (/desktop/competitors, /pricing, /swot) still exist and still
+ * render the full-page version: they are deep-linkable, the rail navigates to
+ * them, and the phone layout has nothing else. This only changes what the
+ * report's own buttons do.
+ */
+const DETAILS = {
+  competitors: {
+    hi: 'प्रतियोगी',
+    en: 'Competitors',
+    body: (
+      <>
+        <CompetitorsStats row />
+        <div style={{ height: '18px' }} />
+        <CompetitorsBody />
+      </>
+    ),
+  },
+  pricing: { hi: 'सुझाया दाम', en: 'Suggested price', body: <PricingBody /> },
+  swot: { hi: 'मज़बूती और जोखिम', en: 'Strengths & risks', body: <SwotBody /> },
+} as const;
+
+type DetailKey = keyof typeof DETAILS;
 
 /**
  * D-P3a. The long-form report in the body, with the money summary and the
@@ -19,6 +50,7 @@ export default function ReportScreen() {
   const { s } = useSession();
   const nav = useNav();
   const { report, plan } = useCase();
+  const [detail, setDetail] = useState<DetailKey | null>(null);
   if (!report) return null;
 
   const money = plan && !isGap(plan) ? plan : null;
@@ -72,9 +104,9 @@ export default function ReportScreen() {
             )}
           </div>
 
-          <Onward hi="प्रतियोगी" en="Competitors" onClick={() => nav.go('competitors')} />
-          <Onward hi="दाम" en="Pricing" onClick={() => nav.go('pricing')} />
-          <Onward hi="मज़बूती और जोखिम" en="Strengths & risks" onClick={() => nav.go('swot')} />
+          <Onward hi="प्रतियोगी" en="Competitors" onClick={() => setDetail('competitors')} />
+          <Onward hi="दाम" en="Pricing" onClick={() => setDetail('pricing')} />
+          <Onward hi="मज़बूती और जोखिम" en="Strengths & risks" onClick={() => setDetail('swot')} />
 
           <div style={{ flex: 1 }} />
           <Primary onClick={() => nav.go('scheme')} arrow>
@@ -85,13 +117,14 @@ export default function ReportScreen() {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
         <ScoreDial score={report.score} size={132} />
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: '20px', fontWeight: 700 }}>{label(report.business.name, s.lang)}</div>
           <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '3px' }}>
             {label(report.village.name, s.lang)}, {report.village.block} · {report.radiusKm}{' '}
             <T hi="किमी दायरा" en="km radius" />
           </div>
         </div>
+        <DistrictLocator tehsil={report.village.block} width={128} />
       </div>
 
       <Legend>
@@ -125,6 +158,17 @@ export default function ReportScreen() {
           value={inr(report.pricing.suggested)}
         />
       </div>
+
+      {/* Rendered inside the body, but <dialog>.showModal() promotes it to the
+          browser's top layer, so it sits above the rail and the side panel
+          regardless of where it lives in the tree. */}
+      <Modal
+        open={detail !== null}
+        onClose={() => setDetail(null)}
+        title={detail ? <T hi={DETAILS[detail].hi} en={DETAILS[detail].en} /> : null}
+      >
+        {detail ? DETAILS[detail].body : null}
+      </Modal>
     </DesktopShell>
   );
 }

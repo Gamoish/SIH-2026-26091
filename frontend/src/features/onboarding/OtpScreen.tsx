@@ -18,7 +18,7 @@ export default function OtpScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('disha.otp');
+    const raw = sessionStorage.getItem('udyam.otp');
     if (!raw) {
       nav.replace('phone');
       return;
@@ -67,7 +67,7 @@ export default function OtpScreen() {
     try {
       await api.verifyOtp(s.phone, filled);
       set({ verified: true });
-      sessionStorage.removeItem('disha.otp');
+      sessionStorage.removeItem('udyam.otp');
       nav.go('social');
       return;
     } catch (err) {
@@ -102,7 +102,7 @@ export default function OtpScreen() {
     setError(null);
     try {
       const res = await api.requestOtp(s.phone);
-      sessionStorage.setItem('disha.otp', JSON.stringify(res));
+      sessionStorage.setItem('udyam.otp', JSON.stringify(res));
       setReq(res);
       setLeft(res.expires_in_sec);
       setCode(Array(OTP_LENGTH).fill(''));

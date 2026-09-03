@@ -1,6 +1,6 @@
 # frontend
 
-The Disha frontend: Next.js 15, React 19, TypeScript. PWA, offline-capable.
+The Udyam Sathi frontend: Next.js 15, React 19, TypeScript. PWA, offline-capable.
 
 Project overview and architecture live at the repository root —
 [README](../../README.md) and [docs/architecture.md](../../docs/architecture.md).

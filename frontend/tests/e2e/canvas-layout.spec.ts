@@ -235,7 +235,7 @@ test.describe('desktop layout matches the design canvas', () => {
     test(`${spec.artboard} · /desktop/${spec.slug}`, async ({ page, context }) => {
       await context.addCookies([
         {
-          name: 'disha.layout',
+          name: 'udyam.layout',
           value: 'desktop',
           domain: 'localhost',
           path: '/',
@@ -247,9 +247,9 @@ test.describe('desktop layout matches the design canvas', () => {
       ]);
       await page.addInitScript(
         ([s, otp]) => {
-          localStorage.setItem('disha.session.v1', s as string);
+          localStorage.setItem('udyam.session.v1', s as string);
           // the OTP screen needs a pending request or it bounces to phone
-          if (otp) sessionStorage.setItem('disha.otp', otp as string);
+          if (otp) sessionStorage.setItem('udyam.otp', otp as string);
         },
         [
           JSON.stringify(session(spec.session)),
@@ -322,7 +322,7 @@ test.describe('desktop layout matches the design canvas', () => {
   test('the split chrome puts the branding panel at 46%', async ({ page, context }) => {
     await context.addCookies([
       {
-        name: 'disha.layout',
+        name: 'udyam.layout',
         value: 'desktop',
         domain: 'localhost',
         path: '/',

@@ -181,6 +181,11 @@ export default function LocationScreen() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('गाँव खोजिए', 'Search for your village')}
           aria-label={t('गाँव खोजिए', 'Search for your village')}
+          // A raw input, so it needs the same autofill guard the shared Field
+          // component applies: without it the browser offers the saved profile
+          // name and the search truthfully reports no match against it.
+          autoComplete="off"
+          name="village-search"
           style={{
             width: '100%',
             border: '1px solid var(--line)',
