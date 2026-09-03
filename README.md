@@ -56,3 +56,4 @@ docs/        Architecture notes
 * `RUNNING.md` — how to run the project
 * `docs/architecture.md` — architecture notes
 * `CLAUDE.md` — project conventions and rules for AI-assisted development on this repo
+
