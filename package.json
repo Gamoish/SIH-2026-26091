@@ -26,3 +26,4 @@
     "api:import-census": "pnpm --filter @udyam-sathi/backend import:census"
   }
 }
+
