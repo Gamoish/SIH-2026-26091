@@ -62,3 +62,4 @@ Use `.env.local`, and keep `.env.example` current with the expected shape.
 
 Prettier and ESLint are configured; run `pnpm format` before committing. Route
 files under `app/` stay thin — screens live in `src/features/`.
+
