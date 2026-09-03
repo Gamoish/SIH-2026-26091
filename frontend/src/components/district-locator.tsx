@@ -66,31 +66,16 @@ export function DistrictLocator({
         width={width}
         height={(width * VIEW_H) / VIEW_W}
         role="img"
-        aria-label={
-          active ? `${active} tehsil, Sonbhadra district` : 'Sonbhadra district, Uttar Pradesh'
-        }
+        aria-label={active ? `${active} tehsil, Sonbhadra district` : 'Sonbhadra district, Uttar Pradesh'}
         style={{ display: 'block', overflow: 'visible' }}
       >
-        <path
-          d={OUTLINE}
-          fill="var(--panel)"
-          stroke="var(--line)"
-          strokeWidth={0.9}
-          strokeLinejoin="round"
-        />
+        <path d={OUTLINE} fill="var(--panel)" stroke="var(--line)" strokeWidth={0.9} strokeLinejoin="round" />
         {Object.entries(HQ).map(([name, p]) => {
           const on = name === active;
           return (
             <g key={name}>
-              {on ? (
-                <circle cx={p.x} cy={p.y} r={5.2} fill="var(--navy)" opacity={0.16} />
-              ) : null}
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={on ? 2.4 : 1.5}
-                fill={on ? 'var(--navy)' : 'var(--faint)'}
-              />
+              {on ? <circle cx={p.x} cy={p.y} r={5.2} fill="var(--navy)" opacity={0.16} /> : null}
+              <circle cx={p.x} cy={p.y} r={on ? 2.4 : 1.5} fill={on ? 'var(--navy)' : 'var(--faint)'} />
               <text
                 x={p.x}
                 y={p.y - (on ? 4.6 : 3.2)}
