@@ -4,6 +4,7 @@
  * security bug, so they are testable on their own.
  */
 import assert from 'node:assert';
+import { spawnSync } from 'node:child_process';
 import { normalisePhone, maskPhone } from '../src/lib/phone.ts';
 import { generateCode, hashCode, verifyCode } from '../src/lib/otp.ts';
 import { parseCsv, findColumn, extractVillages } from '../src/lib/lgd-csv.ts';
@@ -123,6 +124,62 @@ await test('a duplicate LGD code is kept once', () => {
 
 await test('an export with no recognisable columns fails loudly', () => {
   assert.throws(() => extractVillages('foo,bar\n1,2'), /Village Code/);
+});
+
+// --- env gates -------------------------------------------------------------
+// env.ts throws at module load, so each case needs its own process. The point
+// of ALLOW_DEV_OTP is that it unblocks the OTP flags and nothing else; a bug
+// that let it soften DATABASE_URL or JWT_SECRET would be a silent production
+// hole, so those cases are checked explicitly.
+
+const PROD = {
+  NODE_ENV: 'production',
+  DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+  JWT_SECRET: 'x'.repeat(32),
+};
+
+/** Load env.ts in a fresh process with exactly `vars` set. Returns stderr, or null if it booted. */
+const loadEnv = (vars) => {
+  const r = spawnSync(
+    process.execPath,
+    ['--experimental-strip-types', '--no-warnings', '-e', "import('./src/env.ts')"],
+    {
+      cwd: new URL('..', import.meta.url),
+      encoding: 'utf8',
+      // A clean env, not process.env: an inherited DATABASE_URL would mask a
+      // missing-variable case and quietly turn these into no-ops.
+      env: { PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, ...vars },
+    },
+  );
+  return r.status === 0 ? null : r.stderr;
+};
+
+await test('production refuses the dev-OTP flags by default', () => {
+  const err = loadEnv({ ...PROD, OTP_DEV_MODE: 'true' });
+  assert.match(err ?? '', /OTP_DEV_MODE=true is refused in production/);
+});
+
+await test('ALLOW_DEV_OTP=true admits the dev-OTP flags under NODE_ENV=production', () => {
+  assert.equal(
+    loadEnv({
+      ...PROD,
+      OTP_DEV_MODE: 'true',
+      OTP_DEV_ECHO: 'true',
+      OTP_DEV_FIXED_CODE: '1234',
+      ALLOW_DEV_OTP: 'true',
+    }),
+    null,
+  );
+});
+
+await test('ALLOW_DEV_OTP does not weaken the JWT_SECRET length gate', () => {
+  const err = loadEnv({ ...PROD, JWT_SECRET: 'short', OTP_DEV_MODE: 'true', ALLOW_DEV_OTP: 'true' });
+  assert.match(err ?? '', /JWT_SECRET must be at least 32 characters/);
+});
+
+await test('ALLOW_DEV_OTP does not make DATABASE_URL optional', () => {
+  const err = loadEnv({ NODE_ENV: 'production', JWT_SECRET: 'x'.repeat(32), ALLOW_DEV_OTP: 'true' });
+  assert.match(err ?? '', /DATABASE_URL is required/);
 });
 
 console.log(`\nOK — ${n} api checks passed.`);

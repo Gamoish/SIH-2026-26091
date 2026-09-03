@@ -216,6 +216,24 @@ requests to it through an internal port. Detection does not follow imports, so
 `server`/`index`/`app` file under `src/` - it is the entrypoint everywhere else
 too (`pnpm dev`, `pnpm start`, Docker, Playwright).
 
+Vercel forces `NODE_ENV=production` on every deployment. This backend has no
+SMS provider wired, so the production OTP gates refuse to start the process:
+`OTP_DEV_MODE=true` is rejected for being production, and `OTP_PROVIDER_KEY` is
+required for the same reason. Set `ALLOW_DEV_OTP=true` to admit the three
+`OTP_DEV_*` flags regardless of `NODE_ENV`.
+
+> **`ALLOW_DEV_OTP=true` puts login codes in the function log.** With
+> `OTP_DEV_MODE=true` every OTP is printed to Vercel's runtime log, and with
+> `OTP_DEV_ECHO=true` it is also returned in the request-otp response - so
+> anyone with dashboard access to this project can read any user's login code,
+> and with echo on, so can any caller of the endpoint. This is a deliberate
+> trade-off for a private-repo, solo-developer showcase with no real users. It
+> must never be set on a deployment with real users: wire an SMS provider and
+> set `OTP_PROVIDER_KEY` instead.
+
+The flag unblocks that one path and nothing else - `DATABASE_URL`, `JWT_SECRET`
+and its 32-character production minimum stay exactly as strict.
+
 Set `CORS_ORIGIN` to the frontend deployment's URL. The frontend calls the API
 cross-origin (`NEXT_PUBLIC_API_URL` is an absolute URL), so the allow-list in
 `src/server.ts` is load-bearing in production, not just locally.
