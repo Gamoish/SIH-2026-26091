@@ -160,3 +160,4 @@ origin you loaded the frontend from, including the port.
 **Port already in use.** The stack wants 3000, 4000 and 5433. `pnpm db:up` and
 `docker compose up` share the same Postgres container, so running both is fine —
 running `pnpm dev` and the `web` container at once is not.
+
