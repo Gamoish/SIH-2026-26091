@@ -32,8 +32,7 @@ function Tricolour() {
       style={{
         height: '6px',
         flex: 'none',
-        background:
-          'linear-gradient(90deg,var(--saffron-flag) 0%,#fff 50%,var(--green-flag) 100%)',
+        background: 'linear-gradient(90deg,var(--saffron-flag) 0%,#fff 50%,var(--green-flag) 100%)',
       }}
     />
   );
@@ -178,12 +177,9 @@ export function SplitShell({
   tagline,
   width = 440,
   step,
-  monument,
   children,
 }: {
   tagline?: React.ReactNode;
-  /** Overrides the default skyline watermark, e.g. a single line-art monument. */
-  monument?: { url: string; opacity?: number; height?: string };
   /** Enables the "Previous step" control; omit on screens outside onboarding. */
   step?: Slug;
   /** The content column: 520px on the language picker, 440px on the forms. */
@@ -230,13 +226,6 @@ export function SplitShell({
         <main
           className="dc-monument dc-flag"
           style={{
-            ...(monument
-              ? ({
-                  '--monument': `url('${monument.url}')`,
-                  '--monument-opacity': monument.opacity ?? 0.45,
-                  ...(monument.height ? { '--monument-height': monument.height } : null),
-                } as React.CSSProperties)
-              : null),
             flex: 1,
             minWidth: 0,
             display: 'flex',

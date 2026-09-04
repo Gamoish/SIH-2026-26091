@@ -110,18 +110,16 @@
      never becomes the loudest thing on a short screen */
   height: var(--monument-height, clamp(120px, 22vh, 200px));
   pointer-events: none;
-  background-color: var(--navy);
-  /* line-art masks are mostly holes, so a screen that opts into one turns the
-     paint up to keep the strokes readable at the same weight a fill has */
+  /* Painted, not masked: the monument art in /public/monuments is traced from
+     photographs, so as an alpha mask every opaque pixel - background included -
+     would fill in as one solid block. Drawing the artwork itself and letting
+     opacity carry it works for the colour traces and the black silhouettes
+     alike; the silhouettes just read grey instead of navy. */
+  background-image: var(--monument, url('/skyline.svg'));
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom center;
   opacity: var(--monument-opacity, 0.22);
-  -webkit-mask-image: var(--monument, url('/skyline.svg'));
-  mask-image: var(--monument, url('/skyline.svg'));
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: bottom center;
-  mask-position: bottom center;
 }
 
 /* --- the flag corner, ported from the phone ------------------------------ --

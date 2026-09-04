@@ -210,7 +210,8 @@ async function measure(page: Page) {
       activeBg: active ? getComputedStyle(active).backgroundColor : null,
       hasRail: !!document.querySelector('.dc-desk-side'),
       hasOnb: !!document.querySelector('.dc-onb'),
-      monument: monAfter ? (monAfter.maskImage ?? monAfter.webkitMaskImage) : null,
+      // painted, not masked - see the note on .dc-monument::after in desktop.css
+      monument: monAfter ? monAfter.backgroundImage : null,
       monumentBand: monAfter ? Math.round(parseFloat(monAfter.height)) : null,
       monumentOnRail: !!document.querySelector('.dc-desk-side.dc-monument'),
       monumentIsolated: mon ? getComputedStyle(mon).isolation : null,

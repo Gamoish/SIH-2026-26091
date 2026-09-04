@@ -23,8 +23,8 @@
 }
 
 /* The skyline is a real flex item, ordered after every screen's content, so it
-   owns its space instead of living under the CTA. aspect-ratio keeps the
-   silhouette at the monument canvas proportions - never squashed to fit. */
+   owns its space instead of living under the CTA. aspect-ratio keeps the band
+   at the canvas proportions - never squashed to fit. */
 .dc-phone::before {
   content: '';
   pointer-events: none;
@@ -32,16 +32,17 @@
   flex: none;
   width: 100%;
   aspect-ratio: var(--skyline-ratio);
-  background-color: var(--navy);
+  /* Painted, not masked - the same reason desktop.css gives: the art in
+     /public/monuments is traced from photographs, so as an alpha mask every
+     opaque pixel would fill in and the band would render as one solid navy
+     block. `contain` rather than the old `100% 100%` because that art is
+     roughly 2:1 and this band is nearly 5:1; stretching it to fit distorted
+     the monument beyond recognition. */
+  background-image: var(--monument, url('/skyline.svg'));
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom center;
   opacity: 0.18;
-  -webkit-mask-image: var(--monument, url('/skyline.svg'));
-  mask-image: var(--monument, url('/skyline.svg'));
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: bottom center;
-  mask-position: bottom center;
 }
 
 .dc-phone > * {

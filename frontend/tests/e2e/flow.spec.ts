@@ -318,10 +318,11 @@ test('the monument motif is decoration only', async ({ page }) => {
   await frame.waitFor();
   const skyline = await frame.evaluate((el) => {
     const s = getComputedStyle(el, '::before');
-    const mask = s.getPropertyValue('mask-image') || s.getPropertyValue('-webkit-mask-image');
-    return { mask, opacity: s.opacity, events: s.pointerEvents };
+    // painted, not masked - see the note on .dc-phone::before in phone.css
+    const art = s.getPropertyValue('background-image');
+    return { art, opacity: s.opacity, events: s.pointerEvents };
   });
-  expect(skyline.mask).toContain('/monuments/');
+  expect(skyline.art).toContain('/monuments/');
   expect(Number(skyline.opacity)).toBeGreaterThan(0.05);
   expect(Number(skyline.opacity)).toBeLessThan(0.2);
   expect(skyline.events).toBe('none');
@@ -344,20 +345,18 @@ test('the monument motif is decoration only', async ({ page }) => {
 test('the monument changes from screen to screen', async ({ page }) => {
   await onboard(page);
 
-  const maskOf = async () => {
+  // painted, not masked - see the note on .dc-phone::before in phone.css
+  const artOf = async () => {
     const frame = page.locator('.dc-phone');
     await frame.waitFor();
-    return frame.evaluate((el) => {
-      const s = getComputedStyle(el, '::before');
-      return s.getPropertyValue('mask-image') || s.getPropertyValue('-webkit-mask-image');
-    });
+    return frame.evaluate((el) => getComputedStyle(el, '::before').getPropertyValue('background-image'));
   };
 
   const seen = new Map<string, string>();
   for (const slug of ['feasibility', 'report', 'swot', 'competitors', 'pricing', 'scheme', 'emi']) {
     await page.goto(`/screens/${slug}`);
     await expect(page).toHaveURL(new RegExp(`/screens/${slug}`));
-    const file = (await maskOf()).match(/monuments\/([a-z-]+)\.svg/)?.[1];
+    const file = (await artOf()).match(/monuments\/([a-z-]+)\.svg/)?.[1];
     expect(file, `${slug} resolved no monument`).toBeTruthy();
     expect(seen.has(file!), `${slug} reuses ${file} from ${seen.get(file!)}`).toBe(false);
     seen.set(file!, slug);

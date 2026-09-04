@@ -33,15 +33,7 @@ export default function LanguageScreen() {
   };
 
   return (
-    <SplitShell
-      width={520}
-      step="language"
-      monument={{
-        url: '/monuments/india-gate-line.png',
-        opacity: 0.3,
-        height: 'clamp(240px, 46vh, 420px)',
-      }}
-    >
+    <SplitShell width={520} step="language">
       <div>
         <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0 }}>
           <T hi="अपनी भाषा चुनिए" en="Choose your language" />
@@ -108,7 +100,14 @@ export default function LanguageScreen() {
                 color: 'var(--muted)',
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+              >
                 <rect x="4" y="10.5" width="16" height="10" rx="2.5" />
                 <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
               </svg>

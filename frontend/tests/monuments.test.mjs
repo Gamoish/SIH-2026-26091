@@ -45,15 +45,29 @@ test('every screen is assigned a monument', () => {
   }
 });
 
-test('every real screen gets a distinct monument', () => {
+/* 22 screens, 20 files, and one of those (konark-sun-temple) is held back
+   because its source trace has a transparency checkerboard baked into it. The
+   three pairs below therefore share, each pair being one subject seen twice in
+   the same flow rather than two unrelated screens colliding. */
+const SHARED = [
+  ['category', 'edit-category'],
+  ['loading', 'empty'],
+  ['report', 'share'],
+];
+
+test('a monument is reused only by an approved pair', () => {
   const seen = new Map();
   for (const slug of SCREENS) {
-    if (slug === 'empty') continue;
     const file = MONUMENTS[slug];
-    assert.ok(!seen.has(file), `${slug} reuses "${file}", already used by ${seen.get(file)}`);
+    const prev = seen.get(file);
+    if (prev !== undefined) {
+      const ok = SHARED.some((pair) => pair.includes(prev) && pair.includes(slug));
+      assert.ok(ok, `${slug} reuses "${file}" from ${prev}, which is not an approved pair`);
+      continue;
+    }
     seen.set(file, slug);
   }
-  assert.equal(seen.size, SCREENS.length - 1);
+  assert.equal(seen.size, SCREENS.length - SHARED.length);
 });
 
 test('every referenced monument file exists', () => {
@@ -62,25 +76,35 @@ test('every referenced monument file exists', () => {
   }
 });
 
+/* Held back rather than deleted: the art is fine, the export is not - its
+   trace has a Photoshop transparency checkerboard baked in, so it paints as a
+   grey checked rectangle. Re-export it and give it a screen. */
+const HELD_BACK = new Set(['konark-sun-temple']);
+
 test('no monument file is orphaned', () => {
   const used = new Set(Object.values(MONUMENTS));
   for (const f of fs.readdirSync(dir)) {
     const name = f.replace(/\.svg$/, '');
-    assert.ok(used.has(name), `${f} is not referenced by any screen`);
+    assert.ok(used.has(name) || HELD_BACK.has(name), `${f} is not referenced by any screen`);
   }
 });
 
-test('each monument is a silhouette on the shared canvas', () => {
-  for (const f of fs.readdirSync(dir)) {
-    const svg = fs.readFileSync(path.join(dir, f), 'utf8');
-    assert.match(svg, /viewBox="0 0 640 130"/, `${f} must use the shared canvas`);
-    assert.ok(!/fill="#fff"/i.test(svg), `${f} uses a white fill, which is opaque in a mask`);
-    assert.equal((svg.match(/<svg/g) ?? []).length, 1, `${f} must hold one root svg`);
+test('no monument carries an opaque background plate', () => {
+  // The traces ship with a full-canvas rect behind the monument. Harmless in an
+  // illustration, fatal here: it paints as a filled box behind the form, and
+  // under the old mask-based rule it swallowed the silhouette entirely.
+  for (const [, file] of Object.entries(MONUMENTS)) {
+    const svg = fs.readFileSync(path.join(dir, `${file}.svg`), 'utf8');
+    assert.ok(
+      !/<path d="M0 0 C[^"]*" fill="#[0-9A-Fa-f]{3,8}" transform="translate\(0,0\)"\/>/.test(svg),
+      `${file}.svg still has its background plate; strip it or it paints as a box`,
+    );
+    assert.equal((svg.match(/<svg/g) ?? []).length, 1, `${file}.svg must hold one root svg`);
   }
 });
 
 test('monumentVar builds a css url, and ignores unknown screens', () => {
-  assert.equal(monumentVar('capital'), "url('/monuments/taj-mahal.svg')");
+  assert.equal(monumentVar('capital'), "url('/monuments/parliament.svg')");
   assert.equal(monumentVar('not-a-screen'), undefined);
 });
 
