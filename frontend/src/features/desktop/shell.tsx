@@ -30,10 +30,10 @@ function Tricolour() {
       aria-hidden
       className="dc-tricolour"
       style={{
-        height: '4px',
+        height: '6px',
         flex: 'none',
         background:
-          'linear-gradient(90deg,var(--saffron-flag) 0 33.33%,#fff 33.33% 66.66%,var(--green-flag) 66.66% 100%)',
+          'linear-gradient(90deg,var(--saffron-flag) 0%,#fff 50%,var(--green-flag) 100%)',
       }}
     />
   );
@@ -68,7 +68,7 @@ function Ashoka({ size = 30 }: { size?: number }) {
   );
 }
 
-/** The clock mark that heads the navy branding panel (84px tile, D-P1a). */
+/** The briefcase-and-rupee mark that heads the navy branding panel (84px tile, D-P1a). */
 function Mark() {
   return (
     <div
@@ -84,16 +84,21 @@ function Mark() {
       aria-hidden
     >
       <svg
-        width="42"
-        height="42"
+        width="44"
+        height="44"
         viewBox="0 0 24 24"
         fill="none"
         stroke="#fff"
-        strokeWidth="2"
+        strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
       >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3.5 2" />
+        <path d="M9 7V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V7" />
+        <rect x="2.6" y="7" width="18.8" height="13" rx="2.6" />
+        <path d="M2.6 11.6h18.8" />
+        {/* the rupee sits inside the case, drawn rather than typed so it keeps
+            the same stroke weight as the case itself */}
+        <path d="M10 13.6h4M10 15.4h4M13 13.6c0 1.9-1.3 1.8-3 1.8l3 3" />
       </svg>
     </div>
   );
@@ -173,9 +178,12 @@ export function SplitShell({
   tagline,
   width = 440,
   step,
+  monument,
   children,
 }: {
   tagline?: React.ReactNode;
+  /** Overrides the default skyline watermark, e.g. a single line-art monument. */
+  monument?: { url: string; opacity?: number; height?: string };
   /** Enables the "Previous step" control; omit on screens outside onboarding. */
   step?: Slug;
   /** The content column: 520px on the language picker, 440px on the forms. */
@@ -209,7 +217,7 @@ export function SplitShell({
           <div style={{ fontSize: '30px', fontWeight: 700 }}>
             उद्यम साथी <span style={{ color: '#B9CCE5', fontWeight: 500 }}>· Udyam Sathi</span>
           </div>
-          <div style={{ fontSize: '15px', color: '#B9CCE5', maxWidth: '360px', lineHeight: 1.65 }}>
+          <div style={{ fontSize: '17.5px', color: '#C7D8EC', maxWidth: '400px', lineHeight: 1.85 }}>
             {tagline ?? (
               <T
                 hi="एक सरकारी व्यवहार्यता और ऋण सलाहकार, जो आपकी भाषा में बात करता है"
@@ -222,6 +230,13 @@ export function SplitShell({
         <main
           className="dc-monument dc-flag"
           style={{
+            ...(monument
+              ? ({
+                  '--monument': `url('${monument.url}')`,
+                  '--monument-opacity': monument.opacity ?? 0.45,
+                  ...(monument.height ? { '--monument-height': monument.height } : null),
+                } as React.CSSProperties)
+              : null),
             flex: 1,
             minWidth: 0,
             display: 'flex',

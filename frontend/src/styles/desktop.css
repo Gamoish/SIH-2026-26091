@@ -108,10 +108,12 @@
   bottom: 0;
   /* tall enough to read as a skyline on a 900px-high viewport, capped so it
      never becomes the loudest thing on a short screen */
-  height: clamp(120px, 22vh, 200px);
+  height: var(--monument-height, clamp(120px, 22vh, 200px));
   pointer-events: none;
   background-color: var(--navy);
-  opacity: 0.13;
+  /* line-art masks are mostly holes, so a screen that opts into one turns the
+     paint up to keep the strokes readable at the same weight a fill has */
+  opacity: var(--monument-opacity, 0.22);
   -webkit-mask-image: var(--monument, url('/skyline.svg'));
   mask-image: var(--monument, url('/skyline.svg'));
   -webkit-mask-size: contain;

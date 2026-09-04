@@ -11,6 +11,24 @@
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
+/**
+ * The fallback above is the right default locally and a silent trap in a
+ * deployment. NEXT_PUBLIC_* is substituted at build time, not read at runtime,
+ * so an unset variable bakes `localhost:4000` into the production bundle - and
+ * every call then fails as a browser CORS error against an origin that is not
+ * there, which says nothing about the actual cause. Say it plainly instead.
+ *
+ * Both reads are compile-time constants, so this whole block is dropped from
+ * the bundle whenever the variable is set.
+ */
+if (!process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === 'production') {
+  console.warn(
+    'WARNING: NEXT_PUBLIC_API_URL not set - falling back to localhost, this will not work in production. ' +
+      'Set it on the frontend project and redeploy with the build cache disabled: the value is baked in at build time, ' +
+      'so changing it in the dashboard alone will not take effect.',
+  );
+}
+
 const TOKEN_KEY = 'udyam.token.v1';
 
 /** Digits in a one-time code. The server confirms this as `code_length`. */

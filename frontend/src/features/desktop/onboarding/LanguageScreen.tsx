@@ -33,7 +33,15 @@ export default function LanguageScreen() {
   };
 
   return (
-    <SplitShell width={520} step="language">
+    <SplitShell
+      width={520}
+      step="language"
+      monument={{
+        url: '/monuments/india-gate-line.png',
+        opacity: 0.3,
+        height: 'clamp(240px, 46vh, 420px)',
+      }}
+    >
       <div>
         <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0 }}>
           <T hi="अपनी भाषा चुनिए" en="Choose your language" />
@@ -79,23 +87,38 @@ export default function LanguageScreen() {
             style={{
               minHeight: '88px',
               borderRadius: '16px',
-              border: '1.5px dashed var(--line)',
-              background: 'transparent',
+              border: '1.5px solid var(--line)',
+              background: 'var(--panel)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '2px',
-              color: 'var(--faint)',
+              gap: '4px',
+              color: 'var(--muted)',
             }}
           >
             <span style={{ fontSize: '24px', fontWeight: 600 }}>{l.native}</span>
-            <span style={{ fontSize: '13px' }}>{l.roman}</span>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--muted)',
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <rect x="4" y="10.5" width="16" height="10" rx="2.5" />
+                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+              </svg>
+              <T hi="जल्द आ रहा है" en="Coming Soon" />
+            </span>
           </div>
         ))}
       </div>
 
-      <div style={{ fontSize: '12.5px', color: 'var(--faint)' }}>
+      <div style={{ fontSize: '13px', color: 'var(--muted)' }}>
         <T hi="ଓଡ଼ିଆ और বাংলা जल्द आ रही हैं" en="ଓଡ଼ିଆ and বাংলা are coming soon" />
       </div>
     </SplitShell>

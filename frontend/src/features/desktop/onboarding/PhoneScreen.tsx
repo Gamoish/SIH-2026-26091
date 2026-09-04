@@ -47,7 +47,14 @@ export default function PhoneScreen() {
   };
 
   return (
-    <SplitShell step="phone">
+    <SplitShell
+      step="phone"
+      monument={{
+        url: '/monuments/monument-line.svg',
+        opacity: 0.3,
+        height: 'clamp(240px, 46vh, 420px)',
+      }}
+    >
       <Ask
         hi="अपना मोबाइल नंबर डालिए"
         en="Enter your mobile number"
