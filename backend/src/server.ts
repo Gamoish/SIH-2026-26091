@@ -32,7 +32,7 @@ const app = Fastify({
 // GET,HEAD,POST, so the browser's preflight refused every PUT and PATCH -
 // which is every write the onboarding flow makes. The frontend swallowed the
 // resulting network error, so onboarding_profiles simply stayed empty.
-await app.register(cors, {
+app.register(cors, {
   origin: env.corsOrigin,
   credentials: true,
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -40,17 +40,33 @@ await app.register(cors, {
 
 app.get('/health', async () => ({ ok: true, env: env.nodeEnv }));
 
-await app.register(authRoutes);
-await app.register(villageRoutes);
-await app.register(onboardingRoutes);
-await app.register(applicationRoutes);
+app.register(authRoutes);
+app.register(villageRoutes);
+app.register(onboardingRoutes);
+app.register(applicationRoutes);
 
-try {
-  await app.listen({ port: env.port, host: '0.0.0.0' });
-} catch (err) {
-  app.log.error(err);
-  process.exit(1);
-}
+/**
+ * No `await` above, and the callback form here, both on purpose: this module
+ * body must stay synchronous.
+ *
+ * Vercel's zero-config runtime hooks `listen()` while it evaluates this file,
+ * then waits for that call to hand it a server. A top-level `await` splits the
+ * body across microtasks, so evaluation returns before `listen()` is reached -
+ * the runtime never sees it, the function never reports ready, and every
+ * request hangs at "Waiting for response" until it times out as
+ * INTERNAL_FUNCTION_INVOCATION_FAILED. That failure logs nothing at all, since
+ * nothing actually threw.
+ *
+ * Dropping the awaits costs nothing: Fastify queues plugins and defers loading
+ * them until `listen()`/`ready()` anyway, so registration order is unchanged
+ * and a plugin that fails still surfaces as `err` below.
+ */
+app.listen({ port: env.port, host: '0.0.0.0' }, (err) => {
+  if (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+});
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, async () => {
