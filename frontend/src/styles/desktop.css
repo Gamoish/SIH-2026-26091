@@ -108,7 +108,7 @@
   bottom: 0;
   /* tall enough to read as a skyline on a 900px-high viewport, capped so it
      never becomes the loudest thing on a short screen */
-  height: var(--monument-height, clamp(120px, 22vh, 200px));
+  height: var(--monument-height, clamp(180px, 34vh, 340px));
   pointer-events: none;
   /* Painted, not masked: the monument art in /public/monuments is traced from
      photographs, so as an alpha mask every opaque pixel - background included -
@@ -120,6 +120,16 @@
   background-repeat: no-repeat;
   background-position: bottom center;
   opacity: var(--monument-opacity, 0.22);
+}
+
+/* Card-stack screens keep the original, shorter band. Their content runs to
+   the bottom of the viewport, so at the taller size the monument's spire rises
+   through the gutters between cards and reads as a stray mark rather than a
+   watermark. The wrapper carrying `data-screen` is `display: contents` - it
+   generates no box, but it is still an ancestor for selector purposes. */
+[data-screen='report'] .dc-monument,
+[data-screen='settings'] .dc-monument {
+  --monument-height: clamp(120px, 22vh, 200px);
 }
 
 /* --- the flag corner, ported from the phone ------------------------------ --
