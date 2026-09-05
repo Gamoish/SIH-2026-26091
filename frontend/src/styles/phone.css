@@ -31,7 +31,12 @@
   order: 1;
   flex: none;
   width: 100%;
-  aspect-ratio: var(--skyline-ratio);
+  /* Sized off its own ratio rather than the 640x130 skyline canvas: this band
+     is a real flex item, so its height is space taken from the screen, and at
+     the skyline's 4.9:1 the roughly 2:1 monument art came out too small to
+     read at phone width. Taller, but only as far as the tightest screens can
+     spare - see the height gate below. */
+  aspect-ratio: var(--monument-ratio, 640 / 170);
   /* Painted, not masked - the same reason desktop.css gives: the art in
      /public/monuments is traced from photographs, so as an alpha mask every
      opaque pixel would fill in and the band would render as one solid navy
@@ -43,6 +48,17 @@
   background-repeat: no-repeat;
   background-position: bottom center;
   opacity: 0.18;
+}
+
+/* The height gate. On a short viewport the screens that already scroll -
+   scheme, emi, share, settings - would just scroll further, because unlike the
+   desktop overlay this band is real space. Below 700px tall it keeps the
+   original skyline band, so nothing is bought at the cost of more scrolling on
+   the smallest phones. */
+@media (max-height: 700px) {
+  .dc-phone::before {
+    --monument-ratio: var(--skyline-ratio);
+  }
 }
 
 .dc-phone > * {
