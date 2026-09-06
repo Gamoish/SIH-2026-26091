@@ -16,10 +16,8 @@ import { ONBOARDING, previousStep, useNav, type Slug } from '@/lib/nav';
  *   TopBarShell   D-P1d..D-P1f, D-P10  navy bar, optional fixed side panel
  *   DesktopShell  D-P2..D-P11   264px rail beside a scrolling body
  *
- * Every measurement here is read off the artboards (rail 264px, split 46%,
- * bar padding 20px 40px, item padding 10px 12px, active item saffron) rather
- * than approximated - an earlier pass defaulted all eight first-run screens to
- * one centred column and lost the layout entirely.
+ * Branding uses the same Udyam Sathi logo everywhere, with the size adjusted
+ * according to the available space.
  */
 
 /* ---------------------------------------------------------------- pieces -- */
@@ -32,74 +30,32 @@ function Tricolour() {
       style={{
         height: '6px',
         flex: 'none',
-        background: 'linear-gradient(90deg,var(--saffron-flag) 0%,#fff 50%,var(--green-flag) 100%)',
+        background:
+          'linear-gradient(90deg,var(--saffron-flag) 0%,#fff 50%,var(--green-flag) 100%)',
       }}
     />
   );
 }
 
-function Ashoka({ size = 30 }: { size?: number }) {
+/**
+ * Reusable Udyam Sathi logo.
+ *
+ * The SVG is used directly so it stays sharp at every size.
+ * Different shells pass different widths depending on available space.
+ */
+function UdyamLogo({ width = 180 }: { width?: number }) {
   return (
-    <div
+    <img
+      src="/logo1.png"
+      alt="Udyam Sathi"
       style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        borderRadius: '50%',
-        overflow: 'hidden',
-        flex: 'none',
-        position: 'relative',
+        width: `${width}px`,
+        height: 'auto',
+        maxWidth: '100%',
+        objectFit: 'contain',
+        display: 'block',
       }}
-      aria-hidden
-    >
-      <div style={{ position: 'absolute', inset: '0 0 66.6% 0', background: 'var(--saffron-flag)' }} />
-      <div style={{ position: 'absolute', inset: '33.3% 0 33.3% 0', background: '#fff' }} />
-      <div style={{ position: 'absolute', inset: '66.6% 0 0 0', background: 'var(--green-flag)' }} />
-      <svg width={size} height={size} viewBox="0 0 30 30" style={{ position: 'absolute', top: 0, left: 0 }}>
-        <circle cx="15" cy="15" r="5" fill="none" stroke="#0B3D91" strokeWidth="1" />
-        <circle cx="15" cy="15" r="1.1" fill="#0B3D91" />
-        <g stroke="#0B3D91" strokeWidth="0.6">
-          {[0, 30, 60, 90, 120, 150].map((d) => (
-            <line key={d} x1="15" y1="10" x2="15" y2="20" transform={`rotate(${d} 15 15)`} />
-          ))}
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-/** The briefcase-and-rupee mark that heads the navy branding panel (84px tile, D-P1a). */
-function Mark() {
-  return (
-    <div
-      style={{
-        width: '84px',
-        height: '84px',
-        borderRadius: '22px',
-        background: 'rgba(255,255,255,.12)',
-        display: 'grid',
-        placeItems: 'center',
-        flex: 'none',
-      }}
-      aria-hidden
-    >
-      <svg
-        width="44"
-        height="44"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M9 7V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V7" />
-        <rect x="2.6" y="7" width="18.8" height="13" rx="2.6" />
-        <path d="M2.6 11.6h18.8" />
-        {/* the rupee sits inside the case, drawn rather than typed so it keeps
-            the same stroke weight as the case itself */}
-        <path d="M10 13.6h4M10 15.4h4M13 13.6c0 1.9-1.3 1.8-3 1.8l3 3" />
-      </svg>
-    </div>
+    />
   );
 }
 
@@ -107,8 +63,16 @@ function Mark() {
 function Steps({ at }: { at?: Slug }) {
   const i = at ? ONBOARDING.indexOf(at) : -1;
   if (i < 0) return null;
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} aria-hidden>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+      }}
+      aria-hidden
+    >
       {ONBOARDING.map((slug, n) => (
         <span
           key={slug}
@@ -117,7 +81,8 @@ function Steps({ at }: { at?: Slug }) {
             width: n === i ? '26px' : '8px',
             height: '8px',
             borderRadius: '5px',
-            background: n <= i ? '#fff' : 'rgba(255,255,255,.28)',
+            background:
+              n <= i ? '#fff' : 'rgba(255,255,255,.28)',
           }}
         />
       ))}
@@ -137,6 +102,7 @@ function BackStep({ step }: { step?: Slug }) {
   const { s } = useSession();
   const nav = useNav();
   const prev = step ? previousStep(step, s) : null;
+
   if (!prev) return null;
 
   return (
@@ -158,9 +124,17 @@ function BackStep({ step }: { step?: Slug }) {
         cursor: 'pointer',
       }}
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+      >
         <path d="M15 6l-6 6 6 6" />
       </svg>
+
       <T hi="पिछला क़दम" en="Previous step" />
     </button>
   );
@@ -169,30 +143,53 @@ function BackStep({ step }: { step?: Slug }) {
 /* ------------------------------------------------------- onboarding chrome -- */
 
 /**
- * D-P1a - D-P1c. A navy branding panel at 46% of the width, vertically
- * centred, beside the one question. The panel is the identity of the service;
- * the right side is the only thing the user acts on.
+ * D-P1a - D-P1c.
+ *
+ * A navy branding panel at 46% of the width, vertically centred,
+ * beside the one question.
+ *
+ * `logoWidth` allows individual onboarding screens to choose their
+ * appropriate logo size.
  */
 export function SplitShell({
   tagline,
   width = 440,
   step,
+  logoWidth = 275,
   children,
 }: {
   tagline?: React.ReactNode;
-  /** Enables the "Previous step" control; omit on screens outside onboarding. */
+
+  /** Enables the "Previous step" control. */
   step?: Slug;
-  /** The content column: 520px on the language picker, 440px on the forms. */
+
+  /** The content column: 520px on the language picker, 440px on forms. */
   width?: number;
+
+  /** Width of the Udyam Sathi logo in the branding panel. */
+  logoWidth?: number;
+
   children: React.ReactNode;
 }) {
   return (
     <div
       className="dc-onb"
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fff' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100dvh',
+        background: '#fff',
+      }}
     >
       <Tricolour />
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         <aside
           style={{
             width: '46%',
@@ -209,11 +206,16 @@ export function SplitShell({
             padding: '40px',
           }}
         >
-          <Mark />
-          <div style={{ fontSize: '30px', fontWeight: 700 }}>
-            उद्यम साथी <span style={{ color: '#B9CCE5', fontWeight: 500 }}>· Udyam Sathi</span>
-          </div>
-          <div style={{ fontSize: '17.5px', color: '#C7D8EC', maxWidth: '400px', lineHeight: 1.85 }}>
+          <UdyamLogo width={logoWidth} />
+
+          <div
+            style={{
+              fontSize: '17.5px',
+              color: '#C7D8EC',
+              maxWidth: '400px',
+              lineHeight: 1.85,
+            }}
+          >
             {tagline ?? (
               <T
                 hi="एक सरकारी व्यवहार्यता और ऋण सलाहकार, जो आपकी भाषा में बात करता है"
@@ -254,10 +256,12 @@ export function SplitShell({
 }
 
 /**
- * D-P1d - D-P1f and D-P10. A navy bar across the top, then the body. `aside`
- * is the fixed panel two of these screens carry beside the question - the
- * running summary on location, the eligibility panel on capital.
+ * D-P1d - D-P1f and D-P10.
+ *
+ * A navy bar across the top, then the body.
+ * `aside` is the fixed panel two of these screens carry beside the question.
  */
+
 export function TopBarShell({
   step,
   aside,
@@ -272,16 +276,24 @@ export function TopBarShell({
   asideWidth?: number;
   asideBackground?: string;
   padding?: string;
-  /** 560px on the question screens; unset lets a grid use the full width. */
+
+  /** 560px on question screens; unset lets a grid use full width. */
   contentWidth?: number;
+
   children: React.ReactNode;
 }) {
   return (
     <div
       className="dc-onb"
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fff' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100dvh',
+        background: '#fff',
+      }}
     >
       <Tricolour />
+
       <div
         className="dc-flag dc-onb-top"
         style={{
@@ -294,18 +306,52 @@ export function TopBarShell({
           flex: 'none',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <Ashoka />
-          <div style={{ fontSize: '17px', fontWeight: 700 }}>
-            उद्यम साथी{' '}
-            <span style={{ color: '#B9CCE5', fontSize: '12px', fontWeight: 600 }}>Udyam Sathi</span>
-          </div>
+        {/* Udyam Sathi branding */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexShrink: 0,
+          }}
+        >
+          {/* Logo symbol */}
+          <img
+            src="/udyam-logo.png"
+            alt="Udyam Sathi logo"
+            style={{
+              width: '70px',
+              height: '70px',
+              objectFit: 'contain',
+              display: 'block',
+            }}
+          />
+
+          {/* Wordmark + tagline */}
+          <img
+            src="/udyam-wordmark.png"
+            alt="Udyam Sathi"
+            style={{
+              width: '190px',
+              height: 'auto',
+              objectFit: 'contain',
+              display: 'block',
+            }}
+          />
         </div>
+
         <span style={{ flex: 1 }} />
+
         <Steps at={step} />
       </div>
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         <main
           className="dc-monument reveal"
           style={{
@@ -317,11 +363,11 @@ export function TopBarShell({
             display: 'flex',
             flexDirection: 'column',
             gap: '18px',
-            borderRight: aside ? '1px solid var(--line-soft)' : undefined,
+            borderRight: aside
+              ? '1px solid var(--line-soft)'
+              : undefined,
           }}
         >
-          {/* the canvas keeps the question column readable rather than letting
-              it run the full width of a 1440px screen */}
           <div
             style={{
               width: contentWidth ? `${contentWidth}px` : '100%',
@@ -335,13 +381,17 @@ export function TopBarShell({
             {children}
           </div>
         </main>
+
         {aside ? (
           <aside
             style={{
               width: `${asideWidth}px`,
               flex: 'none',
               background: asideBackground,
-              color: asideBackground === 'var(--navy-800)' ? '#fff' : 'var(--text)',
+              color:
+                asideBackground === 'var(--navy-800)'
+                  ? '#fff'
+                  : 'var(--text)',
               padding: '32px',
               display: 'flex',
               flexDirection: 'column',
@@ -358,18 +408,41 @@ export function TopBarShell({
 
 /* ---------------------------------------------------- post-onboarding chrome -- */
 
-/** Hugeicons (free pack, MIT) - the same three the phone dock uses, so one
- *  destination carries one mark whichever layout the visitor is in. */
-const NAV: { slug: Slug; hi: string; en: string; icon: typeof Home05Icon }[] = [
-  { slug: 'home', hi: 'होम', en: 'Home', icon: Home05Icon },
-  { slug: 'saved', hi: 'आपके आवेदन', en: 'Applications', icon: File02Icon },
-  { slug: 'settings', hi: 'सेटिंग्स', en: 'Settings', icon: Settings02Icon },
-];
+/**
+ * Hugeicons (free pack, MIT) - the same three the phone dock uses, so one
+ * destination carries one mark whichever layout the visitor is in.
+ */
+const NAV: {
+  slug: Slug;
+  hi: string;
+  en: string;
+  icon: typeof Home05Icon;
+}[] = [
+    {
+      slug: 'home',
+      hi: 'होम',
+      en: 'Home',
+      icon: Home05Icon,
+    },
+    {
+      slug: 'saved',
+      hi: 'आपके आवेदन',
+      en: 'Applications',
+      icon: File02Icon,
+    },
+    {
+      slug: 'settings',
+      hi: 'सेटिंग्स',
+      en: 'Settings',
+      icon: Settings02Icon,
+    },
+  ];
 
 /**
- * D-P2 - D-P11. A 264px navy rail beside the body. `aside` is the second fixed
- * panel four of these screens carry (the full report's summary, the competitor
- * map's detail column, the share sheet, and so on).
+ * D-P2 - D-P11.
+ *
+ * A 264px navy rail beside the body.
+ * `aside` is the second fixed panel four of these screens carry.
  */
 export function DesktopShell({
   title,
@@ -389,8 +462,10 @@ export function DesktopShell({
   asideBackground?: string;
   padding?: string;
   background?: string;
+
   /** Set to lay the body out as one flex column, as D-P8 does. */
   gap?: number;
+
   children: React.ReactNode;
 }) {
   const { s } = useSession();
@@ -399,9 +474,7 @@ export function DesktopShell({
   return (
     <div className="dc-desk dc-flag">
       <aside className="dc-desk-side">
-        {/* Who is signed in, at the head of the rail: on a desktop the account
-            is the thing you act on, and the flag corner already marks the page
-            as the service's. The wordmark keeps its place at the foot. */}
+        {/* Account / signed-in user */}
         <div style={{ padding: '0 22px 18px' }}>
           <AvatarPicker
             size={44}
@@ -419,17 +492,35 @@ export function DesktopShell({
                 >
                   {s.name || '—'}
                 </div>
-                <div style={{ fontSize: '11px', color: '#B9CBE0' }}>
-                  {s.phone ? `+91 ${s.phone}` : <T hi="नमस्ते" en="Hello" />}
+
+                <div
+                  style={{
+                    fontSize: '11px',
+                    color: '#B9CBE0',
+                  }}
+                >
+                  {s.phone ? (
+                    `+91 ${s.phone}`
+                  ) : (
+                    <T hi="नमस्ते" en="Hello" />
+                  )}
                 </div>
               </div>
             }
           />
         </div>
 
-        <nav style={{ padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <nav
+          style={{
+            padding: '16px 22px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}
+        >
           {NAV.map((n) => {
             const on = path === `/desktop/${n.slug}`;
+
             return (
               <Link
                 key={n.slug}
@@ -443,12 +534,19 @@ export function DesktopShell({
                   borderRadius: '9px',
                   fontSize: '13.5px',
                   textDecoration: 'none',
-                  background: on ? 'var(--saffron)' : 'transparent',
+                  background: on
+                    ? 'var(--saffron)'
+                    : 'transparent',
                   color: on ? '#fff' : '#B9CBE0',
                   fontWeight: on ? 700 : 500,
                 }}
               >
-                <HugeiconsIcon icon={n.icon} size={18} strokeWidth={on ? 2.1 : 1.9} />
+                <HugeiconsIcon
+                  icon={n.icon}
+                  size={18}
+                  strokeWidth={on ? 2.1 : 1.9}
+                />
+
                 <T hi={n.hi} en={n.en} />
               </Link>
             );
@@ -457,27 +555,55 @@ export function DesktopShell({
 
         <div style={{ flex: 1 }} />
 
+        {/* Udyam Sathi brand at the bottom of the desktop rail */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
             margin: '0 22px',
-            padding: '14px 0 2px',
+            padding: '14px 0 8px',
             borderTop: '1px solid rgba(255,255,255,.12)',
+            gap: '10px',
           }}
         >
-          <Ashoka size={24} />
-          <div style={{ fontSize: '13px', fontWeight: 700 }}>
-            उद्यम साथी{' '}
-            <span style={{ fontSize: '10px', color: '#B9CBE0', fontWeight: 500 }}>Udyam Sathi</span>
-          </div>
+          {/* Logo symbol */}
+          <img
+            src="/udyam-logo.png"
+            alt="Udyam Sathi logo"
+            style={{
+              width: '44px',
+              height: '44px',
+              objectFit: 'contain',
+              display: 'block',
+              flexShrink: 0,
+            }}
+          />
+
+          {/* Wordmark + tagline */}
+          <img
+            src="/udyam-wordmark.png"
+            alt="Udyam Sathi"
+            style={{
+              width: '145px',
+              height: 'auto',
+              objectFit: 'contain',
+              display: 'block',
+              flexShrink: 1,
+            }}
+          />
         </div>
       </aside>
 
       <div className="dc-desk-main">
         <Tricolour />
-        <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+
+        <div
+          style={{
+            display: 'flex',
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <div
             className="dc-desk-body dc-monument reveal"
             style={{
@@ -487,22 +613,43 @@ export function DesktopShell({
               backgroundImage: 'var(--ledger)',
               padding,
               ...(gap != null
-                ? { display: 'flex', flexDirection: 'column' as const, gap: `${gap}px` }
+                ? {
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    gap: `${gap}px`,
+                  }
                 : null),
             }}
           >
             {title ? (
               <div
                 className="dc-desk-title"
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '22px' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  marginBottom: '22px',
+                }}
               >
-                <div style={{ fontSize: '20px', fontWeight: 700, minWidth: 0 }}>{title}</div>
+                <div
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    minWidth: 0,
+                  }}
+                >
+                  {title}
+                </div>
+
                 <span style={{ flex: 1 }} />
+
                 {actions}
               </div>
             ) : null}
+
             {children}
           </div>
+
           {aside ? (
             <aside
               className="dc-desk-aside"
@@ -528,7 +675,11 @@ export function DesktopShell({
 
 /* --------------------------------------------------------------- shared -- */
 
-export function Legend({ children }: { children: React.ReactNode }) {
+export function Legend({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div
       style={{
@@ -547,14 +698,39 @@ export function Legend({ children }: { children: React.ReactNode }) {
 }
 
 /** The question a first-run screen asks. */
-export function Ask({ hi, en, note }: { hi: string; en: string; note?: React.ReactNode }) {
+export function Ask({
+  hi,
+  en,
+  note,
+}: {
+  hi: string;
+  en: string;
+  note?: React.ReactNode;
+}) {
   return (
     <div>
-      <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+      <h1
+        style={{
+          fontSize: '28px',
+          fontWeight: 700,
+          margin: 0,
+          lineHeight: 1.3,
+        }}
+      >
         <T hi={hi} en={en} />
       </h1>
+
       {note ? (
-        <p style={{ fontSize: '15px', color: 'var(--muted)', margin: '8px 0 0', lineHeight: 1.6 }}>{note}</p>
+        <p
+          style={{
+            fontSize: '15px',
+            color: 'var(--muted)',
+            margin: '8px 0 0',
+            lineHeight: 1.6,
+          }}
+        >
+          {note}
+        </p>
       ) : null}
     </div>
   );
