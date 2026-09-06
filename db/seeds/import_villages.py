@@ -15,6 +15,13 @@ normal, real Census data — not a bug). Each is flagged via
 `has_name_duplicate_in_tehsil` so the frontend can force disambiguation
 (e.g. show gram panchayat or a nearby landmark) rather than letting a user
 pick the wrong one from an ambiguous name match.
+
+NOTE: the input CSV is not in this repository - only the output it produced,
+`villages_census_2011.sql`, which is what `backend/scripts/import-census.ts`
+loads. This script is kept as the provenance record for that file: it documents
+exactly how the committed SQL was derived from the Census extract. Re-running it
+means fetching the source CSV again (see "Source" above) and placing it next to
+this file as `sonbhadra_primary_census_abstract.csv`.
 """
 
 import csv

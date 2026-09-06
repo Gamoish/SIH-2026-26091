@@ -34,12 +34,5 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# local screenshot scratch
-apps/web/shots/
-
 # knowledge-graph tool output (regenerable)
 graphify-out/
-
-
-
-.gitignore

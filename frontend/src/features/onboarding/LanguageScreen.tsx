@@ -35,48 +35,25 @@ export default function LanguageScreen() {
           gap: '22px',
         }}
       >
+        {/* The site logo. Same background-image treatment the monument motif
+            uses, so the SVG stays one file in public/ rather than being pasted
+            into JSX. Sized to the 58px footprint of the placeholder mark it
+            replaces: this screen's spacing is asserted by the "decorations get
+            their own space" e2e check, and a taller mark pushes content into
+            the skyline band. The desktop rail's chakra is white-on-navy and is
+            deliberately left alone - this mark is dark-on-light. */}
         <div
+          role="img"
+          aria-label="Udyam Sathi"
           style={{
             width: '58px',
             height: '58px',
-            borderRadius: '15px',
-            background: 'var(--navy)',
-            display: 'grid',
-            placeItems: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: 'var(--e2)',
+            backgroundImage: "url('/logo-mark.svg')",
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
           }}
-        >
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" role="presentation">
-            <circle cx="12" cy="12" r="9.1" stroke="#fff" strokeWidth="1.5" />
-            <g stroke="#fff" strokeWidth="1.1" strokeLinecap="round">
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(0 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(30 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(60 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(90 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(120 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(150 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(180 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(210 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(240 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(270 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(300 12 12)" />
-              <line x1="12" y1="3.9" x2="12" y2="6.4" transform="rotate(330 12 12)" />
-            </g>
-            <circle cx="12" cy="12" r="1.7" fill="#fff" />
-          </svg>
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: '4px',
-              background: 'var(--saffron)',
-            }}
-          />
-        </div>
+        />
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 700 }}>अपनी भाषा चुनिए</div>
           <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '2px' }}>

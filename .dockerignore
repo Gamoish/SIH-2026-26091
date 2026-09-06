@@ -16,5 +16,4 @@ blob-report
 .env.local
 **/.env.local
 graphify-out
-design
 

@@ -140,8 +140,6 @@ const BaseCtx = createContext<Base>('/screens');
 /** Wraps a layout subtree so every `nav.go` inside it stays in that layout. */
 export const NavBase = BaseCtx.Provider;
 
-export const useBase = () => useContext(BaseCtx);
-
 export function useNav() {
   const router = useRouter();
   const base = useContext(BaseCtx);

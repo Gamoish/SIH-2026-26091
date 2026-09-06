@@ -116,12 +116,12 @@ button:disabled {
 @media print {
   /* Print the document, not the application.
      ---------------------------------------------------------------------
-     What this used to get wrong: the rules targeted `.dc-desk-side` and
-     `.dc-desk-top`, but the desktop shell's right-hand panel, its tricolour
-     strip and its screen-title row carried NO class at all, so nothing could
-     select them. The "printable" sheet therefore also printed the next-step
-     panel, the flag strip, the skyline watermark and the ledger grid. The
-     hooks now exist in shell.tsx; these rules use them. */
+     What this used to get wrong: the rules targeted `.dc-desk-side`, but
+     the desktop shell's right-hand panel, its tricolour strip and its screen-
+     title row carried NO class at all, so nothing could select them. The
+     "printable" sheet therefore also printed the next-step panel, the flag
+     strip, the skyline watermark and the ledger grid. The hooks now exist in
+     shell.tsx; every selector below matches something the shell renders. */
   @page {
     margin: 14mm;
   }
@@ -136,7 +136,6 @@ button:disabled {
   nav,
   .dc-desk-side,
   .dc-desk-aside,
-  .dc-desk-top,
   .dc-desk-title,
   .dc-onb-top,
   .dc-tricolour,

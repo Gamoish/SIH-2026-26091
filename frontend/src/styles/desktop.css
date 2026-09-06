@@ -42,14 +42,20 @@
   box-shadow: var(--e1);
 }
 
+/* The desktop rail's nav links. This block existed but nothing used it: the
+   links in shell.tsx carried inline styles, so a rail link had no hover state
+   at all and the active-page rule never fired. The values below are the ones
+   the inline styles shipped, so adopting the class changes nothing on screen
+   except restoring hover. */
 .navitem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: 10px;
-  color: #9fb6d3;
-  font-size: 14px;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  color: #b9cbe0;
+  font-size: 13.5px;
+  font-weight: 500;
   text-decoration: none;
 }
 .navitem:hover {
@@ -57,7 +63,7 @@
   color: #fff;
 }
 .navitem[aria-current='page'] {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--saffron);
   color: #fff;
   font-weight: 700;
 }

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { MONUMENTS } from '../../src/lib/monuments';
 
 /**
- * Layout regression against `design/Disha Desktop.dc.html`.
+ * Layout regression against the desktop design canvas.
  *
  * This exists because selector-and-content tests cannot see layout. An earlier
  * pass shipped all eight first-run screens as one centred column instead of the
@@ -10,7 +10,8 @@ import { MONUMENTS } from '../../src/lib/monuments';
  * numbers below are read off the artboards; measuring the rendered page against
  * them is the only check that would have failed.
  *
- * When the canvas changes, update SPEC in the same commit as the screens - a
+ * The canvas itself is not in this repo; SPEC below is the record of it. When
+ * the design changes, update SPEC in the same commit as the screens - a
  * diff here is either a real regression or a deliberate redesign, and both
  * should be visible in review.
  */

@@ -435,18 +435,7 @@ export function DesktopShell({
                 key={n.slug}
                 href={`/desktop/${n.slug}`}
                 aria-current={on ? 'page' : undefined}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '11px',
-                  padding: '10px 12px',
-                  borderRadius: '9px',
-                  fontSize: '13.5px',
-                  textDecoration: 'none',
-                  background: on ? 'var(--saffron)' : 'transparent',
-                  color: on ? '#fff' : '#B9CBE0',
-                  fontWeight: on ? 700 : 500,
-                }}
+                className="navitem"
               >
                 <HugeiconsIcon icon={n.icon} size={18} strokeWidth={on ? 2.1 : 1.9} />
                 <T hi={n.hi} en={n.en} />

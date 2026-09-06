@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="frontend/public/logo.svg" alt="Udyam Sathi" width="380">
+</p>
+
 # उद्यम साथी · Udyam Sathi
 
 A feasibility-check and loan-advisory tool for entrepreneurs in Sonbhadra district, Uttar Pradesh. Built for Smart India Hackathon 2026.

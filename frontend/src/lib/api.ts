@@ -122,8 +122,6 @@ export const api = {
     return res;
   },
 
-  me: () => request<{ user: { id: string; phone_number: string } }>('/api/auth/me'),
-
   // --- villages -------------------------------------------------------------
 
   villages: (params: { q?: string; tehsil?: string; limit?: number } = {}) => {
@@ -134,8 +132,6 @@ export const api = {
     const suffix = qs.toString() ? `?${qs}` : '';
     return request<{ loaded: boolean; count: number; villages: Village[] }>(`/api/villages${suffix}`);
   },
-
-  tehsils: () => request<{ tehsils: { tehsil: string; village_count: number }[] }>('/api/villages/tehsils'),
 
   // --- onboarding -----------------------------------------------------------
 
