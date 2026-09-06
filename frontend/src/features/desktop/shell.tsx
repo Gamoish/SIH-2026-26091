@@ -38,67 +38,28 @@ function Tricolour() {
   );
 }
 
-function Ashoka({ size = 30 }: { size?: number }) {
+/** The full vertical lockup that heads the navy branding panel (D-P1a). */
+function Mark() {
   return (
-    <div
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        borderRadius: '50%',
-        overflow: 'hidden',
-        flex: 'none',
-        position: 'relative',
-      }}
-      aria-hidden
-    >
-      <div style={{ position: 'absolute', inset: '0 0 66.6% 0', background: 'var(--saffron-flag)' }} />
-      <div style={{ position: 'absolute', inset: '33.3% 0 33.3% 0', background: '#fff' }} />
-      <div style={{ position: 'absolute', inset: '66.6% 0 0 0', background: 'var(--green-flag)' }} />
-      <svg width={size} height={size} viewBox="0 0 30 30" style={{ position: 'absolute', top: 0, left: 0 }}>
-        <circle cx="15" cy="15" r="5" fill="none" stroke="#0B3D91" strokeWidth="1" />
-        <circle cx="15" cy="15" r="1.1" fill="#0B3D91" />
-        <g stroke="#0B3D91" strokeWidth="0.6">
-          {[0, 30, 60, 90, 120, 150].map((d) => (
-            <line key={d} x1="15" y1="10" x2="15" y2="20" transform={`rotate(${d} 15 15)`} />
-          ))}
-        </g>
-      </svg>
-    </div>
+    <img
+      src="/logo1.png"
+      alt="उद्यम साथी · Udyam Sathi"
+      style={{ width: 'min(300px, 70%)', height: 'auto', flex: 'none' }}
+    />
   );
 }
 
-/** The briefcase-and-rupee mark that heads the navy branding panel (84px tile, D-P1a). */
-function Mark() {
+/** Mark beside wordmark, for the two navy bars. Both assets are white-on-transparent,
+ *  so they only ever sit on `--navy`. */
+function Lockup({ h }: { h: number }) {
   return (
-    <div
-      style={{
-        width: '84px',
-        height: '84px',
-        borderRadius: '22px',
-        background: 'rgba(255,255,255,.12)',
-        display: 'grid',
-        placeItems: 'center',
-        flex: 'none',
-      }}
-      aria-hidden
-    >
-      <svg
-        width="44"
-        height="44"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M9 7V5.6A1.6 1.6 0 0 1 10.6 4h2.8A1.6 1.6 0 0 1 15 5.6V7" />
-        <rect x="2.6" y="7" width="18.8" height="13" rx="2.6" />
-        <path d="M2.6 11.6h18.8" />
-        {/* the rupee sits inside the case, drawn rather than typed so it keeps
-            the same stroke weight as the case itself */}
-        <path d="M10 13.6h4M10 15.4h4M13 13.6c0 1.9-1.3 1.8-3 1.8l3 3" />
-      </svg>
+    <div style={{ display: 'flex', alignItems: 'center', gap: `${h * 0.3}px`, flex: 'none' }}>
+      <img src="/udyam-logo.png" alt="" style={{ height: `${h}px`, width: 'auto' }} />
+      <img
+        src="/udyam-wordmark.png"
+        alt="उद्यम साथी · Udyam Sathi"
+        style={{ height: `${h * 0.72}px`, width: 'auto' }}
+      />
     </div>
   );
 }
@@ -210,9 +171,6 @@ export function SplitShell({
           }}
         >
           <Mark />
-          <div style={{ fontSize: '30px', fontWeight: 700 }}>
-            उद्यम साथी <span style={{ color: '#B9CCE5', fontWeight: 500 }}>· Udyam Sathi</span>
-          </div>
           <div style={{ fontSize: '17.5px', color: '#C7D8EC', maxWidth: '400px', lineHeight: 1.85 }}>
             {tagline ?? (
               <T
@@ -294,13 +252,7 @@ export function TopBarShell({
           flex: 'none',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
-          <Ashoka />
-          <div style={{ fontSize: '17px', fontWeight: 700 }}>
-            उद्यम साथी{' '}
-            <span style={{ color: '#B9CCE5', fontSize: '12px', fontWeight: 600 }}>Udyam Sathi</span>
-          </div>
-        </div>
+        <Lockup h={40} />
         <span style={{ flex: 1 }} />
         <Steps at={step} />
       </div>
@@ -456,11 +408,7 @@ export function DesktopShell({
             borderTop: '1px solid rgba(255,255,255,.12)',
           }}
         >
-          <Ashoka size={24} />
-          <div style={{ fontSize: '13px', fontWeight: 700 }}>
-            उद्यम साथी{' '}
-            <span style={{ fontSize: '10px', color: '#B9CBE0', fontWeight: 500 }}>Udyam Sathi</span>
-          </div>
+          <Lockup h={26} />
         </div>
       </aside>
 
