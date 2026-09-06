@@ -245,14 +245,14 @@ export function TopBarShell({
         style={{
           background: 'var(--navy)',
           color: '#fff',
-          padding: '20px 40px',
+          padding: '14px 40px',
           display: 'flex',
           alignItems: 'center',
           gap: '28px',
           flex: 'none',
         }}
       >
-        <Lockup h={40} />
+        <Lockup h={60} />
         <span style={{ flex: 1 }} />
         <Steps at={step} />
       </div>
