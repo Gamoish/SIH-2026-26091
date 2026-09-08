@@ -69,7 +69,8 @@ export const MOCK_VILLAGES: MockVillage[] = [
   },
 ];
 
-export function distanceKm(a: MockVillage, b: MockVillage): number {
+/** Straight-line km. Takes anything with coordinates, not only a fixture village. */
+export function distanceKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
   const R = 6371;
   const rad = (d: number) => (d * Math.PI) / 180;
   const dLat = rad(b.lat - a.lat);

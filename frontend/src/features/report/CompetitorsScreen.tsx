@@ -1,16 +1,17 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { label } from '@/domain/feasibility';
 import { num } from '@/lib/format';
-import { Header, T } from '@/components';
+import { CompetitorMap, Header, T } from '@/components';
 
 export default function CompetitorsScreen() {
   const { s } = useSession();
   const nav = useNav();
   const { report } = useCase();
+  const [mapOpen, setMapOpen] = useState(false);
   if (!report) return null;
 
   const max = Math.max(1, ...report.competitors.map((c) => c.count));
@@ -93,6 +94,31 @@ export default function CompetitorsScreen() {
             />
           </div>
         </div>
+
+        {/* Collapsed by default: the phone layout has no room for a live map
+            beside the chart above. The map is mounted on open rather than
+            hidden by <details>, so a phone that never opens it never loads
+            Leaflet and never fetches a tile - and Leaflet never has to size
+            itself inside a display:none box. */}
+        <details
+          onToggle={(e) => setMapOpen(e.currentTarget.open)}
+          style={{ borderRadius: '13px', border: '1px solid var(--line)', background: '#fff' }}
+        >
+          <summary
+            style={{
+              padding: '10px 13px',
+              fontSize: '12.5px',
+              fontWeight: 600,
+              color: 'var(--navy-dark)',
+              cursor: 'pointer',
+            }}
+          >
+            <T hi="नक्शे पर देखिए (नमूना)" en="View on map (sample)" />
+          </summary>
+          <div style={{ padding: '0 11px 11px' }}>
+            {mapOpen ? <CompetitorMap report={report} height={220} /> : null}
+          </div>
+        </details>
 
         <div
           style={{

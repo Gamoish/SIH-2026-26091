@@ -12,3 +12,4 @@ export { Stat, type StatTone } from './stat';
 export { ScoreDial } from './score-dial';
 export { DistrictLocator } from './district-locator';
 export { Modal } from './modal';
+export { CompetitorMap } from './competitor-map';
