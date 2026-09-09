@@ -64,20 +64,40 @@ async function onboard(
   await page.getByRole('button', { name: new RegExp(social) }).click();
   await page.getByRole('button', { name: /Next · your location/ }).click();
 
+  // Business BEFORE capital: the capital step's estimate breaks the project
+  // cost down over the chosen business, so it cannot run first.
   await expect(page).toHaveURL(/\/screens\/location/);
   await page.getByRole('button', { name: new RegExp(`^${village}`) }).click();
   await page.getByRole('button', { name: radius, exact: true }).click();
-  await page.getByRole('button', { name: /Next · enter capital/ }).click();
-
-  await expect(page).toHaveURL(/\/screens\/capital/);
-  await page.getByLabel('Your own capital, in rupees').fill(capital);
   await page.getByRole('button', { name: /Next · choose business/ }).click();
 
   await expect(page).toHaveURL(/\/screens\/category/);
   await page.getByRole('button', { name: business, exact: true }).click();
+  await page.getByRole('button', { name: /Next · enter capital/ }).click();
+
+  await expect(page).toHaveURL(/\/screens\/capital/);
+  await page.getByLabel('Your own capital, in rupees').fill(capital);
   await page.getByRole('button', { name: /Next · see the report/ }).click();
 
   await expect(page).toHaveURL(/\/screens\/feasibility/, { timeout: 15_000 });
+}
+
+/**
+ * Open the share screen and WAIT until the case is actually filed.
+ *
+ * ShareScreen files in an effect and records `savedAt` when the POST resolves,
+ * deliberately surviving unmount. Navigating away the instant the screen paints
+ * is therefore a race: `savedAt` may still be null, and every guard that keys
+ * off it (`BEHIND` -> home) then does nothing. Tests that assert on those
+ * guards have to wait for the write rather than assume it.
+ */
+async function fileCase(page: Page) {
+  await page.goto('/screens/share');
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
 }
 
 test('a first-time user reaches a report and a repayment plan', async ({ page }) => {
@@ -251,7 +271,7 @@ test('browser back and forward move between real routes', async ({ page }) => {
 test('once home, back never re-enters onboarding', async ({ page }) => {
   await onboard(page);
 
-  await page.goto('/screens/share');
+  await fileCase(page);
   await page.getByRole('button', { name: 'Go to home' }).click();
   await expect(page).toHaveURL(/\/screens\/home/);
 
@@ -264,7 +284,7 @@ test('once home, back never re-enters onboarding', async ({ page }) => {
 
 test('a finished onboarding step redirects home if opened directly', async ({ page }) => {
   await onboard(page);
-  await page.goto('/screens/share');
+  await fileCase(page);
   await page.getByRole('button', { name: 'Go to home' }).click();
   await expect(page).toHaveURL(/\/screens\/home/);
 
@@ -276,15 +296,15 @@ test('a finished onboarding step redirects home if opened directly', async ({ pa
 
 test('starting a new check reopens the onboarding steps', async ({ page }) => {
   await onboard(page);
-  await page.goto('/screens/share');
+  await fileCase(page);
   await page.getByRole('button', { name: 'Go to home' }).click();
 
   await page.getByRole('button', { name: /Start a new check/ }).click();
   await expect(page).toHaveURL(/\/screens\/location/);
 
   await page.getByRole('button', { name: /^Bijpur/ }).click();
-  await page.getByRole('button', { name: /Next · enter capital/ }).click();
-  await expect(page).toHaveURL(/\/screens\/capital/);
+  await page.getByRole('button', { name: /Next · choose business/ }).click();
+  await expect(page).toHaveURL(/\/screens\/category/);
 });
 
 test('the bottom dock switches sections', async ({ page }) => {
@@ -450,6 +470,30 @@ test('the decorations get their own space and shift nothing', async ({ page }) =
       expect(r.y + r.height, `${slug}: content overlaps the skyline`).toBeLessThanOrEqual(skylineTop + 1);
     }
   }
+});
+
+test('onboarding asks for the business before the capital', async ({ page }) => {
+  await onboard(page);
+  await fileCase(page);
+  await page.getByRole('button', { name: 'Go to home' }).click();
+  await page.getByRole('button', { name: /Start a new check/ }).click();
+
+  // location -> category -> capital, forwards...
+  await expect(page).toHaveURL(/\/screens\/location/);
+  await page.getByRole('button', { name: /^Jarha/ }).click();
+  await page.getByRole('button', { name: /Next · choose business/ }).click();
+  await expect(page).toHaveURL(/\/screens\/category/);
+  await page.getByRole('button', { name: 'Tailoring', exact: true }).click();
+  await page.getByRole('button', { name: /Next · enter capital/ }).click();
+  await expect(page).toHaveURL(/\/screens\/capital/);
+
+  // ...and the guard agrees: capital cannot be reached without a business.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('udyam.session.v1')!);
+    localStorage.setItem('udyam.session.v1', JSON.stringify({ ...s, business: null, capital: null }));
+  });
+  await page.goto('/screens/capital');
+  await expect(page).toHaveURL(/\/screens\/category/);
 });
 
 test('the capital screen uses the native keyboard, not a drawn keypad', async ({ page }) => {
@@ -680,6 +724,8 @@ test('leaving the share screen mid-save never files the case twice', async ({ pa
     }
   });
 
+  // NOT fileCase(): this test is arranging the race on purpose, so it must
+  // leave before the write lands rather than wait for it.
   await page.goto('/screens/share');
   await page.getByRole('button', { name: 'Go to home' }).click();
   // Leave before the response can land. A full navigation, not a router push:

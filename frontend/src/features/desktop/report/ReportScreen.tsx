@@ -113,9 +113,34 @@ export default function ReportScreen() {
             )}
           </div>
 
-          <Onward hi="प्रतियोगी" en="Competitors" onClick={() => setDetail('competitors')} />
-          <Onward hi="दाम" en="Pricing" onClick={() => setDetail('pricing')} />
-          <Onward hi="मज़बूती और जोखिम" en="Strengths & risks" onClick={() => setDetail('swot')} />
+          <Onward
+            hi="प्रतियोगी"
+            en="Competitors"
+            value={String(report.totalCompetitors)}
+            sub={<T hi={`${report.radiusKm} किमी में`} en={`within ${report.radiusKm} km`} />}
+            onClick={() => setDetail('competitors')}
+          />
+          <Onward
+            hi="दाम"
+            en="Pricing"
+            value={
+              report.pricing.suggested < 10
+                ? `₹${report.pricing.suggested.toFixed(2)}`
+                : inr(report.pricing.suggested)
+            }
+            sub={<T hi={report.business.unit.hi} en={report.business.unit.en} />}
+            onClick={() => setDetail('pricing')}
+          />
+          <Onward
+            hi="मज़बूती और जोखिम"
+            en="Strengths & risks"
+            value={`${report.swot.strengths.length + report.swot.opportunities.length}/${
+              report.swot.weaknesses.length + report.swot.threats.length
+            }`}
+            sub={<T hi="पक्ष / जोखिम" en="for / against" />}
+            tone="balance"
+            onClick={() => setDetail('swot')}
+          />
 
           <div style={{ flex: 1 }} />
           <Primary onClick={() => nav.go('scheme')} arrow>
@@ -209,7 +234,30 @@ function Caps({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Onward({ hi, en, onClick }: { hi: string; en: string; onClick: () => void }) {
+/**
+ * A panel opener carrying the one number that panel is about, so the column
+ * reads at a glance instead of as three identical text rows.
+ *
+ * Same `dc-desk-card` surface and `--` tokens as the "The market" stats above
+ * it - this is the existing card pattern with a figure in it, not a new visual
+ * language. Still a plain button opening the same modal: nothing about the
+ * behaviour changed.
+ */
+function Onward({
+  hi,
+  en,
+  value,
+  sub,
+  tone = 'navy',
+  onClick,
+}: {
+  hi: string;
+  en: string;
+  value: string;
+  sub: React.ReactNode;
+  tone?: 'navy' | 'balance';
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
@@ -217,21 +265,51 @@ function Onward({ hi, en, onClick }: { hi: string; en: string; onClick: () => vo
       style={{
         width: '100%',
         textAlign: 'left',
-        padding: '14px 18px',
+        padding: '13px 18px',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: '14px',
         cursor: 'pointer',
         fontFamily: 'var(--sans)',
-        fontSize: '14.5px',
-        fontWeight: 600,
         color: 'var(--text)',
       }}
     >
-      <span style={{ flex: 1 }}>
-        <T hi={hi} en={en} />
+      <span
+        style={{
+          flex: 'none',
+          minWidth: '62px',
+          textAlign: 'center',
+          borderRadius: '10px',
+          padding: '7px 9px',
+          background: tone === 'balance' ? 'var(--sage-tint)' : 'var(--navy-tint2)',
+          border: `1px solid ${tone === 'balance' ? 'var(--sage-line)' : 'var(--navy-tint)'}`,
+          color: tone === 'balance' ? '#3F5637' : 'var(--navy-dark)',
+          fontSize: '18px',
+          fontWeight: 700,
+          lineHeight: 1.15,
+        }}
+      >
+        {value}
       </span>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2.4">
+
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: 'block', fontSize: '14.5px', fontWeight: 700 }}>
+          <T hi={hi} en={en} />
+        </span>
+        <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: '1px' }}>
+          {sub}
+        </span>
+      </span>
+
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--faint)"
+        strokeWidth="2.4"
+        style={{ flex: 'none' }}
+      >
         <path d="M9 6l6 6-6 6" />
       </svg>
     </button>

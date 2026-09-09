@@ -49,12 +49,13 @@ async function onboard(page: Page, phone = nextPhone()) {
   await page.getByRole('button', { name: '10 km', exact: false }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  await expect(page).toHaveURL(/\/desktop\/capital/);
-  await page.getByLabel(/Your capital/).fill('22000');
-  await page.getByRole('button', { name: 'Continue' }).click();
-
+  // business first, capital second
   await expect(page).toHaveURL(/\/desktop\/category/);
   await page.getByRole('button', { name: 'Leaf plates', exact: true }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await expect(page).toHaveURL(/\/desktop\/capital/);
+  await page.getByLabel(/Your capital/).fill('22000');
   await page.getByRole('button', { name: /Run the check/ }).click();
 
   await expect(page).toHaveURL(/\/desktop\/feasibility/, { timeout: 15_000 });
@@ -184,6 +185,15 @@ test('finishing a case files it to the database, and the list reads it back', as
   await page.goto('/desktop/share');
   await expect(page.getByText('Feasibility summary')).toBeVisible();
 
+  // Wait for the write, don't assume it. The screen files in an effect and
+  // records `savedAt` when the POST resolves; navigating on the instant it
+  // paints races that request, and the row would not be in Postgres yet.
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
+
   // The list screen fetches GET /api/applications, so a row appearing here is
   // proof the case reached Postgres - the session alone could not produce it.
   await page.goto('/desktop/saved');
@@ -298,8 +308,9 @@ test('onboarding goes back a step by button, and only where the guards allow it'
 
   const back = page.getByRole('button', { name: /Previous step/ });
 
-  // capital -> location, by the button rather than by history
-  await page.goto('/desktop/capital');
+  // category -> location, by the button rather than by history. Category is
+  // now the step after location; capital moved to last.
+  await page.goto('/desktop/category');
   await expect(back).toBeVisible();
   await back.click();
   await expect(page).toHaveURL(/\/desktop\/location/);
@@ -369,15 +380,22 @@ for (const [layout, base] of [
         : p1.getByRole('option', { name: /^Adalganj/ });
     await expect(village.first()).toBeVisible({ timeout: 10_000 });
     await village.first().click();
+    await p1
+      .getByRole('button', { name: layout === 'phone' ? /Next · choose business/ : 'Continue' })
+      .click();
+
+    await expect(p1).toHaveURL(new RegExp(`${base}/category`));
+    await p1.getByRole('button', { name: 'Leaf plates', exact: true }).click();
     await p1.getByRole('button', { name: layout === 'phone' ? /Next · enter capital/ : 'Continue' }).click();
 
     await expect(p1).toHaveURL(new RegExp(`${base}/capital`));
     await p1.getByLabel(layout === 'phone' ? 'Your own capital, in rupees' : /Your capital/).fill('22000');
+    // Submit it: capital reaches the server through this step, and the whole
+    // point of the test is what a fresh browser can restore from the server.
     await p1
-      .getByRole('button', { name: layout === 'phone' ? /Next · choose business/ : 'Continue' })
+      .getByRole('button', { name: layout === 'phone' ? /Next · see the report/ : /Run the check/ })
       .click();
-    await expect(p1).toHaveURL(new RegExp(`${base}/category`));
-    await p1.getByRole('button', { name: 'Leaf plates', exact: true }).click();
+    await expect(p1).toHaveURL(new RegExp(`${base}/(loading|feasibility)`), { timeout: 20_000 });
     await first.close();
 
     // --- second visit: same number, a browser that has never seen this user

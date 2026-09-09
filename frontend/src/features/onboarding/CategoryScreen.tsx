@@ -38,15 +38,18 @@ export default function CategoryScreen() {
     } catch {
       // local session holds it; the report still builds from it
     }
-    nav.go('loading');
+    nav.go('capital');
   };
 
   const options = Object.values(MOCK_BUSINESSES);
 
   return (
     <div className="dc-phone">
-      <Header onBack={() => nav.go('capital')} title={<T hi="अपनी जानकारी भरिए" en="Fill in your details" />}>
-        <Steps active={3} />
+      <Header
+        onBack={() => nav.go('location')}
+        title={<T hi="अपनी जानकारी भरिए" en="Fill in your details" />}
+      >
+        <Steps active={2} />
       </Header>
 
       <div style={{ flex: 1, padding: '14px 18px 18px', display: 'flex', flexDirection: 'column' }}>
@@ -164,7 +167,7 @@ export default function CategoryScreen() {
         </div>
 
         <Primary onClick={submit} disabled={!business} arrow style={{ marginTop: 'auto' }}>
-          <T hi="आगे · रिपोर्ट देखिए" en="Next · see the report" />
+          <T hi="आगे · पूँजी बताइए" en="Next · enter capital" />
         </Primary>
       </div>
     </div>

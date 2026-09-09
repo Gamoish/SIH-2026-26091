@@ -5,6 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { api } from '@/lib/api';
 import { planLoan, isGap } from '@/domain/finance';
+import { label } from '@/domain/feasibility';
+import { MOCK_BUSINESSES } from '@/data/fixtures/businesses';
 import { inr } from '@/lib/format';
 import { Field, Primary, T, useT } from '@/components';
 import { TopBarShell, Ask } from '../shell';
@@ -13,6 +15,12 @@ import { TopBarShell, Ask } from '../shell';
  * D-P1e. The live eligibility preview beside the input is `planLoan()` - the
  * same deterministic engine the report uses - so the figure a user sees here
  * is the figure they get later, never an illustration.
+ *
+ * `planLoan` takes no business: the scheme, rate and project cost are the same
+ * whatever is being started. What IS business-specific is where the money
+ * goes, so now that the category step runs before this one, the aside breaks
+ * the project cost down over the chosen business's own `costSplit` instead of
+ * stopping at a total.
  */
 export default function CapitalScreen() {
   const { s, set } = useSession();
@@ -23,6 +31,7 @@ export default function CapitalScreen() {
   const capital = digits === '' ? 0 : Number(digits);
   const plan = s.social && capital > 0 ? planLoan(capital, s.social) : null;
   const money = plan && !isGap(plan) ? plan : null;
+  const business = s.business ? MOCK_BUSINESSES[s.business] : null;
 
   const submit = async () => {
     if (capital <= 0) return;
@@ -32,7 +41,7 @@ export default function CapitalScreen() {
     } catch {
       // local session holds it; the next step re-saves
     }
-    nav.go('category');
+    nav.go('loading');
   };
 
   return (
@@ -61,6 +70,25 @@ export default function CapitalScreen() {
               <Line k={<T hi="आपके पास" en="You have" />} v={inr(money.capital)} />
               <Line k={<T hi="योजना जोड़ती है" en="The scheme adds" />} v={inr(money.loanAmount)} />
               <Line k={<T hi="कुल परियोजना" en="Project cost" />} v={inr(money.projectCost)} />
+
+              {business ? (
+                <>
+                  <div style={{ height: '1px', background: 'rgba(255,255,255,.15)', margin: '6px 0' }} />
+                  <div style={{ fontSize: '12px', letterSpacing: '.06em', color: '#B9CCE5' }}>
+                    <T
+                      hi={`${business.name.hi} में यह पैसा कहाँ जाएगा`}
+                      en={`WHERE THIS GOES IN ${business.name.en.toUpperCase()}`}
+                    />
+                  </div>
+                  {business.costSplit.map((c) => (
+                    <Line
+                      key={c.label.en}
+                      k={label(c.label, s.lang)}
+                      v={inr(Math.round(money.projectCost * c.share))}
+                    />
+                  ))}
+                </>
+              ) : null}
             </>
           ) : (
             <div style={{ fontSize: '14px', color: '#CBDAEC', lineHeight: 1.7 }}>
@@ -102,7 +130,7 @@ export default function CapitalScreen() {
       />
 
       <Primary onClick={submit} disabled={capital <= 0} arrow>
-        <T hi="आगे बढ़िए" en="Continue" />
+        <T hi="जाँच शुरू कीजिए" en="Run the check" />
       </Primary>
     </TopBarShell>
   );

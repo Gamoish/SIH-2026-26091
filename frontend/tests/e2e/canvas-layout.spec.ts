@@ -30,7 +30,7 @@ type Spec = {
   padding?: string;
   /** Column counts of the body's top-level grids, in document order. */
   grids?: number[];
-  session: 'fresh' | 'identified' | 'located' | 'priced' | 'complete';
+  session: 'fresh' | 'identified' | 'located' | 'chosen' | 'complete';
 };
 
 /** Session states, matching how far `redirectFor` lets a visitor reach. */
@@ -58,8 +58,10 @@ const session = (kind: Spec['session']) => {
   if (kind === 'fresh') return { ...s, verified: false };
   if (kind === 'identified') return { ...s, social: 'ST', name: 'Suresh Kharwar' };
   if (kind === 'located') return { ...s, social: 'ST', name: 'Suresh Kharwar', village: 'jarha' };
-  if (kind === 'priced')
-    return { ...s, social: 'ST', name: 'Suresh Kharwar', village: 'jarha', capital: 22000 };
+  // Business now precedes capital, so the state that can reach the capital
+  // step is one with a business chosen, not one with a price already set.
+  if (kind === 'chosen')
+    return { ...s, social: 'ST', name: 'Suresh Kharwar', village: 'jarha', business: 'leaf-plates' };
   return {
     ...s,
     social: 'ST',
@@ -83,8 +85,8 @@ const SPEC: Spec[] = [
   { artboard: 'D-P1c', slug: 'otp', chrome: 'split', asides: [SPLIT], session: 'fresh' },
   // --- onboarding: navy top bar, optional fixed side panel -------------------
   { artboard: 'D-P1d', slug: 'location', chrome: 'topbar', asides: [520], session: 'identified' },
-  { artboard: 'D-P1e', slug: 'capital', chrome: 'topbar', asides: [460], session: 'located' },
-  { artboard: 'D-P1f', slug: 'category', chrome: 'topbar', asides: [], grids: [6], session: 'priced' },
+  { artboard: 'D-P1e', slug: 'capital', chrome: 'topbar', asides: [460], session: 'chosen' },
+  { artboard: 'D-P1f', slug: 'category', chrome: 'topbar', asides: [], grids: [6], session: 'located' },
   { artboard: 'D-P10', slug: 'loading', chrome: 'topbar', asides: [], grids: [2, 2], session: 'complete' },
   // --- post-onboarding: 264px rail ------------------------------------------
   {

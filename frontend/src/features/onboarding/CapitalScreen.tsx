@@ -29,7 +29,7 @@ export default function CapitalScreen() {
     } catch {
       // local session holds it; the next step re-saves
     }
-    nav.go('category');
+    nav.go('loading');
   };
 
   const split =
@@ -44,10 +44,10 @@ export default function CapitalScreen() {
   return (
     <div className="dc-phone">
       <Header
-        onBack={() => nav.go('location')}
+        onBack={() => nav.go('category')}
         title={<T hi="अपनी जानकारी भरिए" en="Fill in your details" />}
       >
-        <Steps active={2} />
+        <Steps active={3} />
       </Header>
 
       <div
@@ -271,7 +271,7 @@ export default function CapitalScreen() {
         )}
 
         <Primary onClick={submit} disabled={capital <= 0} arrow style={{ marginTop: 'auto' }}>
-          <T hi="आगे · कारोबार चुनिए" en="Next · choose business" />
+          <T hi="आगे · रिपोर्ट देखिए" en="Next · see the report" />
         </Primary>
       </div>
     </div>

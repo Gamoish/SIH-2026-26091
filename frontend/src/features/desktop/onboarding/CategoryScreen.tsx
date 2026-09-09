@@ -42,7 +42,7 @@ export default function CategoryScreen() {
     } catch {
       // local session holds it; the report still builds from it
     }
-    nav.go('loading');
+    nav.go('capital');
   };
 
   return (
@@ -144,7 +144,7 @@ export default function CategoryScreen() {
       </div>
 
       <Primary onClick={submit} disabled={!business} arrow style={{ width: '560px', maxWidth: '100%' }}>
-        <T hi="जाँच शुरू कीजिए" en="Run the check" />
+        <T hi="आगे बढ़िए" en="Continue" />
       </Primary>
     </TopBarShell>
   );

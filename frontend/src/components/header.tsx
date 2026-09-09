@@ -64,8 +64,8 @@ export function Header({
 export function Steps({ active }: { active: 1 | 2 | 3 }) {
   const steps = [
     { hi: 'जगह', en: 'Location' },
-    { hi: 'पूँजी', en: 'Capital' },
     { hi: 'कारोबार', en: 'Business' },
+    { hi: 'पूँजी', en: 'Capital' },
   ];
   return (
     <div style={{ display: 'flex', alignItems: 'center', padding: '4px 18px 14px' }}>

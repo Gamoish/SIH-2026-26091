@@ -32,6 +32,10 @@ export default function LocationScreen() {
   const t = useT();
 
   const [radiusKm, setRadius] = useState(s.radiusKm);
+  // Starts empty, NOT seeded from the session: "Start a new check" reopens
+  // this screen with the previous village still on the session, and seeding
+  // the box would filter the list down to that one village. The existing
+  // choice is already visible as the selected card.
   const [query, setQuery] = useState('');
   const [choices, setChoices] = useState<Choice[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
@@ -116,7 +120,7 @@ export default function LocationScreen() {
         // step re-saves. A dropped write must not strand the user here.
       }
     }
-    nav.go('capital');
+    nav.go('category');
   };
 
   return (
@@ -248,7 +252,13 @@ export default function LocationScreen() {
                 return (
                   <button
                     key={c.key}
-                    onClick={() => setSelected(c)}
+                    onClick={() => {
+                      setSelected(c);
+                      // The box is the record of the choice, not just a search field:
+                      // leaving the typed fragment (or the placeholder) behind made a
+                      // completed selection look like it had not registered.
+                      setQuery(c.name);
+                    }}
                     style={{
                       width: '100%',
                       textAlign: 'left',
@@ -374,7 +384,7 @@ export default function LocationScreen() {
         </div>
 
         <Primary onClick={submit} disabled={!selected} arrow style={{ marginTop: 'auto' }}>
-          <T hi="आगे · पूँजी बताइए" en="Next · enter capital" />
+          <T hi="आगे · कारोबार चुनिए" en="Next · choose business" />
         </Primary>
       </div>
     </div>

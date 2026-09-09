@@ -161,33 +161,59 @@ export default function ReportScreen() {
           ) : null}
         </ul>
 
+        {/* Carries the for/against balance rather than a bare label, matching
+            the stat cards on the feasibility screen and the desktop report's
+            side panels. Same button, same destination - density only. */}
         <button
           onClick={() => nav.go('swot')}
           style={{
             background: '#fff',
             border: '1px solid var(--line)',
             borderRadius: '11px',
-            padding: '11px 13px',
+            padding: '10px 13px',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '12px',
             cursor: 'pointer',
-            fontSize: '12.5px',
-            fontWeight: 600,
+            textAlign: 'left',
             color: 'var(--navy)',
             boxShadow: 'var(--e1)',
-            minHeight: '44px',
+            minHeight: '52px',
           }}
         >
-          <T hi="पूरा SWOT देखिए" en="See the full SWOT" />
+          <span
+            style={{
+              flex: 'none',
+              minWidth: '54px',
+              textAlign: 'center',
+              borderRadius: '9px',
+              padding: '5px 8px',
+              background: 'var(--sage-tint)',
+              border: '1px solid var(--sage-line)',
+              color: '#3F5637',
+              fontSize: '15px',
+              fontWeight: 700,
+            }}
+          >
+            {report.swot.strengths.length + report.swot.opportunities.length}/
+            {report.swot.weaknesses.length + report.swot.threats.length}
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: '12.5px', fontWeight: 700 }}>
+              <T hi="मज़बूती और जोखिम" en="Strengths & risks" />
+            </span>
+            <span style={{ display: 'block', fontSize: '10.5px', color: 'var(--muted)', marginTop: '1px' }}>
+              <T hi="पक्ष / जोखिम · पूरा SWOT" en="for / against · full SWOT" />
+            </span>
+          </span>
           <svg
             width="15"
             height="15"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="currentColor"
+            stroke="var(--faint)"
             strokeWidth="2.4"
-            style={{ marginLeft: 'auto' }}
+            style={{ flex: 'none' }}
           >
             <path d="M9 6l6 6-6 6" />
           </svg>

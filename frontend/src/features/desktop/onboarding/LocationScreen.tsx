@@ -36,6 +36,10 @@ export default function LocationScreen() {
   const t = useT();
 
   const [radiusKm, setRadius] = useState(s.radiusKm);
+  // Starts empty, NOT seeded from the session: "Start a new check" reopens
+  // this screen with the previous village still on the session, and seeding
+  // the box would filter the list down to that one village. The existing
+  // choice is already visible as the selected card.
   const [query, setQuery] = useState('');
   const [choices, setChoices] = useState<Choice[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
@@ -113,7 +117,7 @@ export default function LocationScreen() {
         // the local session already holds the choice; the next step re-saves
       }
     }
-    nav.go('capital');
+    nav.go('category');
   };
 
   return (
@@ -207,7 +211,13 @@ export default function LocationScreen() {
                   key={c.key}
                   role="option"
                   aria-selected={on}
-                  onClick={() => setSelected(c)}
+                  onClick={() => {
+                    setSelected(c);
+                    // The box is the record of the choice, not just a search field:
+                    // leaving the typed fragment (or the placeholder) behind made a
+                    // completed selection look like it had not registered.
+                    setQuery(c.name);
+                  }}
                   className="rowh"
                   style={{
                     width: '100%',

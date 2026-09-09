@@ -29,7 +29,10 @@ export type Slug =
   | 'edit-category'
   | 'empty';
 
-export const ONBOARDING: Slug[] = ['language', 'phone', 'otp', 'social', 'location', 'capital', 'category'];
+// Business before capital: the capital step's live estimate is only meaningful
+// once we know what is being costed, and the cost-split it renders is per
+// business. `previousStep` derives from this array, so the back links follow.
+export const ONBOARDING: Slug[] = ['language', 'phone', 'otp', 'social', 'location', 'category', 'capital'];
 
 /**
  * The first-run identity screens. These establish *who the account is* and are
@@ -52,17 +55,22 @@ const NEEDS: Partial<Record<Slug, { has: (s: Session) => boolean; go: Slug }>> =
   // A village is chosen when *either* identifier is set: a demo fixture has an
   // id and no LGD code, a real directory row has an LGD code and no fixture.
   // Testing only `village` silently bounced every real selection back here.
-  capital: { has: (s) => s.village != null || s.villageLgdCode != null, go: 'location' },
-  category: { has: (s) => s.capital != null, go: 'capital' },
-  loading: { has: (s) => s.business != null, go: 'category' },
-  feasibility: { has: (s) => s.business != null, go: 'category' },
-  report: { has: (s) => s.business != null, go: 'category' },
-  swot: { has: (s) => s.business != null, go: 'category' },
-  competitors: { has: (s) => s.business != null, go: 'category' },
-  pricing: { has: (s) => s.business != null, go: 'category' },
+  category: { has: (s) => s.village != null || s.villageLgdCode != null, go: 'location' },
+  capital: { has: (s) => s.business != null, go: 'category' },
+  // Capital is now the LAST question, so these check capital rather than
+  // business: business alone no longer implies the rest of the chain is done.
+  // Each only names the step immediately before it and lets the loop below
+  // walk the remainder - capital -> category -> location - so the order lives
+  // in one place instead of being restated per screen.
+  loading: { has: (s) => s.capital != null, go: 'capital' },
+  feasibility: { has: (s) => s.capital != null, go: 'capital' },
+  report: { has: (s) => s.capital != null, go: 'capital' },
+  swot: { has: (s) => s.capital != null, go: 'capital' },
+  competitors: { has: (s) => s.capital != null, go: 'capital' },
+  pricing: { has: (s) => s.capital != null, go: 'capital' },
   scheme: { has: (s) => s.capital != null && s.social != null, go: 'capital' },
   emi: { has: (s) => s.capital != null && s.social != null, go: 'capital' },
-  share: { has: (s) => s.capital != null && s.business != null, go: 'category' },
+  share: { has: (s) => s.capital != null && s.business != null, go: 'capital' },
   home: { has: isOnboarded, go: 'language' },
   saved: { has: isOnboarded, go: 'language' },
   settings: { has: isOnboarded, go: 'language' },
