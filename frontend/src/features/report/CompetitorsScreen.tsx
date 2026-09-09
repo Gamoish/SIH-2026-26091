@@ -5,7 +5,7 @@ import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { label } from '@/domain/feasibility';
 import { num } from '@/lib/format';
-import { CompetitorMap, Header, T } from '@/components';
+import { CompetitorMap, Header, IllustrativeNote, T } from '@/components';
 
 export default function CompetitorsScreen() {
   const { s } = useSession();
@@ -208,6 +208,8 @@ export default function CompetitorsScreen() {
             en={`${report.totalCompetitors} units across your ${report.radiusKm} km radius — about ${num(report.peoplePerCompetitor)} people each.${yours ? ` ${label(yours.name, 'en')} has ${yours.count}.` : ''}`}
           />
         </div>
+
+        <IllustrativeNote />
       </div>
     </div>
   );

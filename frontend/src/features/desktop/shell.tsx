@@ -49,6 +49,45 @@ function Mark() {
   );
 }
 
+/**
+ * PLACEHOLDER for the Ministry of Social Justice & Empowerment lockup, the
+ * navy-panel twin of the one on the phone language screen.
+ *
+ * Same reasoning as there: the real asset has not been supplied, and an
+ * official emblem is the wrong thing to approximate - a hand-drawn State
+ * Emblem would be both inaccurate and improper to ship. Swap this for an
+ * <img> once the file lands in public/.
+ *
+ * The phone version is dashed grey on white. That styling would nearly vanish
+ * on `--navy`, so the treatment is translated rather than copied: a
+ * translucent white fill and dashed white border carry the same "not real yet"
+ * reading against the dark panel, and the label uses `#C7D8EC` - the muted
+ * on-navy colour the tagline below it already uses.
+ */
+function MinistryMark() {
+  return (
+    <div
+      role="img"
+      aria-label="MoSJE logo"
+      style={{
+        width: '132px',
+        height: '44px',
+        flex: 'none',
+        border: '1px dashed rgba(255,255,255,.45)',
+        borderRadius: '9px',
+        background: 'rgba(255,255,255,.07)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '11px',
+        color: '#C7D8EC',
+      }}
+    >
+      MoSJE logo
+    </div>
+  );
+}
+
 /** Mark beside wordmark, for the two navy bars. Both assets are white-on-transparent,
  *  so they only ever sit on `--navy`. */
 function Lockup({ h }: { h: number }) {
@@ -138,9 +177,17 @@ export function SplitShell({
   tagline,
   width = 440,
   step,
+  ministryMark = false,
   children,
 }: {
   tagline?: React.ReactNode;
+  /**
+   * Shows the ministry placeholder under the site mark. Opt-in because this
+   * shell also backs the phone, OTP and social steps, and the phone layout
+   * carries the placeholder on the language screen only - turning it on here
+   * for everyone would put it on three screens that never had it.
+   */
+  ministryMark?: boolean;
   /** Enables the "Previous step" control; omit on screens outside onboarding. */
   step?: Slug;
   /** The content column: 520px on the language picker, 440px on the forms. */
@@ -171,6 +218,7 @@ export function SplitShell({
           }}
         >
           <Mark />
+          {ministryMark ? <MinistryMark /> : null}
           <div style={{ fontSize: '17.5px', color: '#C7D8EC', maxWidth: '400px', lineHeight: 1.85 }}>
             {tagline ?? (
               <T

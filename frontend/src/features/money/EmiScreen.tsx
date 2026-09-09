@@ -4,7 +4,7 @@ import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { isGap } from '@/domain/finance';
 import { inr } from '@/lib/format';
-import { Header, Primary, T } from '@/components';
+import { Header, IllustrativeNote, Primary, T } from '@/components';
 
 export default function EmiScreen() {
   const nav = useNav();
@@ -244,6 +244,8 @@ export default function EmiScreen() {
             </div>
           </div>
         </div>
+
+        <IllustrativeNote />
 
         <Primary onClick={() => nav.go('share')} arrow>
           <T hi="आगे · बैंक को दिखाइए" en="Next · show to the bank" />

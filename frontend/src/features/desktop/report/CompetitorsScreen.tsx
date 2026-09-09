@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useCase } from '@/hooks/use-case';
 import { label } from '@/domain/feasibility';
 import { num } from '@/lib/format';
-import { CompetitorMap, Stat, T } from '@/components';
+import { CompetitorMap, IllustrativeNote, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
 
 /**
@@ -147,6 +147,7 @@ export default function CompetitorsScreen() {
         <T hi="गाँव-दर-गाँव" en="Village by village" />
       </Legend>
       <CompetitorsBody />
+      <IllustrativeNote style={{ marginTop: '26px' }} />
     </DesktopShell>
   );
 }

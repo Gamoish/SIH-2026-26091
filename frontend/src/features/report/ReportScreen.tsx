@@ -6,7 +6,7 @@ import { useCase } from '@/hooks/use-case';
 import { narrate, label } from '@/domain/feasibility';
 import { isGap } from '@/domain/finance';
 import { inr, num } from '@/lib/format';
-import { Header, Primary, T } from '@/components';
+import { Alternatives, Header, IllustrativeNote, Primary, T } from '@/components';
 
 const Mark = ({ children, tone = 'navy' }: { children: React.ReactNode; tone?: 'navy' | 'sage' }) => (
   <b
@@ -41,7 +41,7 @@ const Section = ({ n, hi, en }: { n: number; hi: string; en: string }) => (
 export default function ReportScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { report, plan } = useCase();
+  const { report, plan, alternatives } = useCase();
   if (!report) return null;
 
   const business = label(report.business.name, s.lang);
@@ -192,6 +192,10 @@ export default function ReportScreen() {
             <path d="M9 6l6 6-6 6" />
           </svg>
         </button>
+
+        <Alternatives items={alternatives} />
+
+        <IllustrativeNote />
 
         <Primary onClick={() => nav.go('scheme')} arrow style={{ marginTop: 'auto' }}>
           <T hi="आगे · पैसे का रास्ता" en="Next · the money path" />

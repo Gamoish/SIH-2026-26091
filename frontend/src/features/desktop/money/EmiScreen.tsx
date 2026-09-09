@@ -5,7 +5,7 @@ import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { isGap } from '@/domain/finance';
 import { inr } from '@/lib/format';
-import { Primary, Stat, T } from '@/components';
+import { IllustrativeNote, Primary, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
 
 /**
@@ -110,6 +110,7 @@ export default function EmiScreen() {
           <T hi="बैंक को दिखाइए" en="Show this to the bank" />
         </Primary>
       </div>
+      <IllustrativeNote style={{ marginTop: '26px' }} />
     </DesktopShell>
   );
 }

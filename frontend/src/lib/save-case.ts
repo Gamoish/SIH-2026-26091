@@ -17,7 +17,10 @@ import type { Case } from '@/domain/case';
  * rate is not confirmed is a fact about the case, and dropping it here would
  * make the stored row claim more than the engine did.
  */
-export async function saveCase(c: Case): Promise<string | null> {
+// Only the two persisted halves. `Case` also carries `alternatives`, which is
+// derived from the report and recomputed on every load - filing it would store
+// a stale copy of something we can always work out again.
+export async function saveCase(c: Pick<Case, 'report' | 'plan'>): Promise<string | null> {
   if (!c.report) return null; // nothing worth filing yet
 
   const { profile } = await api.getProfile();

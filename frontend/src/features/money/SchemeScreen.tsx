@@ -7,7 +7,7 @@ import { compareAgainst, isGap } from '@/domain/finance';
 import { SCHEMES } from '@/domain/schemes';
 import { label } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
-import { Header, Primary, T } from '@/components';
+import { Header, IllustrativeNote, Primary, T } from '@/components';
 
 const COMMERCIAL_PCT = 11;
 
@@ -443,6 +443,8 @@ export default function SchemeScreen() {
             />
           </div>
         </div>
+
+        <IllustrativeNote />
 
         <Primary onClick={() => nav.go('emi')} arrow style={{ marginTop: 'auto' }}>
           <T hi="आगे · वापसी की योजना" en="Next · repayment plan" />

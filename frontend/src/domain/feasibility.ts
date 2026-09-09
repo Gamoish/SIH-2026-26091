@@ -27,6 +27,12 @@ export type FeasibilityReport = {
   estimatedAnnualRevenue: number;
   /** Which of the two ceilings the revenue estimate actually hit. */
   revenueLimitedBy: 'market' | 'capital';
+  /**
+   * The same figure the loan plan calls `projectCost`, from the same shared
+   * function. Exposed so the two can be asserted equal rather than each
+   * recomputing it - that is how they used to drift.
+   */
+  projectCost: number;
   swot: { strengths: Bilingual[]; weaknesses: Bilingual[]; opportunities: Bilingual[]; threats: Bilingual[] };
 };
 
@@ -74,7 +80,16 @@ export function buildReport(opts: {
 
   const viableCatchment = 10000 / business.densityPer10k;
   const headroom = Math.min(1, peoplePerCompetitor / viableCatchment);
-  const capitalFit = Math.min(1, opts.capital / 20000);
+  // Diminishing returns, not a hard cap. `min(1, capital / 20000)` was flat
+  // above the threshold, so Rs 20,000 and Rs 5,00,000 scored identically and a
+  // bigger cushion counted for nothing - the plateau, not the threshold, was
+  // the exploitable part (Rs 19,999 and Rs 20,001 always scored the same).
+  //
+  // This term rises for every rupee and never reaches 1: Rs 5,000 scores 0.5,
+  // Rs 20,000 scores 0.8, Rs 1,00,000 scores 0.95. No two capital values put
+  // side by side score the same, and there is no value to stand either side of.
+  const CAPITAL_HALF_FIT = 5000;
+  const capitalFit = opts.capital / (opts.capital + CAPITAL_HALF_FIT);
   const score = Math.round((headroom * 0.6 + capitalFit * 0.4) * 100);
 
   // Two independent ceilings, and the estimate is the lower one.
@@ -114,6 +129,7 @@ export function buildReport(opts: {
         : totalCompetitors === 0
           ? ('thin-market' as const)
           : ('crowded' as const),
+    projectCost,
     estimatedAnnualRevenue: Math.round(Math.min(demandCeiling, capacityCeiling)),
     revenueLimitedBy: demandCeiling <= capacityCeiling ? ('market' as const) : ('capital' as const),
     swot: {
@@ -123,6 +139,56 @@ export function buildReport(opts: {
       threats: business.threats,
     },
   };
+}
+
+/**
+ * A better-scoring business for the same village, radius and capital.
+ *
+ * `reason` is deliberately one of two values rather than free text. At a fixed
+ * village/radius/capital the capital term of the score is identical for every
+ * business, so the ONLY thing separating them is headroom - and headroom has
+ * exactly two inputs: how many units are already running, and how many people
+ * one unit of that trade needs to be viable. Those are the two reasons, and
+ * they are the true ones; anything more would be invented narration.
+ */
+export type Alternative = {
+  business: MockBusiness;
+  score: number;
+  reason: 'less-competition' | 'smaller-catchment';
+};
+
+/**
+ * Other businesses that would score better here. Empty unless the current pick
+ * actually came back as `check` - a good verdict does not need talking out of -
+ * and empty when nothing genuinely scores higher, rather than padding the list
+ * with something worse so the section has content.
+ *
+ * Pure, and cheap: `buildReport` reads in-memory fixtures and touches no
+ * network, so this is four more passes of the same arithmetic and needs no
+ * extra request.
+ */
+export function betterAlternatives(opts: {
+  villageId: string;
+  businessId: BusinessId;
+  radiusKm: number;
+  capital: number;
+}): Alternative[] {
+  const current = buildReport(opts);
+  if (!current || current.verdict !== 'check') return [];
+
+  return (Object.keys(MOCK_BUSINESSES) as BusinessId[])
+    .filter((id) => id !== opts.businessId)
+    .map((id) => buildReport({ ...opts, businessId: id }))
+    .filter((r): r is FeasibilityReport => r != null && r.score > current.score)
+    .sort((a, b) => b.score - a.score)
+    .map((r) => ({
+      business: r.business,
+      score: r.score,
+      reason:
+        r.totalCompetitors < current.totalCompetitors
+          ? ('less-competition' as const)
+          : ('smaller-catchment' as const),
+    }));
 }
 
 export function narrate(r: FeasibilityReport, lang: Lang): string {

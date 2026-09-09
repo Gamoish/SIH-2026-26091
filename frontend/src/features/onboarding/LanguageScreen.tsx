@@ -42,18 +42,57 @@ export default function LanguageScreen() {
             their own space" e2e check, and a taller mark pushes content into
             the skyline band. The desktop rail's chakra is white-on-navy and is
             deliberately left alone - this mark is dark-on-light. */}
-        <div
-          role="img"
-          aria-label="Udyam Sathi"
-          style={{
-            width: '58px',
-            height: '58px',
-            backgroundImage: "url('/logo-mark.svg')",
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-          }}
-        />
+        {/* The site mark and the ministry slot sit in ONE ROW on purpose. The
+            row is as tall as the taller child - the 58px mark - so the
+            placeholder adds no column height, and the "decorations get their
+            own space" e2e check still passes: that test walks the frame's
+            children and fails if any of them reaches into the skyline band, so
+            a second stacked element here would push content into it. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div
+            role="img"
+            aria-label="Udyam Sathi"
+            style={{
+              width: '58px',
+              height: '58px',
+              backgroundImage: "url('/logo-mark.svg')",
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+            }}
+          />
+
+          {/* PLACEHOLDER, not the asset. The real Ministry of Social Justice &
+              Empowerment lockup has not been supplied yet, and an official
+              emblem is exactly the wrong thing to approximate - a hand-drawn
+              stand-in for the State Emblem would be both wrong and improper to
+              publish. So this is a labelled empty box until the real file
+              lands: drop it in public/ and swap this div for an <img>.
+
+              Dashed + muted is the same treatment the not-yet-available
+              languages below use, so the screen already reads it as "coming",
+              and it stays visually subordinate to the site mark beside it. */}
+          <div
+            role="img"
+            aria-label="MoSJE logo"
+            style={{
+              width: '104px',
+              height: '38px',
+              border: '1px dashed var(--line)',
+              borderRadius: '8px',
+              background: 'var(--panel)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '9.5px',
+              lineHeight: 1.3,
+              textAlign: 'center',
+              color: 'var(--faint)',
+            }}
+          >
+            MoSJE logo
+          </div>
+        </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 700 }}>अपनी भाषा चुनिए</div>
           <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '2px' }}>

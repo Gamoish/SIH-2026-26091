@@ -7,7 +7,16 @@ import { useCase } from '@/hooks/use-case';
 import { narrate, label } from '@/domain/feasibility';
 import { isGap } from '@/domain/finance';
 import { inr, num } from '@/lib/format';
-import { DistrictLocator, Modal, Primary, ScoreDial, Stat, T } from '@/components';
+import {
+  Alternatives,
+  DistrictLocator,
+  IllustrativeNote,
+  Modal,
+  Primary,
+  ScoreDial,
+  Stat,
+  T,
+} from '@/components';
 import { DesktopShell, Legend } from '../shell';
 import { CompetitorsBody, CompetitorsStats } from './CompetitorsScreen';
 import { PricingBody } from './PricingScreen';
@@ -49,7 +58,7 @@ type DetailKey = keyof typeof DETAILS;
 export default function ReportScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { report, plan } = useCase();
+  const { report, plan, alternatives } = useCase();
   const [detail, setDetail] = useState<DetailKey | null>(null);
   if (!report) return null;
 
@@ -176,6 +185,9 @@ export default function ReportScreen() {
       >
         {detail ? DETAILS[detail].body : null}
       </Modal>
+      <Alternatives items={alternatives} style={{ marginTop: '26px' }} />
+
+      <IllustrativeNote style={{ marginTop: '26px' }} />
     </DesktopShell>
   );
 }

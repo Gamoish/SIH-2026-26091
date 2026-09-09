@@ -1,5 +1,5 @@
 import type { Session } from '../types/index.ts';
-import { buildReport, type FeasibilityReport } from './feasibility.ts';
+import { buildReport, betterAlternatives, type Alternative, type FeasibilityReport } from './feasibility.ts';
 import { planLoan, isGap, type PlanResult } from './finance.ts';
 
 export type Case = {
@@ -12,6 +12,13 @@ export type Case = {
    * through rather than collapsed, and callers narrow it with `isGap`.
    */
   plan: PlanResult | null;
+  /**
+   * Better-scoring businesses for the same village, radius and capital. Empty
+   * whenever the report is good, absent, or genuinely has nothing better to
+   * offer. Computed here rather than in each screen so the phone flow and the
+   * wide view can never recommend different things for the same session.
+   */
+  alternatives: Alternative[];
 };
 
 /**
@@ -37,7 +44,17 @@ export function caseFrom(s: Session): Case {
 
   const plan = s.capital != null && s.social ? planLoan(s.capital, s.social) : null;
 
-  return { report, plan };
+  const alternatives =
+    s.village && s.business && s.capital != null
+      ? betterAlternatives({
+          villageId: s.village,
+          businessId: s.business,
+          radiusKm: s.radiusKm,
+          capital: s.capital,
+        })
+      : [];
+
+  return { report, plan, alternatives };
 }
 
 /** EMI as a share of the estimated monthly income - the affordability check. */

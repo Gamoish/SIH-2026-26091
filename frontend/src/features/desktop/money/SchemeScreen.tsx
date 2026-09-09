@@ -7,7 +7,7 @@ import { useCase } from '@/hooks/use-case';
 import { compareAgainst, isGap } from '@/domain/finance';
 import { SCHEMES } from '@/domain/schemes';
 import { inr } from '@/lib/format';
-import { Primary, Stat, T } from '@/components';
+import { IllustrativeNote, Primary, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
 
 /** A commercial term loan, for contrast only - never used to compute a figure. */
@@ -141,6 +141,7 @@ export default function SchemeScreen() {
           <T hi="वापसी का समय देखिए" en="See the repayment plan" />
         </Primary>
       </div>
+      <IllustrativeNote style={{ marginTop: '26px' }} />
     </DesktopShell>
   );
 }
