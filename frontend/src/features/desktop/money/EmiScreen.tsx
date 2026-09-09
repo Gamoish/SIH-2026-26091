@@ -55,7 +55,12 @@ export default function EmiScreen() {
       <Legend>
         <T hi="साल-दर-साल" en="Year by year" />
       </Legend>
-      <div className="dc-desk-card" style={{ overflow: 'hidden' }}>
+      {/* The row count follows the tenure, and tenure is now real scheme data:
+          3 rows on a 36-month NSFDC Micro Finance loan, 7 on an 84-month term
+          loan. The table scrolls inside its own box so the page height stays
+          the same whichever tier the applicant lands in - otherwise a longer
+          tenure pushes the whole screen past the viewport. */}
+      <div className="dc-desk-card" style={{ overflow: 'hidden', maxHeight: '236px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
           <thead>
             <tr style={{ background: 'var(--panel)' }}>

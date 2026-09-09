@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { compareAgainst, isGap } from '@/domain/finance';
-import { SCHEMES } from '@/domain/schemes';
+import { SCHEMES, rateRange } from '@/domain/schemes';
 import { inr } from '@/lib/format';
 import { IllustrativeNote, Primary, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
@@ -126,9 +126,12 @@ export default function SchemeScreen() {
                 >
                   <Td>{sc.code}</Td>
                   <Td>{sc.eligible.join(' / ')}</Td>
-                  <Td>{fig(sc.interestPct, '%')}</Td>
-                  <Td>{fig(sc.tenureMonths, ' mo')}</Td>
-                  <Td>{fig(sc.moratoriumMonths, ' mo')}</Td>
+                  {/* A scheme prices in bands, so the table shows the range
+                      it spans; the row above already names the band this
+                      applicant actually landed in. */}
+                  <Td>{rateRange(sc) ?? <span style={{ color: 'var(--amber)' }}>-</span>}</Td>
+                  <Td>{fig(sc.tiers[0]?.tenureMonths ?? null, ' mo')}</Td>
+                  <Td>{fig(sc.tiers[0]?.moratoriumMonths ?? null, ' mo')}</Td>
                 </tr>
               );
             })}

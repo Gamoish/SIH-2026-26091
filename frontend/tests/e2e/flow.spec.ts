@@ -114,13 +114,13 @@ test('a first-time user reaches a report and a repayment plan', async ({ page })
   await page.getByRole('button', { name: /the money path/ }).click();
   await expect(page).toHaveURL(/\/screens\/scheme/);
 
-  await expect(page.getByText('NSTFDC Term Loan')).toBeVisible();
+  await expect(page.getByText('NSTFDC Loan')).toBeVisible();
   await expect(page.getByText('₹2,20,000')).toBeVisible();
   await expect(page.getByText('+₹1,98,000')).toBeVisible();
 
   await page.getByRole('button', { name: /repayment plan/ }).click();
   await expect(page).toHaveURL(/\/screens\/emi/);
-  await expect(page.getByText('From month 7 · 42 instalments')).toBeVisible();
+  await expect(page.getByText('From month 7 · 78 instalments')).toBeVisible();
   await expect(page.getByText('Nothing')).toBeVisible();
 
   await page.getByRole('button', { name: /show to the bank/ }).click();
@@ -139,7 +139,7 @@ test('the numbers follow the input rather than a fixed demo case', async ({ page
   });
 
   await page.goto('/screens/scheme');
-  await expect(page.getByText('NSFDC Term Loan')).toBeVisible();
+  await expect(page.getByText('NSFDC Loan')).toBeVisible();
   await expect(page.getByText('₹1,10,000')).toBeVisible();
   await expect(page.getByText('₹2,20,000')).toHaveCount(0);
 });
@@ -622,14 +622,14 @@ test('a phone change is re-verified by OTP inside the sheet', async ({ page }) =
 test('changing the category from Settings moves the scheme', async ({ page }) => {
   await onboard(page);
   await page.goto('/screens/scheme');
-  await expect(page.getByText('NSTFDC Term Loan')).toBeVisible();
+  await expect(page.getByText('NSTFDC Loan')).toBeVisible();
 
   await page.goto('/screens/edit-category');
   await page.getByRole('button', { name: /Scheduled Caste/ }).click();
   await page.getByRole('button', { name: 'Save' }).click();
 
   await page.goto('/screens/scheme');
-  await expect(page.getByText('NSFDC Term Loan')).toBeVisible();
+  await expect(page.getByText('NSFDC Loan')).toBeVisible();
 });
 
 /**

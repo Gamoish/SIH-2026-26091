@@ -88,7 +88,17 @@ export default function CapitalScreen() {
             </>
           ) : (
             <div style={{ fontSize: '14px', color: '#CBDAEC', lineHeight: 1.7 }}>
-              {plan && isGap(plan) ? (
+              {plan && isGap(plan) && plan.reason === 'below-minimum' ? (
+                <T
+                  hi="इतनी छोटी रकम पर कोई काम की गणना नहीं बनती। शुरू करने लायक रकम भरिए — कम से कम ₹2,000।"
+                  en="That amount is too small for a useful estimate. Enter a more realistic starting amount — at least ₹2,000."
+                />
+              ) : plan && isGap(plan) && plan.reason === 'above-ceiling' ? (
+                <T
+                  hi={`यह रकम ${plan.scheme?.code ?? ''} की सीमा से ऊपर है।`}
+                  en={`That is above ${plan.scheme?.code ?? ''}'s ceiling - this scheme does not fund a project that large.`}
+                />
+              ) : plan && isGap(plan) ? (
                 <T
                   hi="इस वर्ग की योजना के आँकड़े अभी पुष्ट नहीं — राशि आगे दिखाई जाएगी।"
                   en="This category's scheme figures are unconfirmed — the amount is withheld for now."

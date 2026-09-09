@@ -56,8 +56,12 @@ test('grocery differs between villages of similar size', () => {
 test('feasibility and finance agree on project cost, for every usable scheme', () => {
   // SC -> NSFDC, ST -> NSTFDC. OBC/NBCFDC has no confirmed contribution percent
   // and is a PlanGap, so there is no project cost to agree on.
+  // Capitals inside both schemes' usable range: at or above the MIN_CAPITAL
+  // floor, and under NSFDC's Rs 50,00,000 project ceiling (Rs 5,00,000 of
+  // capital). Outside it planLoan returns a gap on purpose - covered in
+  // finance.test.mjs, not here.
   for (const social of ['SC', 'ST']) {
-    for (const capital of [1, 2000, 22000, 150000, 999999]) {
+    for (const capital of [2000, 22000, 150000, 499000]) {
       const plan = planLoan(capital, social);
       assert.ok(!isGap(plan), `${social} should have a usable scheme`);
       // finance's own figure, and the one feasibility computes for the same
@@ -207,7 +211,7 @@ test('the breakdown is driven by the shared project cost, for every business', (
   // Both capital screens call costBreakdown(plan.projectCost, business), and
   // plan.projectCost comes from projectCostFrom - so this is the same chain
   // both layouts render, asserted once.
-  for (const capital of [100, 22000]) {
+  for (const capital of [2000, 22000]) {
     const plan = planLoan(capital, 'ST');
     assert.equal(plan.projectCost, projectCostFrom(capital));
     for (const b of Object.values(MOCK_BUSINESSES)) {

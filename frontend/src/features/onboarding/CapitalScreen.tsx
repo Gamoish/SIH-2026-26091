@@ -251,7 +251,19 @@ export default function CapitalScreen() {
               lineHeight: 1.5,
             }}
           >
-            {plan && isGap(plan) ? (
+            {plan && isGap(plan) && plan.reason === 'below-minimum' ? (
+              // Not our gap - the user can fix this one by typing a bigger
+              // number, so the message says so instead of apologising.
+              <T
+                hi="इतनी छोटी रकम पर कोई काम की गणना नहीं बनती। शुरू करने लायक रकम भरिए — कम से कम ₹2,000।"
+                en="That amount is too small for a useful estimate. Enter a more realistic starting amount — at least ₹2,000."
+              />
+            ) : plan && isGap(plan) && plan.reason === 'above-ceiling' ? (
+              <T
+                hi={`यह रकम ${plan.scheme?.code ?? ''} की सीमा से ऊपर है — इस योजना से इतना बड़ा प्रोजेक्ट नहीं होता।`}
+                en={`That is above ${plan.scheme?.code ?? ''}'s ceiling — this scheme does not fund a project that large.`}
+              />
+            ) : plan && isGap(plan) ? (
               <T
                 hi={`${plan.scheme?.code ?? ''} की दरें अभी पुष्टि नहीं हुईं — लागत यहाँ नहीं दिखाई जा सकती।`}
                 en={`${plan.scheme?.code ?? ''} figures are not confirmed yet — the project cost cannot be shown here.`}

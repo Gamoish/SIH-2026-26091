@@ -1,5 +1,5 @@
 import type { SocialCategory } from '../types/index.ts';
-import { schemeFor, type SchemeRow } from './schemes.ts';
+import { schemeFor, selectTier, type SchemeRow, type SchemeTier } from './schemes.ts';
 
 export type YearRow = {
   year: number;
@@ -12,6 +12,8 @@ export type YearRow = {
 
 export type LoanPlan = {
   scheme: SchemeRow;
+  /** The rate band this project actually fell into. */
+  tier: SchemeTier;
   capital: number;
   projectCost: number;
   loanAmount: number;
@@ -32,6 +34,12 @@ export type PlanGap = {
   unavailable: true;
   scheme: SchemeRow | null;
   missing: string[];
+  /**
+   * Why there is no plan. The screens phrase these very differently: an
+   * unsourced scheme is our gap and we say so, whereas a capital below the
+   * floor is something the user can fix by typing a bigger number.
+   */
+  reason: 'unsourced' | 'below-minimum' | 'above-ceiling';
 };
 
 export type PlanResult = LoanPlan | PlanGap;
@@ -48,6 +56,20 @@ export const isGap = (r: PlanResult): r is PlanGap => 'unavailable' in r;
  * The default is the 10% NSFDC/NSTFDC contribution, for the feasibility side,
  * which has no social category to look a scheme up with.
  */
+/**
+ * The smallest own-capital figure worth running the money engine on.
+ *
+ * PROPOSED, not sourced: neither corporation publishes a floor. With a 10%
+ * beneficiary contribution every rupee of capital becomes ten of project cost,
+ * so ₹2,000 is a ₹20,000 project - about where the cheapest of the five
+ * categories stops being a business. Under it (₹1,000 -> a ₹10,000 project,
+ * ₹4,600 of sewing machine) nothing in the fixed-asset line buys working
+ * equipment, and the output is arithmetic rather than advice.
+ *
+ * Inclusive: exactly ₹2,000 still plans.
+ */
+export const MIN_CAPITAL = 2000;
+
 export function projectCostFrom(capital: number, beneficiaryPct = 10): number {
   return Math.round(capital / (beneficiaryPct / 100));
 }
@@ -62,20 +84,42 @@ export function emiFor(principal: number, annualPct: number, months: number): nu
 
 export function planLoan(capital: number, social: SocialCategory): PlanResult {
   const scheme = schemeFor(social);
-  if (!scheme) return { unavailable: true, scheme: null, missing: ['scheme'] };
+  if (!scheme) return { unavailable: true, scheme: null, missing: ['scheme'], reason: 'unsourced' };
 
-  const missing = (['interestPct', 'tenureMonths', 'moratoriumMonths', 'beneficiaryPct'] as const).filter(
-    (k) => scheme[k] == null,
-  );
-  if (missing.length) return { unavailable: true, scheme, missing };
+  // An empty tier list is how an unsourced scheme is recorded - see NBCFDC.
+  const missing = [
+    ...(scheme.beneficiaryPct == null ? ['beneficiaryPct'] : []),
+    ...(scheme.tiers.length === 0 ? ['interestPct', 'tenureMonths', 'moratoriumMonths'] : []),
+  ];
+  if (missing.length) return { unavailable: true, scheme, missing, reason: 'unsourced' };
 
-  const interestPct = scheme.interestPct!;
-  const tenureMonths = scheme.tenureMonths!;
-  const moratoriumMonths = scheme.moratoriumMonths!;
   const beneficiaryPct = scheme.beneficiaryPct!;
 
-  const projectCost = projectCostFrom(capital, beneficiaryPct);
-  const loanAmount = projectCost - capital;
+  // Below the floor the arithmetic still works and the answer is meaningless,
+  // so it is refused rather than printed.
+  if (capital < MIN_CAPITAL) {
+    return { unavailable: true, scheme, missing: [], reason: 'below-minimum' };
+  }
+
+  const grossCost = projectCostFrom(capital, beneficiaryPct);
+  const grossLoan = grossCost - capital;
+
+  // NSFDC picks its product by project cost, NSTFDC prices by the loan. Both
+  // quantities are known before a tier is chosen - the contribution percent is
+  // the same across every tier of a scheme - so there is no circularity here.
+  const tier = selectTier(scheme, scheme.tierBasis === 'project-cost' ? grossCost : grossLoan);
+  if (!tier) return { unavailable: true, scheme, missing: [], reason: 'above-ceiling' };
+
+  const { interestPct, tenureMonths, moratoriumMonths } = tier;
+
+  // A tier's own loan ceiling can bite before its band does - NSFDC's Micro
+  // Finance Scheme runs to a ₹1,40,000 project but caps the loan at
+  // ₹1,25,000, and 90% of ₹1,40,000 is ₹1,26,000. When it binds, the project
+  // is what the money actually buys: the borrower's capital plus the most the
+  // scheme will lend. Clamping only ever lowers the cost, so it cannot push
+  // the project into a different tier.
+  const loanAmount = tier.maxLoan != null ? Math.min(grossLoan, tier.maxLoan) : grossLoan;
+  const projectCost = capital + loanAmount;
 
   const monthlyRate = interestPct / 100 / 12;
   const moratoriumInterest = Math.round(loanAmount * monthlyRate * moratoriumMonths);
@@ -117,6 +161,7 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
 
   return {
     scheme,
+    tier,
     capital,
     projectCost,
     loanAmount,

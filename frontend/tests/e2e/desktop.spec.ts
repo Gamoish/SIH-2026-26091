@@ -124,8 +124,9 @@ test('the desktop numbers match the engines, not the canvas', async ({ page }) =
   await page.goto('/desktop/emi');
 
   const body = await page.locator('.dc-desk-body').innerText();
-  // planLoan()'s own figures for a 22,000 ST case
-  expect(body).toContain('₹5,395');
+  // planLoan()'s own figures for a 22,000 ST case: NSTFDC's first slab, 6%
+  // over 84 months with a 6-month moratorium (78 instalments).
+  expect(body).toContain('₹3,164');
   // the design canvas's placeholder must never appear
   expect(body).not.toContain('₹5,270');
 });

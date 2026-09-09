@@ -4,7 +4,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
 import { compareAgainst, isGap } from '@/domain/finance';
-import { SCHEMES } from '@/domain/schemes';
+import { SCHEMES, rateRange } from '@/domain/schemes';
 import { label } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
 import { Header, IllustrativeNote, Primary, T } from '@/components';
@@ -238,7 +238,7 @@ export default function SchemeScreen() {
             {
               hi: 'ब्याज़',
               en: 'Interest',
-              get: (sc: (typeof SCHEMES)[0]) => (sc.interestPct == null ? '—' : `${sc.interestPct}%`),
+              get: (sc: (typeof SCHEMES)[0]) => rateRange(sc) ?? '—',
             },
             {
               hi: 'पात्रता',
