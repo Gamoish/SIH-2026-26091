@@ -38,6 +38,20 @@ export type PlanResult = LoanPlan | PlanGap;
 
 export const isGap = (r: PlanResult): r is PlanGap => 'unavailable' in r;
 
+/**
+ * Total project cost from what the applicant puts in. The term-loan schemes
+ * define it the other way round - the beneficiary contributes `beneficiaryPct`
+ * of the project - so the cost is the contribution grossed back up.
+ *
+ * `feasibility.ts` and `planLoan` both need this figure and used to compute it
+ * separately, which meant the report and the loan page could quietly disagree.
+ * The default is the 10% NSFDC/NSTFDC contribution, for the feasibility side,
+ * which has no social category to look a scheme up with.
+ */
+export function projectCostFrom(capital: number, beneficiaryPct = 10): number {
+  return Math.round(capital / (beneficiaryPct / 100));
+}
+
 export function emiFor(principal: number, annualPct: number, months: number): number {
   if (months <= 0) return 0;
   const r = annualPct / 100 / 12;
@@ -60,7 +74,7 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
   const moratoriumMonths = scheme.moratoriumMonths!;
   const beneficiaryPct = scheme.beneficiaryPct!;
 
-  const projectCost = Math.round(capital / (beneficiaryPct / 100));
+  const projectCost = projectCostFrom(capital, beneficiaryPct);
   const loanAmount = projectCost - capital;
 
   const monthlyRate = interestPct / 100 / 12;

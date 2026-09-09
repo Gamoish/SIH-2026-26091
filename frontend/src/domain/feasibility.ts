@@ -1,6 +1,12 @@
 import type { Bilingual, BusinessId, Lang } from '../types/index.ts';
 import { MOCK_VILLAGES, distanceKm, type MockVillage } from '../data/fixtures/villages.ts';
-import { MOCK_BUSINESSES, type MockBusiness } from '../data/fixtures/businesses.ts';
+import {
+  MOCK_BUSINESSES,
+  MOCK_COMPETITOR_COUNTS,
+  MOCK_GROCERY_SPEND_INDEX,
+  type MockBusiness,
+} from '../data/fixtures/businesses.ts';
+import { projectCostFrom } from './finance.ts';
 
 const pick = (t: Bilingual, lang: Lang) => (lang === 'en' ? t.en : t.hi);
 
@@ -19,12 +25,15 @@ export type FeasibilityReport = {
   verdict: 'good' | 'check';
   limiter: 'thin-market' | 'crowded' | 'none';
   estimatedAnnualRevenue: number;
+  /** Which of the two ceilings the revenue estimate actually hit. */
+  revenueLimitedBy: 'market' | 'capital';
   swot: { strengths: Bilingual[]; weaknesses: Bilingual[]; opportunities: Bilingual[]; threats: Bilingual[] };
 };
 
+/** Hand-authored per village, see MOCK_COMPETITOR_COUNTS. Non-fixture villages
+ *  never reach here - buildReport returns null for them first. */
 function competitorsIn(v: MockVillage, b: MockBusiness): number {
-  const base = (v.population / 10000) * b.densityPer10k;
-  return Math.max(v.town ? 1 : 0, Math.round(base * (v.town ? 1.6 : 1)));
+  return MOCK_COMPETITOR_COUNTS[v.id]?.[b.id] ?? 0;
 }
 
 export function buildReport(opts: {
@@ -68,7 +77,26 @@ export function buildReport(opts: {
   const capitalFit = Math.min(1, opts.capital / 20000);
   const score = Math.round((headroom * 0.6 + capitalFit * 0.4) * 100);
 
-  const projectCost = opts.capital * 10;
+  // Two independent ceilings, and the estimate is the lower one.
+  //
+  // Demand: the people this unit would have to itself, the share of them who
+  // buy this at all, what each of them buys in a year, at the price the report
+  // is already suggesting.
+  //
+  // Capacity: what the applicant's own money can push through. Only the
+  // working-capital lines of the project cost cycle; fixed assets are bought
+  // once and do not turn.
+  const price = round(suggested);
+  // Grocery only, and only on the user's own village - see the note on
+  // MOCK_GROCERY_SPEND_INDEX. Everything else runs at 1.
+  const spend = business.id === 'grocery' ? (MOCK_GROCERY_SPEND_INDEX[village.id] ?? 1) : 1;
+  const demandCeiling =
+    peoplePerCompetitor * business.penetrationRate * spend * business.purchaseFrequencyPerYear * price;
+
+  const projectCost = projectCostFrom(opts.capital);
+  const workingShare = business.costSplit.reduce((n, c) => n + (c.working ? c.share : 0), 0);
+  const capacityCeiling = projectCost * workingShare * business.workingCapitalTurns;
+
   return {
     village,
     business,
@@ -77,7 +105,7 @@ export function buildReport(opts: {
     competitors,
     totalCompetitors,
     peoplePerCompetitor,
-    pricing: { suggested: round(suggested), low: round(suggested * 0.85), high: round(suggested * 1.2) },
+    pricing: { suggested: price, low: round(suggested * 0.85), high: round(suggested * 1.2) },
     score,
     verdict: score >= 60 ? 'good' : 'check',
     limiter:
@@ -86,7 +114,8 @@ export function buildReport(opts: {
         : totalCompetitors === 0
           ? ('thin-market' as const)
           : ('crowded' as const),
-    estimatedAnnualRevenue: Math.round(projectCost * business.annualRevenueRatio),
+    estimatedAnnualRevenue: Math.round(Math.min(demandCeiling, capacityCeiling)),
+    revenueLimitedBy: demandCeiling <= capacityCeiling ? ('market' as const) : ('capital' as const),
     swot: {
       strengths: business.strengths,
       weaknesses: business.weaknesses,

@@ -158,6 +158,13 @@ export default function ReportScreen() {
           value={inr(report.pricing.suggested)}
         />
       </div>
+      <div style={{ fontSize: '12.5px', color: 'var(--muted)', marginTop: '8px', fontWeight: 600 }}>
+        {report.revenueLimitedBy === 'market' ? (
+          <T hi="सीमा: आसपास का बाज़ार इतना ही है" en="Limited by local market size" />
+        ) : (
+          <T hi="सीमा: आपकी पूँजी इतनी ही चला सकती है" en="Limited by your capital" />
+        )}
+      </div>
 
       {/* Rendered inside the body, but <dialog>.showModal() promotes it to the
           browser's top layer, so it sits above the rail and the side panel

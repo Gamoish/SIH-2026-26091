@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,css,md,json}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,css,md,json}\"",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --no-warnings tests/finance.test.mjs && node --experimental-strip-types --no-warnings tests/monuments.test.mjs && node --experimental-strip-types --no-warnings tests/case.test.mjs && node --experimental-strip-types --no-warnings tests/competitor-map.test.mjs"
+    "test": "node --experimental-strip-types --no-warnings tests/finance.test.mjs && node --experimental-strip-types --no-warnings tests/monuments.test.mjs && node --experimental-strip-types --no-warnings tests/case.test.mjs && node --experimental-strip-types --no-warnings tests/competitor-map.test.mjs && node --experimental-strip-types --no-warnings tests/feasibility.test.mjs"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.3.0",

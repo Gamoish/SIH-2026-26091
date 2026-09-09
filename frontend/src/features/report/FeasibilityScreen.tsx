@@ -277,6 +277,13 @@ export default function FeasibilityScreen() {
               en={`${inr(report.estimatedAnnualRevenue)} a year at full utilisation — an estimate, not a guarantee.`}
             />
           </div>
+          <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
+            {report.revenueLimitedBy === 'market' ? (
+              <T hi="सीमा: आसपास का बाज़ार इतना ही है" en="Limited by local market size" />
+            ) : (
+              <T hi="सीमा: आपकी पूँजी इतनी ही चला सकती है" en="Limited by your capital" />
+            )}
+          </div>
         </div>
 
         <Primary onClick={() => nav.go('report')} arrow style={{ marginTop: 'auto' }}>
