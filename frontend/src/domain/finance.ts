@@ -1,4 +1,5 @@
-import type { SocialCategory } from '../types/index.ts';
+import type { BusinessId, SocialCategory } from '../types/index.ts';
+import { MOCK_BUSINESSES } from '../data/fixtures/businesses.ts';
 import { schemeFor, selectTier, type SchemeRow, type SchemeTier } from './schemes.ts';
 
 export type YearRow = {
@@ -18,6 +19,9 @@ export type LoanPlan = {
   projectCost: number;
   loanAmount: number;
   beneficiaryPct: number;
+  /** What the scheme expects the applicant to put in: `beneficiaryPct` of the
+   *  project cost. Capital below this is a financing shortfall. */
+  requiredMargin: number;
   interestPct: number;
   tenureMonths: number;
   moratoriumMonths: number;
@@ -47,31 +51,34 @@ export type PlanResult = LoanPlan | PlanGap;
 export const isGap = (r: PlanResult): r is PlanGap => 'unavailable' in r;
 
 /**
- * Total project cost from what the applicant puts in. The term-loan schemes
- * define it the other way round - the beneficiary contributes `beneficiaryPct`
- * of the project - so the cost is the contribution grossed back up.
- *
- * `feasibility.ts` and `planLoan` both need this figure and used to compute it
- * separately, which meant the report and the loan page could quietly disagree.
- * The default is the 10% NSFDC/NSTFDC contribution, for the feasibility side,
- * which has no social category to look a scheme up with.
- */
-/**
  * The smallest own-capital figure worth running the money engine on.
  *
- * PROPOSED, not sourced: neither corporation publishes a floor. With a 10%
- * beneficiary contribution every rupee of capital becomes ten of project cost,
- * so ₹2,000 is a ₹20,000 project - about where the cheapest of the five
- * categories stops being a business. Under it (₹1,000 -> a ₹10,000 project,
- * ₹4,600 of sewing machine) nothing in the fixed-asset line buys working
- * equipment, and the output is arithmetic rather than advice.
+ * PROPOSED, not sourced: neither corporation publishes a floor. It is a floor
+ * on the applicant, not on the project - under ₹2,000 of own money there is no
+ * margin to speak of and the output is arithmetic rather than advice. It is
+ * deliberately well below every scheme's required margin: falling short of the
+ * margin is a soft warning the user can act on, not a refusal to calculate.
  *
  * Inclusive: exactly ₹2,000 still plans.
  */
 export const MIN_CAPITAL = 2000;
 
-export function projectCostFrom(capital: number, beneficiaryPct = 10): number {
-  return Math.round(capital / (beneficiaryPct / 100));
+/**
+ * What the business actually costs to set up.
+ *
+ * It used to be the applicant's capital grossed up by the contribution percent,
+ * which made the project cost a function of the one number that has nothing to
+ * do with equipment prices: ₹22,000 became a ₹2,20,000 project whether that
+ * bought a plate press or a sewing machine. It is now the business's own
+ * anchor cost - the same hand-costed figure the capital-fit note judges
+ * against - so the cost of a leaf-plate unit is the cost of a leaf-plate unit
+ * whoever is standing in front of it.
+ *
+ * `feasibility.ts` and `planLoan` both read this one function, so the report
+ * and the loan page cannot drift apart.
+ */
+export function projectCostFor(businessId: BusinessId): number {
+  return MOCK_BUSINESSES[businessId].anchorCost;
 }
 
 export function emiFor(principal: number, annualPct: number, months: number): number {
@@ -82,7 +89,7 @@ export function emiFor(principal: number, annualPct: number, months: number): nu
   return (principal * r * growth) / (growth - 1);
 }
 
-export function planLoan(capital: number, social: SocialCategory): PlanResult {
+export function planLoan(capital: number, social: SocialCategory, businessId: BusinessId): PlanResult {
   const scheme = schemeFor(social);
   if (!scheme) return { unavailable: true, scheme: null, missing: ['scheme'], reason: 'unsourced' };
 
@@ -101,8 +108,13 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
     return { unavailable: true, scheme, missing: [], reason: 'below-minimum' };
   }
 
-  const grossCost = projectCostFrom(capital, beneficiaryPct);
-  const grossLoan = grossCost - capital;
+  // The project costs what it costs. The applicant's capital is the margin
+  // they bring to it, not the thing that sizes it.
+  const grossCost = projectCostFor(businessId);
+  const requiredMargin = Math.round(grossCost * (beneficiaryPct / 100));
+  // Over-contributing is allowed and simply borrows less; it never turns into
+  // a negative loan.
+  const grossLoan = Math.max(0, grossCost - capital);
 
   // NSFDC picks its product by project cost, NSTFDC prices by the loan. Both
   // quantities are known before a tier is chosen - the contribution percent is
@@ -112,14 +124,15 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
 
   const { interestPct, tenureMonths, moratoriumMonths } = tier;
 
-  // A tier's own loan ceiling can bite before its band does - NSFDC's Micro
-  // Finance Scheme runs to a ₹1,40,000 project but caps the loan at
-  // ₹1,25,000, and 90% of ₹1,40,000 is ₹1,26,000. When it binds, the project
-  // is what the money actually buys: the borrower's capital plus the most the
-  // scheme will lend. Clamping only ever lowers the cost, so it cannot push
-  // the project into a different tier.
+  // A tier's own loan ceiling still applies - NSFDC's Micro Finance Scheme
+  // runs to a ₹1,40,000 project but lends at most ₹1,25,000. No anchor cost
+  // currently reaches it (the only business inside that band is tailoring, at
+  // ₹90,000), so the clamp does not bite today; it stays because the ceiling
+  // is real and the anchors are data. When it does bind, the project cost is
+  // unchanged - the shortfall is the borrower's to find, and `requiredMargin`
+  // is what says so.
   const loanAmount = tier.maxLoan != null ? Math.min(grossLoan, tier.maxLoan) : grossLoan;
-  const projectCost = capital + loanAmount;
+  const projectCost = grossCost;
 
   const monthlyRate = interestPct / 100 / 12;
   const moratoriumInterest = Math.round(loanAmount * monthlyRate * moratoriumMonths);
@@ -166,6 +179,7 @@ export function planLoan(capital: number, social: SocialCategory): PlanResult {
     projectCost,
     loanAmount,
     beneficiaryPct,
+    requiredMargin,
     interestPct,
     tenureMonths,
     moratoriumMonths,

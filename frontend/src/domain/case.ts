@@ -1,5 +1,12 @@
 import type { Session } from '../types/index.ts';
-import { buildReport, betterAlternatives, type Alternative, type FeasibilityReport } from './feasibility.ts';
+import {
+  buildReport,
+  betterAlternatives,
+  capitalFitFor,
+  type Alternative,
+  type CapitalFit,
+  type FeasibilityReport,
+} from './feasibility.ts';
 import { planLoan, isGap, type PlanResult } from './finance.ts';
 
 export type Case = {
@@ -19,6 +26,11 @@ export type Case = {
    * wide view can never recommend different things for the same session.
    */
   alternatives: Alternative[];
+  /**
+   * Non-null when the plan is thin for the chosen business. Advisory: the loan
+   * plan beside it is unaffected and still shows its own figures.
+   */
+  capitalFit: CapitalFit | null;
 };
 
 /**
@@ -42,7 +54,7 @@ export function caseFrom(s: Session): Case {
         })
       : null;
 
-  const plan = s.capital != null && s.social ? planLoan(s.capital, s.social) : null;
+  const plan = s.capital != null && s.social && s.business ? planLoan(s.capital, s.social, s.business) : null;
 
   const alternatives =
     s.village && s.business && s.capital != null
@@ -54,7 +66,23 @@ export function caseFrom(s: Session): Case {
         })
       : [];
 
-  return { report, plan, alternatives };
+  // The scheme's own contribution percent where there is one, and the 10%
+  // both sourced corporations use as the fallback, so an unsourced scheme
+  // still gets the note rather than losing it.
+  const capitalFit =
+    report && s.village && s.business && s.capital != null
+      ? capitalFitFor(
+          {
+            villageId: s.village,
+            businessId: s.business,
+            radiusKm: s.radiusKm,
+            capital: s.capital,
+          },
+          plan && !isGap(plan) ? plan.beneficiaryPct : undefined,
+        )
+      : null;
+
+  return { report, plan, alternatives, capitalFit };
 }
 
 /** EMI as a share of the estimated monthly income - the affordability check. */

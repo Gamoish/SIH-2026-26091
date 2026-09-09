@@ -2,17 +2,19 @@
 import React from 'react';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
+import { emiShare } from '@/domain/case';
 import { isGap } from '@/domain/finance';
 import { inr } from '@/lib/format';
 import { Header, IllustrativeNote, Primary, T } from '@/components';
 
 export default function EmiScreen() {
   const nav = useNav();
-  const { report, plan } = useCase();
+  const kase = useCase();
+  const { plan } = kase;
   if (!plan || isGap(plan)) return null;
 
-  const monthly = report ? report.estimatedAnnualRevenue / 12 : 0;
-  const emiShare = monthly > 0 ? Math.round((plan.emi / monthly) * 100) : null;
+  // The shared affordability check, not a third copy of its arithmetic.
+  const share = emiShare(kase);
   const gracePct = (plan.moratoriumMonths / plan.tenureMonths) * 100;
   const reserve = plan.emi * 3;
 
@@ -223,15 +225,13 @@ export default function EmiScreen() {
             <div style={{ fontSize: '18px', fontWeight: 700 }}>{inr(plan.totalRepaid)}</div>
           </div>
           <div style={{ width: '1px', alignSelf: 'stretch', background: 'rgba(255,255,255,.18)' }} />
-          {emiShare != null ? (
+          {share != null ? (
             <div>
               <div style={{ fontSize: '11px', color: '#9FB6D3' }}>
                 <T hi="कमाई से किश्त" en="EMI vs income" />
               </div>
-              <div
-                style={{ fontSize: '18px', fontWeight: 700, color: emiShare > 40 ? '#E6B94F' : '#CFE7D8' }}
-              >
-                ~{emiShare}%
+              <div style={{ fontSize: '18px', fontWeight: 700, color: share > 40 ? '#E6B94F' : '#CFE7D8' }}>
+                ~{share}%
               </div>
             </div>
           ) : null}

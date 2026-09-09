@@ -17,6 +17,16 @@ export type MockBusiness = {
    */
   penetrationRate: number;
   purchaseFrequencyPerYear: number;
+  /**
+   * What a basic, working version of this business typically costs to set up,
+   * all-in (total project cost, not one cost line).
+   *
+   * HAND-AUTHORED JUDGEMENT, not sourced. Each figure is what the cost lines
+   * below add up to at a size that actually functions - one machine, one shed,
+   * one batch - for rural Sonbhadra. Used only to warn when a plan comes out
+   * well under it; it never blocks anything and never feeds the engine.
+   */
+  anchorCost: number;
   /** The one costSplit line that is working capital, not a fixed asset. */
   costSplit: { label: Bilingual; share: number; working?: true }[];
   /**
@@ -41,6 +51,9 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     densityPer10k: 1.4,
     penetrationRate: 0.35,
     purchaseFrequencyPerYear: 60,
+    // Semi-automatic double-die press ~Rs 1,05,000 (59%), shed + power
+    // connection ~Rs 32,000 (18%), leaves and working capital ~Rs 41,000 (23%).
+    anchorCost: 180_000,
     costSplit: [
       { label: { hi: 'पत्तल मशीन', en: 'Plate machines' }, share: 0.59 },
       { label: { hi: 'शेड + बिजली', en: 'Shed + power' }, share: 0.18 },
@@ -76,6 +89,10 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     densityPer10k: 6.2,
     penetrationRate: 0.3,
     purchaseFrequencyPerYear: 2.5,
+    // Two machines including an interlock ~Rs 41,000 (46%), shop fittings and
+    // furniture ~Rs 27,000 (30%), cloth and working capital ~Rs 22,000 (24%).
+    // The cheapest of the five: it can start from a room at home.
+    anchorCost: 90_000,
     costSplit: [
       { label: { hi: 'सिलाई मशीनें', en: 'Sewing machines' }, share: 0.46 },
       { label: { hi: 'दुकान + फर्नीचर', en: 'Shop + furniture' }, share: 0.3 },
@@ -107,6 +124,10 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     densityPer10k: 9.5,
     penetrationRate: 0.45,
     purchaseFrequencyPerYear: 20,
+    // Opening stock ~Rs 82,500 (55%) is the bulk of it, shop and shelving
+    // ~Rs 40,500 (27%), working capital ~Rs 27,000 (18%). Below this a kirana
+    // cannot hold enough stock to be the shop people walk to.
+    anchorCost: 150_000,
     costSplit: [
       { label: { hi: 'शुरुआती स्टॉक', en: 'Opening stock' }, share: 0.55, working: true },
       { label: { hi: 'दुकान + रैक', en: 'Shop + shelving' }, share: 0.27 },
@@ -137,6 +158,10 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     densityPer10k: 3.1,
     penetrationRate: 0.06,
     purchaseFrequencyPerYear: 0.35,
+    // Planer, circular saw and drill ~Rs 1,14,400 (52%), workshop space
+    // ~Rs 57,200 (26%), timber and working capital ~Rs 48,400 (22%). The
+    // dearest of the five - the heavy tools come first and cannot be skipped.
+    anchorCost: 220_000,
     costSplit: [
       { label: { hi: 'औज़ार + मशीन', en: 'Tools + machines' }, share: 0.52 },
       { label: { hi: 'कार्यशाला', en: 'Workshop' }, share: 0.26 },
@@ -170,6 +195,9 @@ export const MOCK_BUSINESSES: Record<BusinessId, MockBusiness> = {
     densityPer10k: 2.3,
     penetrationRate: 0.28,
     purchaseFrequencyPerYear: 4,
+    // A ~500-bird broiler cycle: shed and cages ~Rs 70,400 (44%), chicks
+    // ~Rs 33,600 (21%), feed and working capital ~Rs 56,000 (35%).
+    anchorCost: 160_000,
     costSplit: [
       { label: { hi: 'शेड + पिंजरा', en: 'Shed + cages' }, share: 0.44 },
       { label: { hi: 'चूज़े', en: 'Chicks' }, share: 0.21, working: true },

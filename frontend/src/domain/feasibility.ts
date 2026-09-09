@@ -6,7 +6,7 @@ import {
   MOCK_GROCERY_SPEND_INDEX,
   type MockBusiness,
 } from '../data/fixtures/businesses.ts';
-import { projectCostFrom } from './finance.ts';
+import { projectCostFor } from './finance.ts';
 
 const pick = (t: Bilingual, lang: Lang) => (lang === 'en' ? t.en : t.hi);
 
@@ -25,8 +25,13 @@ export type FeasibilityReport = {
   verdict: 'good' | 'check';
   limiter: 'thin-market' | 'crowded' | 'none';
   estimatedAnnualRevenue: number;
-  /** Which of the two ceilings the revenue estimate actually hit. */
-  revenueLimitedBy: 'market' | 'capital';
+  /**
+   * Which of the two ceilings the revenue estimate actually hit. `capacity` was
+   * `capital` while the project cost was derived from capital; the project cost
+   * is now the business's anchor, so the ceiling is what the setup can push
+   * through, and the name says that instead.
+   */
+  revenueLimitedBy: 'market' | 'capacity';
   /**
    * The same figure the loan plan calls `projectCost`, from the same shared
    * function. Exposed so the two can be asserted equal rather than each
@@ -98,7 +103,7 @@ export function buildReport(opts: {
   // buy this at all, what each of them buys in a year, at the price the report
   // is already suggesting.
   //
-  // Capacity: what the applicant's own money can push through. Only the
+  // Capacity: what a setup of this size can push through. Only the
   // working-capital lines of the project cost cycle; fixed assets are bought
   // once and do not turn.
   const price = round(suggested);
@@ -108,7 +113,7 @@ export function buildReport(opts: {
   const demandCeiling =
     peoplePerCompetitor * business.penetrationRate * spend * business.purchaseFrequencyPerYear * price;
 
-  const projectCost = projectCostFrom(opts.capital);
+  const projectCost = projectCostFor(opts.businessId);
   const workingShare = business.costSplit.reduce((n, c) => n + (c.working ? c.share : 0), 0);
   const capacityCeiling = projectCost * workingShare * business.workingCapitalTurns;
 
@@ -131,7 +136,7 @@ export function buildReport(opts: {
           : ('crowded' as const),
     projectCost,
     estimatedAnnualRevenue: Math.round(Math.min(demandCeiling, capacityCeiling)),
-    revenueLimitedBy: demandCeiling <= capacityCeiling ? ('market' as const) : ('capital' as const),
+    revenueLimitedBy: demandCeiling <= capacityCeiling ? ('market' as const) : ('capacity' as const),
     swot: {
       strengths: business.strengths,
       weaknesses: business.weaknesses,
@@ -167,14 +172,24 @@ export type Alternative = {
  * network, so this is four more passes of the same arithmetic and needs no
  * extra request.
  */
-export function betterAlternatives(opts: {
+export type ReportOpts = {
   villageId: string;
   businessId: BusinessId;
   radiusKm: number;
   capital: number;
-}): Alternative[] {
+};
+
+/**
+ * The ranking itself, with no opinion about when to show it.
+ *
+ * Split out because there are now TWO reasons to offer a different business -
+ * a weak feasibility score, and capital that is thin for the one chosen - and
+ * they are different questions. Both read this one implementation rather than
+ * each growing a ranking of its own.
+ */
+export function rankBetterBusinesses(opts: ReportOpts): Alternative[] {
   const current = buildReport(opts);
-  if (!current || current.verdict !== 'check') return [];
+  if (!current) return [];
 
   return (Object.keys(MOCK_BUSINESSES) as BusinessId[])
     .filter((id) => id !== opts.businessId)
@@ -202,7 +217,7 @@ export type CostLine = { label: Bilingual; amount: number; share: number };
  * themselves. That is the same shape of bug as the duplicated project-cost
  * formula: two copies of one calculation that nothing forces to agree. The
  * amounts here come from `planLoan`'s `projectCost`, which comes from
- * `projectCostFrom`, so the whole chain is one definition end to end.
+ * `projectCostFor`, so the whole chain is one definition end to end.
  */
 export function costBreakdown(projectCost: number, business: MockBusiness): CostLine[] {
   return business.costSplit.map((c) => ({
@@ -210,6 +225,58 @@ export function costBreakdown(projectCost: number, business: MockBusiness): Cost
     amount: Math.round(projectCost * c.share),
     share: c.share,
   }));
+}
+
+/**
+ * Report-screen trigger: offer alternatives only when the check came back
+ * `check`. A good verdict is not talked out of.
+ */
+export function betterAlternatives(opts: ReportOpts): Alternative[] {
+  const current = buildReport(opts);
+  return current && current.verdict === 'check' ? rankBetterBusinesses(opts) : [];
+}
+
+export type CapitalFit = {
+  business: MockBusiness;
+  anchorCost: number;
+  /** The applicant's own capital, the number being judged. */
+  capital: number;
+  /** `beneficiaryPct` of the anchor cost - what the scheme expects them to put in. */
+  requiredMargin: number;
+  /** Better-scoring businesses whose OWN margin this capital does cover. May be empty. */
+  alternatives: Alternative[];
+};
+
+/**
+ * Non-null when the applicant's own capital does not cover the contribution
+ * the scheme expects on a project this size.
+ *
+ * This replaces a comparison of the derived project cost against 65% of the
+ * anchor. That test could not fire once the project cost BECAME the anchor -
+ * it was dead code wearing a live check's clothes. The honest question at that
+ * point is the financing one: the setup costs `anchorCost`, the scheme wants
+ * `beneficiaryPct` of it from the borrower, and this says whether they have it.
+ *
+ * Advisory only - `planLoan` is untouched, and the EMI and repayment figures
+ * still compute and display underneath.
+ *
+ * The alternatives come from `rankBetterBusinesses`, then keep only those whose
+ * own required margin this capital clears - a filter on the shared ranking, not
+ * a second ranking, so a suggestion can never itself be out of reach.
+ */
+export function capitalFitFor(opts: ReportOpts, beneficiaryPct = 10): CapitalFit | null {
+  const business = MOCK_BUSINESSES[opts.businessId];
+  const marginOn = (b: MockBusiness) => Math.round(b.anchorCost * (beneficiaryPct / 100));
+  const requiredMargin = marginOn(business);
+  if (opts.capital >= requiredMargin) return null;
+
+  return {
+    business,
+    anchorCost: business.anchorCost,
+    capital: opts.capital,
+    requiredMargin,
+    alternatives: rankBetterBusinesses(opts).filter((a) => opts.capital >= marginOn(a.business)),
+  };
 }
 
 export function narrate(r: FeasibilityReport, lang: Lang): string {

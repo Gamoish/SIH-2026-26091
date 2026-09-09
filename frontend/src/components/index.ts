@@ -15,3 +15,4 @@ export { Modal } from './modal';
 export { CompetitorMap } from './competitor-map';
 export { IllustrativeNote } from './disclosure';
 export { Alternatives } from './alternatives';
+export { CapitalFitNote } from './capital-fit';

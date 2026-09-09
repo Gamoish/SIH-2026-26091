@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { nextPhone } from './minted';
 import { CAPITAL, EXPECTED_SPLIT } from './expected-cost-split';
+import { DEMO, SHORT_MARGIN } from './expected-demo';
 
 /**
  * The desktop tree, end to end. Runs under the `desktop` project, which seeds
@@ -18,7 +19,25 @@ async function currentCode(page: Page, phone: string): Promise<string> {
   return (await res.json()).MOCK_dev_code as string;
 }
 
-async function onboard(page: Page, phone = nextPhone()) {
+async function onboard(
+  page: Page,
+  opts: {
+    phone?: string;
+    social?: string;
+    village?: string;
+    radius?: string;
+    business?: string;
+    capital?: string;
+  } = {},
+) {
+  const {
+    phone = nextPhone(),
+    social = 'Scheduled Tribe',
+    village = 'Jarha',
+    radius = '10 km',
+    business = 'Leaf plates',
+    capital = '22000',
+  } = opts;
   await page.goto('/desktop/language');
 
   // The first tap can land before hydration under parallel load; retry until
@@ -39,24 +58,24 @@ async function onboard(page: Page, phone = nextPhone()) {
 
   await expect(page).toHaveURL(/\/desktop\/social/);
   await page.getByPlaceholder(/e\.g\./).fill('Suresh Kharwar');
-  await page.getByRole('button', { name: /Scheduled Tribe/ }).click();
+  await page.getByRole('button', { name: new RegExp(social) }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
 
   await expect(page).toHaveURL(/\/desktop\/location/);
   await page
-    .getByRole('option', { name: /^Jarha/ })
+    .getByRole('option', { name: new RegExp(`^${village}`) })
     .first()
     .click();
-  await page.getByRole('button', { name: '10 km', exact: false }).click();
+  await page.getByRole('button', { name: radius, exact: false }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
 
   // business first, capital second
   await expect(page).toHaveURL(/\/desktop\/category/);
-  await page.getByRole('button', { name: 'Leaf plates', exact: true }).click();
+  await page.getByRole('button', { name: business, exact: true }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
 
   await expect(page).toHaveURL(/\/desktop\/capital/);
-  await page.getByLabel(/Your capital/).fill('22000');
+  await page.getByLabel(/Your capital/).fill(capital);
   await page.getByRole('button', { name: /Run the check/ }).click();
 
   await expect(page).toHaveURL(/\/desktop\/feasibility/, { timeout: 15_000 });
@@ -124,9 +143,10 @@ test('the desktop numbers match the engines, not the canvas', async ({ page }) =
   await page.goto('/desktop/emi');
 
   const body = await page.locator('.dc-desk-body').innerText();
-  // planLoan()'s own figures for a 22,000 ST case: NSTFDC's first slab, 6%
-  // over 84 months with a 6-month moratorium (78 instalments).
-  expect(body).toContain('₹3,164');
+  // planLoan()'s own figures for a 22,000 ST leaf-plates case: a ₹1,80,000
+  // anchor cost, ₹1,58,000 borrowed in NSTFDC's first slab, 6% over 84 months
+  // with a 6-month moratorium (78 instalments).
+  expect(body).toContain('₹2,525');
   // the design canvas's placeholder must never appear
   expect(body).not.toContain('₹5,270');
 });
@@ -477,3 +497,46 @@ for (const [layout, base] of [
     await second.close();
   });
 }
+
+test('the anchor-based figures render on the desktop layout', async ({ page }) => {
+  await onboard(page);
+
+  // The capital step's own eligibility aside - planLoan() before the answer is
+  // even committed to the session.
+  await page.goto('/desktop/capital');
+  await expect(page.locator('body')).toContainText(DEMO.projectCost);
+  await expect(page.locator('body')).toContainText(DEMO.loan);
+
+  await page.goto('/desktop/scheme');
+  const scheme = await page.locator('.dc-desk-body').innerText();
+  expect(scheme).toContain(DEMO.projectCost);
+  expect(scheme).toContain(DEMO.loan);
+  // capital clears the ₹18,000 the scheme asks for, so the note stays away
+  expect(scheme).not.toContain('This is tight for');
+
+  await page.goto('/desktop/emi');
+  expect(await page.locator('.dc-desk-body').innerText()).toContain(DEMO.emi);
+
+  await page.goto('/desktop/report');
+  const report = await page.locator('.dc-desk-body').innerText();
+  expect(report).toContain(DEMO.revenue);
+  // The desktop score is a CSS counter animation, so its digits are not in the
+  // DOM text the way the phone layout's plain `{report.score}` is. Same number,
+  // different presentation - read it off the dial's accessible name.
+  await expect(page.getByRole('img', { name: `${DEMO.score} / 100` })).toBeVisible();
+});
+
+test('capital under the required margin warns on the desktop layout', async ({ page }) => {
+  await onboard(page, { business: SHORT_MARGIN.business, capital: SHORT_MARGIN.capital });
+
+  await page.goto('/desktop/scheme');
+  const body = await page.locator('.dc-desk-body').innerText();
+
+  // the warning, with its actual rupee figures - not merely that one appeared
+  expect(body).toContain(SHORT_MARGIN.title);
+  expect(body.replace(/\s+/g, ' ')).toContain(SHORT_MARGIN.copy);
+
+  // and it is advisory: the plan underneath still renders its own figures
+  expect(body).toContain(SHORT_MARGIN.projectCost);
+  expect(body).toContain(SHORT_MARGIN.loan);
+});

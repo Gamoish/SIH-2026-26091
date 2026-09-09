@@ -7,14 +7,14 @@ import { compareAgainst, isGap } from '@/domain/finance';
 import { SCHEMES, rateRange } from '@/domain/schemes';
 import { label } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
-import { Header, IllustrativeNote, Primary, T } from '@/components';
+import { CapitalFitNote, Header, IllustrativeNote, Primary, T } from '@/components';
 
 const COMMERCIAL_PCT = 11;
 
 export default function SchemeScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { plan } = useCase();
+  const { plan, capitalFit } = useCase();
   if (!plan) return null;
 
   if (isGap(plan)) {
@@ -443,6 +443,8 @@ export default function SchemeScreen() {
             />
           </div>
         </div>
+
+        <CapitalFitNote fit={capitalFit} />
 
         <IllustrativeNote />
 

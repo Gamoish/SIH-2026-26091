@@ -3,6 +3,7 @@
 import React from 'react';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
+import { emiShare } from '@/domain/case';
 import { isGap } from '@/domain/finance';
 import { inr } from '@/lib/format';
 import { IllustrativeNote, Primary, Stat, T } from '@/components';
@@ -14,11 +15,12 @@ import { DesktopShell, Legend } from '../shell';
  */
 export default function EmiScreen() {
   const nav = useNav();
-  const { report, plan } = useCase();
+  const kase = useCase();
+  const { plan } = kase;
   if (!plan || isGap(plan)) return null;
 
-  const monthly = report ? report.estimatedAnnualRevenue / 12 : 0;
-  const share = monthly > 0 ? Math.round((plan.emi / monthly) * 100) : null;
+  // The shared affordability check, not a third copy of its arithmetic.
+  const share = emiShare(kase);
 
   return (
     <DesktopShell padding="32px 40px" title={<T hi="वापसी का समय" en="Repayment plan" />}>

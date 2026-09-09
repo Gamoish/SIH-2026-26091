@@ -196,7 +196,7 @@ export default function ReportScreen() {
         {report.revenueLimitedBy === 'market' ? (
           <T hi="सीमा: आसपास का बाज़ार इतना ही है" en="Limited by local market size" />
         ) : (
-          <T hi="सीमा: आपकी पूँजी इतनी ही चला सकती है" en="Limited by your capital" />
+          <T hi="सीमा: इतना ही सेटअप इतना ही चला सकता है" en="Limited by what this setup can run" />
         )}
       </div>
 

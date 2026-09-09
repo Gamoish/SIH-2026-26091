@@ -7,7 +7,7 @@ import { useCase } from '@/hooks/use-case';
 import { compareAgainst, isGap } from '@/domain/finance';
 import { SCHEMES, rateRange } from '@/domain/schemes';
 import { inr } from '@/lib/format';
-import { IllustrativeNote, Primary, Stat, T } from '@/components';
+import { CapitalFitNote, IllustrativeNote, Primary, Stat, T } from '@/components';
 import { DesktopShell, Legend } from '../shell';
 
 /** A commercial term loan, for contrast only - never used to compute a figure. */
@@ -21,7 +21,7 @@ const COMMERCIAL_PCT = 11;
 export default function SchemeScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { plan } = useCase();
+  const { plan, capitalFit } = useCase();
   if (!plan) return null;
 
   if (isGap(plan)) {
@@ -144,6 +144,8 @@ export default function SchemeScreen() {
           <T hi="वापसी का समय देखिए" en="See the repayment plan" />
         </Primary>
       </div>
+      <CapitalFitNote fit={capitalFit} />
+
       <IllustrativeNote style={{ marginTop: '26px' }} />
     </DesktopShell>
   );

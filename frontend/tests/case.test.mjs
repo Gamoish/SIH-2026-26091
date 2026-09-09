@@ -46,8 +46,20 @@ test('both layouts derive the same plan from the same session', () => {
   const { plan } = caseFrom(session());
   assert.ok(!isGap(plan));
   assert.equal(plan.scheme.code, 'NSTFDC');
-  assert.equal(plan.projectCost, 220000);
-  assert.equal(plan.loanAmount, 198000);
+  // leaf-plates' anchor cost, not the capital grossed up
+  assert.equal(plan.projectCost, 180000);
+  assert.equal(plan.loanAmount, 158000);
+  assert.equal(plan.requiredMargin, 18000);
+});
+
+test('the demo capital clears the required margin, so no note is shown', () => {
+  const c = caseFrom(session());
+  assert.equal(c.capitalFit, null, 'Rs 22,000 covers the Rs 18,000 NSTFDC asks for');
+  // and a capital under it does raise one, through the same session shape
+  const short = caseFrom(session({ capital: 12000 }));
+  assert.ok(short.capitalFit);
+  assert.equal(short.capitalFit.requiredMargin, 18000);
+  assert.equal(short.capitalFit.capital, 12000);
 });
 
 test('an unconfirmed scheme yields a gap rather than an invented figure', () => {

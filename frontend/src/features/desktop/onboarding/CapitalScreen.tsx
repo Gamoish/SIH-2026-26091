@@ -16,11 +16,10 @@ import { TopBarShell, Ask } from '../shell';
  * same deterministic engine the report uses - so the figure a user sees here
  * is the figure they get later, never an illustration.
  *
- * `planLoan` takes no business: the scheme, rate and project cost are the same
- * whatever is being started. What IS business-specific is where the money
- * goes, so now that the category step runs before this one, the aside breaks
- * the project cost down over the chosen business's own `costSplit` instead of
- * stopping at a total.
+ * `planLoan` takes the business: the project cost is now that business's own
+ * anchor cost rather than the applicant's capital grossed up, so a plate press
+ * and a sewing machine no longer come out at the same total. The aside breaks
+ * that cost down over the same business's `costSplit`.
  */
 export default function CapitalScreen() {
   const { s, set } = useSession();
@@ -29,7 +28,7 @@ export default function CapitalScreen() {
   const [digits, setDigits] = useState(s.capital != null ? String(s.capital) : '');
 
   const capital = digits === '' ? 0 : Number(digits);
-  const plan = s.social && capital > 0 ? planLoan(capital, s.social) : null;
+  const plan = s.social && s.business && capital > 0 ? planLoan(capital, s.social, s.business) : null;
   const money = plan && !isGap(plan) ? plan : null;
   const business = s.business ? MOCK_BUSINESSES[s.business] : null;
 

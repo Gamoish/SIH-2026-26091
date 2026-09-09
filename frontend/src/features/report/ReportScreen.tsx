@@ -3,6 +3,7 @@ import React from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { useCase } from '@/hooks/use-case';
+import { emiShare } from '@/domain/case';
 import { narrate, label } from '@/domain/feasibility';
 import { isGap } from '@/domain/finance';
 import { inr, num } from '@/lib/format';
@@ -41,7 +42,8 @@ const Section = ({ n, hi, en }: { n: number; hi: string; en: string }) => (
 export default function ReportScreen() {
   const { s } = useSession();
   const nav = useNav();
-  const { report, plan, alternatives } = useCase();
+  const kase = useCase();
+  const { report, plan, alternatives } = kase;
   if (!report) return null;
 
   const business = label(report.business.name, s.lang);
@@ -51,7 +53,8 @@ export default function ReportScreen() {
   const unit = label(report.business.unit, s.lang);
   const monthly = report.estimatedAnnualRevenue / 12;
 
-  const emiShare = plan && !isGap(plan) && monthly > 0 ? Math.round((plan.emi / monthly) * 100) : null;
+  // The shared affordability check - same function the money screens use.
+  const share = emiShare(kase);
 
   return (
     <div className="dc-phone">
@@ -116,7 +119,7 @@ export default function ReportScreen() {
           />
         </div>
 
-        {emiShare != null ? (
+        {share != null ? (
           <div
             style={{
               borderLeft: '3px solid var(--teal)',
@@ -127,11 +130,11 @@ export default function ReportScreen() {
           >
             <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#0F4E68', lineHeight: 1.4 }}>
               <T
-                hi={`“किश्त अनुमानित कमाई का लगभग ${emiShare}% है”`}
-                en={`“The instalment is about ${emiShare}% of estimated income”`}
+                hi={`“किश्त अनुमानित कमाई का लगभग ${share}% है”`}
+                en={`“The instalment is about ${share}% of estimated income”`}
               />
             </div>
-            {emiShare > 40 ? (
+            {share > 40 ? (
               <div style={{ fontSize: '11px', color: 'var(--rust)', marginTop: '4px', fontWeight: 600 }}>
                 <T
                   hi="यह हिस्सा ऊँचा है — कम पूँजी या लंबी अवधि पर विचार कीजिए।"

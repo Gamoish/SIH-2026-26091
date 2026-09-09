@@ -17,7 +17,7 @@ export default function CapitalScreen() {
   const [digits, setDigits] = useState(s.capital != null ? String(s.capital) : '');
 
   const capital = digits === '' ? 0 : Number(digits);
-  const plan = s.social && capital > 0 ? planLoan(capital, s.social) : null;
+  const plan = s.social && s.business && capital > 0 ? planLoan(capital, s.social, s.business) : null;
   const village = MOCK_VILLAGES.find((v) => v.id === s.village);
   const business = s.business ? MOCK_BUSINESSES[s.business] : null;
 

@@ -19,7 +19,7 @@ export type FeasibilityRequest = {
   capital: number;
 };
 
-export type FinancePlanRequest = { capital: number; social: SocialCategory };
+export type FinancePlanRequest = { capital: number; social: SocialCategory; businessId: BusinessId };
 
 export const MOCK_api = {
   /** Null when the chosen village has no demo fixture behind it. */
@@ -30,6 +30,6 @@ export const MOCK_api = {
 
   async financePlan(req: FinancePlanRequest): Promise<PlanResult> {
     await latency(300);
-    return planLoan(req.capital, req.social);
+    return planLoan(req.capital, req.social, req.businessId);
   },
 };

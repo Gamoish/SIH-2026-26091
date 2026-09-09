@@ -34,7 +34,13 @@ shaped to become a `schemes` table, and the seed for it.
 This matters because the agencies do not share a structure. Code that assumes
 "the applicant puts in 10% and borrows 90%" is correct for one product and
 silently wrong for the next. `planLoan` reads `beneficiaryPct` from the row, and
-a test asserts that changing the column changes the project cost.
+a test asserts that changing the column changes the required margin.
+
+The project cost itself is NOT derived from the applicant. It is the chosen
+business's `anchorCost` - what that trade actually costs to set up - so the
+capital the applicant types is the margin they bring against a real price,
+not the thing that sets the price. `projectCostFor()` is the single source,
+read by both `planLoan` and the feasibility report.
 
 ## Unconfirmed figures are visible holes
 

@@ -1,6 +1,12 @@
 import assert from 'node:assert';
-import { buildReport, betterAlternatives, costBreakdown } from '../src/domain/feasibility.ts';
-import { planLoan, projectCostFrom, isGap } from '../src/domain/finance.ts';
+import {
+  buildReport,
+  betterAlternatives,
+  capitalFitFor,
+  costBreakdown,
+  rankBetterBusinesses,
+} from '../src/domain/feasibility.ts';
+import { planLoan, projectCostFor, isGap } from '../src/domain/finance.ts';
 import { MOCK_VILLAGES } from '../src/data/fixtures/villages.ts';
 import { MOCK_BUSINESSES, MOCK_COMPETITOR_COUNTS } from '../src/data/fixtures/businesses.ts';
 
@@ -28,21 +34,35 @@ test('revenue is not a bare multiple of capital', () => {
   assert.notEqual(ratio, report({ villageId: 'bijpur' }).estimatedAnnualRevenue / 22000);
 });
 
-test('both ceilings bind somewhere, and the estimate is the lower one', () => {
-  // The demo walkthrough - Jarha, 10 km, leaf-plates, Rs 22,000 - is
-  // market-limited, which is the right answer: Rs 2.2 lakh of project cost can
-  // genuinely outrun a 35,000-person catchment that already has six presses.
+test('the estimate is the lower of the two ceilings, and never above capacity', () => {
+  // The demo walkthrough - Jarha, 10 km, leaf-plates - is market-limited: a
+  // Rs 1,80,000 plate unit can outrun a 35,000-person catchment that already
+  // has six presses.
   assert.equal(report().revenueLimitedBy, 'market');
 
-  // REFERENCE CASE for the other branch: same village, same market, Rs 2,000
-  // of own capital. Capacity binds below roughly Rs 8,000, so this is the one
-  // to demo if you want to see "limited by your capital" on screen. It is
-  // deliberately not the primary walkthrough.
-  const poor = report({ capital: 2000 });
-  assert.equal(poor.revenueLimitedBy, 'capital');
-  assert.ok(poor.estimatedAnnualRevenue < report().estimatedAnnualRevenue);
-  // Rs 20,000 project cost, 23% of it working capital, 8 turns a year.
-  assert.equal(poor.estimatedAnnualRevenue, 20000 * 0.23 * 8);
+  // The capacity ceiling is still applied, and is now a property of the
+  // BUSINESS rather than of the applicant: the project cost no longer moves
+  // with capital, so neither does this. Asserted across the whole fixture
+  // space rather than through one hand-picked case.
+  //
+  // NOTE: no fixture combination is capacity-limited today - every anchor buys
+  // more throughput than its local market will absorb. The branch stays
+  // because min() of two real ceilings is the right model and the anchors are
+  // data, but the 'capacity' verdict is currently unreachable from fixtures.
+  for (const v of MOCK_VILLAGES) {
+    for (const b of Object.values(MOCK_BUSINESSES)) {
+      for (const radiusKm of [0, 5, 10, 20]) {
+        const r = buildReport({ villageId: v.id, businessId: b.id, radiusKm, capital: 22000 });
+        const working = b.costSplit.reduce((n, c) => n + (c.working ? c.share : 0), 0);
+        const capacity = b.anchorCost * working * b.workingCapitalTurns;
+        assert.ok(r.estimatedAnnualRevenue <= Math.round(capacity), `${v.id}/${b.id} above capacity`);
+        assert.equal(r.revenueLimitedBy, 'market', `${v.id}/${b.id} is no longer market-limited`);
+      }
+    }
+  }
+
+  // and capital genuinely does not touch revenue any more
+  assert.equal(report({ capital: 2000 }).estimatedAnnualRevenue, report().estimatedAnnualRevenue);
 });
 
 test('grocery differs between villages of similar size', () => {
@@ -56,26 +76,24 @@ test('grocery differs between villages of similar size', () => {
 test('feasibility and finance agree on project cost, for every usable scheme', () => {
   // SC -> NSFDC, ST -> NSTFDC. OBC/NBCFDC has no confirmed contribution percent
   // and is a PlanGap, so there is no project cost to agree on.
-  // Capitals inside both schemes' usable range: at or above the MIN_CAPITAL
-  // floor, and under NSFDC's Rs 50,00,000 project ceiling (Rs 5,00,000 of
-  // capital). Outside it planLoan returns a gap on purpose - covered in
-  // finance.test.mjs, not here.
   for (const social of ['SC', 'ST']) {
-    for (const capital of [2000, 22000, 150000, 499000]) {
-      const plan = planLoan(capital, social);
-      assert.ok(!isGap(plan), `${social} should have a usable scheme`);
-      // finance's own figure, and the one feasibility computes for the same
-      // capital, come from the same function and cannot drift apart.
-      assert.equal(plan.projectCost, projectCostFrom(capital, plan.beneficiaryPct));
-      assert.equal(
-        plan.projectCost,
-        buildReport({ villageId: 'jarha', businessId: 'leaf-plates', radiusKm: 10, capital })
-          .projectCost,
-        `${social} @ ${capital}`,
-      );
+    for (const businessId of Object.keys(MOCK_BUSINESSES)) {
+      for (const capital of [2000, 22000, 150000, 499000]) {
+        const plan = planLoan(capital, social, businessId);
+        assert.ok(!isGap(plan), `${social} should have a usable scheme`);
+        // Both sides read projectCostFor, so they cannot drift apart - and the
+        // figure is the business's anchor, at every capital.
+        assert.equal(plan.projectCost, projectCostFor(businessId));
+        assert.equal(plan.projectCost, MOCK_BUSINESSES[businessId].anchorCost);
+        assert.equal(
+          plan.projectCost,
+          buildReport({ villageId: 'jarha', businessId, radiusKm: 10, capital }).projectCost,
+          `${social}/${businessId} @ ${capital}`,
+        );
+      }
     }
   }
-  assert.ok(isGap(planLoan(22000, 'OBC')));
+  assert.ok(isGap(planLoan(22000, 'OBC', 'leaf-plates')));
 });
 
 test('competitor counts come from the hand-authored table', () => {
@@ -163,27 +181,29 @@ test('recommendations stay absent for a village with no report', () => {
 });
 
 test('the cost breakdown is the chosen business, never a default', () => {
-  const plan = planLoan(22000, 'ST');
-  const cost = plan.projectCost; // 2,20,000
-
+  // Each business is now broken down over its OWN project cost - a leaf-plate
+  // unit is Rs 1,80,000 and a grocery is Rs 1,50,000, where both used to be
+  // whatever the applicant's capital grossed up to.
+  //
   // Literal expectations, not `MOCK_BUSINESSES[id].costSplit` echoed back: if
   // the screen ever fell back to one business for all of them, comparing
   // against the fixture would happily agree with itself. Two businesses, so a
   // single hardcoded default cannot satisfy both.
   const EXPECTED = {
     'leaf-plates': [
-      ['Plate machines', 129800],
-      ['Shed + power', 39600],
-      ['Leaves + working', 50600],
+      ['Plate machines', 106200],
+      ['Shed + power', 32400],
+      ['Leaves + working', 41400],
     ],
     grocery: [
-      ['Opening stock', 121000],
-      ['Shop + shelving', 59400],
-      ['Working capital', 39600],
+      ['Opening stock', 82500],
+      ['Shop + shelving', 40500],
+      ['Working capital', 27000],
     ],
   };
 
   for (const [id, rows] of Object.entries(EXPECTED)) {
+    const cost = planLoan(22000, 'ST', id).projectCost;
     const got = costBreakdown(cost, MOCK_BUSINESSES[id]);
     assert.deepEqual(
       got.map((c) => [c.label.en, c.amount]),
@@ -202,19 +222,19 @@ test('the cost breakdown is the chosen business, never a default', () => {
 
   // the two must not be interchangeable - that is the bug this guards
   assert.notDeepEqual(
-    costBreakdown(cost, MOCK_BUSINESSES['leaf-plates']).map((c) => c.label.en),
-    costBreakdown(cost, MOCK_BUSINESSES.grocery).map((c) => c.label.en),
+    costBreakdown(180_000, MOCK_BUSINESSES['leaf-plates']).map((c) => c.label.en),
+    costBreakdown(180_000, MOCK_BUSINESSES.grocery).map((c) => c.label.en),
   );
 });
 
 test('the breakdown is driven by the shared project cost, for every business', () => {
   // Both capital screens call costBreakdown(plan.projectCost, business), and
-  // plan.projectCost comes from projectCostFrom - so this is the same chain
+  // plan.projectCost comes from projectCostFor - so this is the same chain
   // both layouts render, asserted once.
   for (const capital of [2000, 22000]) {
-    const plan = planLoan(capital, 'ST');
-    assert.equal(plan.projectCost, projectCostFrom(capital));
     for (const b of Object.values(MOCK_BUSINESSES)) {
+      const plan = planLoan(capital, 'ST', b.id);
+      assert.equal(plan.projectCost, projectCostFor(b.id));
       const lines = costBreakdown(plan.projectCost, b);
       assert.equal(lines.length, b.costSplit.length);
       assert.equal(
@@ -228,6 +248,115 @@ test('the breakdown is driven by the shared project cost, for every business', (
 
 test('a real LGD village still returns nothing', () => {
   assert.equal(report({ villageId: 'lgd-123456' }), null);
+});
+
+test('the margin note fires when capital is under the required contribution', () => {
+  const at = (businessId, capital) =>
+    capitalFitFor({ villageId: 'jarha', businessId, radiusKm: 10, capital });
+
+  // Two businesses with different anchors, so one shared threshold cannot
+  // accidentally satisfy both. At the 10% default contribution: leaf-plates
+  // Rs 1,80,000 -> Rs 18,000 of margin; tailoring Rs 90,000 -> Rs 9,000.
+  assert.equal(MOCK_BUSINESSES['leaf-plates'].anchorCost, 180_000);
+  assert.equal(MOCK_BUSINESSES.tailoring.anchorCost, 90_000);
+
+  // BOUNDARY, exact: at the required margin there is no note; one rupee under
+  // there is. Both businesses, so the boundary is per business.
+  assert.equal(at('leaf-plates', 18_000), null, 'exactly the margin must not warn');
+  assert.ok(at('leaf-plates', 17_999), 'a rupee under the margin must warn');
+  assert.equal(at('tailoring', 9_000), null, 'exactly the margin must not warn');
+  assert.ok(at('tailoring', 8_999), 'a rupee under the margin must warn');
+
+  // comfortably above, both businesses
+  assert.equal(at('leaf-plates', 50_000), null);
+  assert.equal(at('tailoring', 50_000), null);
+
+  // the same capital can be short for one business and fine for another -
+  // proof the threshold is per business, not one global number
+  assert.ok(at('leaf-plates', 10_000), 'Rs 10,000 is under a plate unit\'s Rs 18,000 margin');
+  assert.equal(at('tailoring', 10_000), null, 'Rs 10,000 clears tailoring\'s Rs 9,000');
+
+  // and it reports the figures it judged on
+  const tight = at('leaf-plates', 10_000);
+  assert.equal(tight.anchorCost, 180_000);
+  assert.equal(tight.requiredMargin, 18_000);
+  assert.equal(tight.capital, 10_000);
+  assert.equal(tight.business.id, 'leaf-plates');
+  assert.ok(tight.capital < tight.requiredMargin);
+});
+
+test('the note reads the margin off the scheme, not off a hardcoded 10%', () => {
+  const opts = { villageId: 'jarha', businessId: 'leaf-plates', radiusKm: 10, capital: 22_000 };
+  // Rs 22,000 clears the 10% margin on a Rs 1,80,000 project, and does not
+  // clear a 25% one. Same capital, same business, different scheme row.
+  assert.equal(capitalFitFor(opts, 10), null);
+  const strict = capitalFitFor(opts, 25);
+  assert.ok(strict);
+  assert.equal(strict.requiredMargin, 45_000);
+});
+
+test('the note never suggests a business the money cannot margin either', () => {
+  const fit = capitalFitFor({
+    villageId: 'ranitali',
+    businessId: 'carpentry',
+    radiusKm: 10,
+    capital: 12_000,
+  });
+  assert.ok(fit, 'Rs 12,000 is under carpentry\'s Rs 22,000 margin');
+  assert.ok(fit.alternatives.length > 0, 'this case should have something to offer');
+  for (const a of fit.alternatives) {
+    assert.ok(
+      fit.capital >= a.business.anchorCost * 0.1,
+      `${a.business.id} is itself out of reach at this capital`,
+    );
+  }
+});
+
+test('the note reuses the report ranking rather than a second one', () => {
+  const opts = { villageId: 'ranitali', businessId: 'carpentry', radiusKm: 10, capital: 12_000 };
+  const ranked = rankBetterBusinesses(opts);
+  const fit = capitalFitFor(opts);
+  // the note's list is the shared ranking, filtered - never reordered, never
+  // padded with something the ranking did not return
+  assert.deepEqual(
+    fit.alternatives.map((a) => a.business.id),
+    ranked.filter((a) => fit.capital >= a.business.anchorCost * 0.1).map((a) => a.business.id),
+  );
+  for (const a of fit.alternatives) assert.ok(ranked.some((r) => r.business.id === a.business.id));
+});
+
+test('the demo walkthrough does NOT trigger the capital note', () => {
+  const fit = capitalFitFor(
+    { villageId: 'jarha', businessId: 'leaf-plates', radiusKm: 10, capital: 22_000 },
+    planLoan(22_000, 'ST', 'leaf-plates').beneficiaryPct,
+  );
+  // Rs 22,000 against the Rs 18,000 NSTFDC asks for on a Rs 1,80,000 plate
+  // unit - clears it, so the locked walkthrough is unchanged.
+  assert.equal(fit, null);
+});
+
+test('the locked demo score and revenue survive the anchor change', () => {
+  // The point of this test is coupling, not the numbers themselves: capitalFit
+  // reads raw capital and revenue is min(demand, capacity), so moving the
+  // project cost off capital must not move either of these.
+  const r = report();
+  assert.equal(r.score, 75);
+  assert.equal(r.estimatedAnnualRevenue, 157153);
+  assert.equal(r.revenueLimitedBy, 'market');
+  assert.equal(r.verdict, 'good');
+  // and the money side of the same walkthrough
+  const plan = planLoan(22_000, 'ST', 'leaf-plates');
+  assert.equal(plan.projectCost, 180_000);
+  assert.equal(plan.requiredMargin, 18_000);
+  assert.equal(plan.loanAmount, 158_000);
+  assert.equal(plan.emi, 2525);
+});
+
+test('every business carries an anchor the note can judge against', () => {
+  for (const b of Object.values(MOCK_BUSINESSES)) {
+    assert.equal(typeof b.anchorCost, 'number', `${b.id} has no anchorCost`);
+    assert.ok(b.anchorCost > 0);
+  }
 });
 
 console.log(`\n${n} feasibility tests passed`);

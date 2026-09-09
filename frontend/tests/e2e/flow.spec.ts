@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { nextPhone } from './minted';
 import { CAPITAL, EXPECTED_SPLIT } from './expected-cost-split';
+import { DEMO, SHORT_MARGIN } from './expected-demo';
 
 const API = 'http://localhost:4001';
 
@@ -115,8 +116,8 @@ test('a first-time user reaches a report and a repayment plan', async ({ page })
   await expect(page).toHaveURL(/\/screens\/scheme/);
 
   await expect(page.getByText('NSTFDC Loan')).toBeVisible();
-  await expect(page.getByText('₹2,20,000')).toBeVisible();
-  await expect(page.getByText('+₹1,98,000')).toBeVisible();
+  await expect(page.getByText('₹1,80,000')).toBeVisible();
+  await expect(page.getByText('+₹1,58,000')).toBeVisible();
 
   await page.getByRole('button', { name: /repayment plan/ }).click();
   await expect(page).toHaveURL(/\/screens\/emi/);
@@ -140,8 +141,10 @@ test('the numbers follow the input rather than a fixed demo case', async ({ page
 
   await page.goto('/screens/scheme');
   await expect(page.getByText('NSFDC Loan')).toBeVisible();
-  await expect(page.getByText('₹1,10,000')).toBeVisible();
-  await expect(page.getByText('₹2,20,000')).toHaveCount(0);
+  // SC + tailoring: NSFDC's Micro Finance band on a ₹90,000 anchor, nothing
+  // like the leaf-plate case above.
+  await expect(page.getByText('₹90,000')).toBeVisible();
+  await expect(page.getByText('₹1,80,000')).toHaveCount(0);
 });
 
 test('an unconfirmed scheme shows a gap instead of an invented EMI', async ({ page }) => {
@@ -786,4 +789,42 @@ test('leaving the share screen mid-save never files the case twice', async ({ pa
   const complete = applications.filter((a) => a.status === 'complete');
 
   expect(complete, 'filed twice, stored once').toHaveLength(1);
+});
+
+test('the anchor-based figures render on the phone layout', async ({ page }) => {
+  await onboard(page);
+
+  await page.goto('/screens/capital');
+  await expect(screen(page)).toContainText(DEMO.projectCost);
+  await expect(screen(page)).toContainText(DEMO.loan);
+
+  await page.goto('/screens/scheme');
+  const scheme = await screen(page).innerText();
+  expect(scheme).toContain(DEMO.projectCost);
+  expect(scheme).toContain(DEMO.loan);
+  // capital clears the ₹18,000 the scheme asks for, so the note stays away
+  expect(scheme).not.toContain('This is tight for');
+
+  await page.goto('/screens/emi');
+  expect(await screen(page).innerText()).toContain(DEMO.emi);
+
+  await page.goto('/screens/feasibility');
+  const feas = await screen(page).innerText();
+  expect(feas).toContain(DEMO.revenue);
+  expect(feas).toContain(String(DEMO.score));
+});
+
+test('capital under the required margin warns on the phone layout', async ({ page }) => {
+  await onboard(page, { business: SHORT_MARGIN.business, capital: SHORT_MARGIN.capital });
+
+  await page.goto('/screens/scheme');
+  const body = await screen(page).innerText();
+
+  // the warning, with its actual rupee figures - not merely that one appeared
+  expect(body).toContain(SHORT_MARGIN.title);
+  expect(body.replace(/\s+/g, ' ')).toContain(SHORT_MARGIN.copy);
+
+  // and it is advisory: the plan underneath still renders its own figures
+  expect(body).toContain(SHORT_MARGIN.projectCost);
+  expect(body).toContain(SHORT_MARGIN.loan);
 });
