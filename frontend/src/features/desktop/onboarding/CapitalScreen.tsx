@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { api } from '@/lib/api';
 import { planLoan, isGap } from '@/domain/finance';
-import { label } from '@/domain/feasibility';
+import { costBreakdown, label } from '@/domain/feasibility';
 import { MOCK_BUSINESSES } from '@/data/fixtures/businesses';
 import { inr } from '@/lib/format';
 import { Field, Primary, T, useT } from '@/components';
@@ -80,12 +80,8 @@ export default function CapitalScreen() {
                       en={`WHERE THIS GOES IN ${business.name.en.toUpperCase()}`}
                     />
                   </div>
-                  {business.costSplit.map((c) => (
-                    <Line
-                      key={c.label.en}
-                      k={label(c.label, s.lang)}
-                      v={inr(Math.round(money.projectCost * c.share))}
-                    />
+                  {costBreakdown(money.projectCost, business).map((c) => (
+                    <Line key={c.label.en} k={label(c.label, s.lang)} v={inr(c.amount)} />
                   ))}
                 </>
               ) : null}

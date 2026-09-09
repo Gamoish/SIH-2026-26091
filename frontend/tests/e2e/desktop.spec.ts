@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { nextPhone } from './minted';
+import { CAPITAL, EXPECTED_SPLIT } from './expected-cost-split';
 
 /**
  * The desktop tree, end to end. Runs under the `desktop` project, which seeds
@@ -176,6 +177,34 @@ test('the profile picture can be changed from the desktop rail', async ({ page }
   // and it is the same photo on the phone layout - one session, one field
   await page.goto('/screens/settings');
   await expect(page.locator('img[alt=""]').first()).toBeVisible();
+});
+
+test('the capital breakdown is the chosen business, on the desktop layout', async ({ page }) => {
+  await onboard(page);
+
+  // Same constants the phone spec asserts against, so the two layouts are
+  // pinned to each other: if either drifts, one of the two tests fails.
+  for (const [id, spec] of Object.entries(EXPECTED_SPLIT)) {
+    await page.evaluate((business) => {
+      const s = JSON.parse(localStorage.getItem('udyam.session.v1')!);
+      localStorage.setItem('udyam.session.v1', JSON.stringify({ ...s, business, capital: null }));
+    }, id);
+    await page.goto('/desktop/capital');
+    await page.getByLabel(/Your capital/).fill(CAPITAL);
+
+    for (const [label, amount] of spec.rows) {
+      await expect(page.getByText(label, { exact: true }), `${id}: ${label}`).toBeVisible();
+      await expect(page.getByText(amount, { exact: true }).first(), `${id}: ${amount}`).toBeVisible();
+    }
+    for (const [otherId, other] of Object.entries(EXPECTED_SPLIT)) {
+      if (otherId === id) continue;
+      for (const [label] of other.rows) {
+        await expect(page.getByText(label, { exact: true }), `${id} shows ${otherId}'s ${label}`).toHaveCount(
+          0,
+        );
+      }
+    }
+  }
 });
 
 test('finishing a case files it to the database, and the list reads it back', async ({ page }) => {

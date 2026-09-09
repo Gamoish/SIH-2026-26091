@@ -4,7 +4,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { api } from '@/lib/api';
 import { planLoan, isGap } from '@/domain/finance';
-import { label } from '@/domain/feasibility';
+import { costBreakdown, label } from '@/domain/feasibility';
 import { MOCK_VILLAGES } from '@/data/fixtures/villages';
 import { MOCK_BUSINESSES } from '@/data/fixtures/businesses';
 import { inr } from '@/lib/format';
@@ -32,14 +32,7 @@ export default function CapitalScreen() {
     nav.go('loading');
   };
 
-  const split =
-    plan && !isGap(plan) && business
-      ? business.costSplit.map((c) => ({
-          label: label(c.label, s.lang),
-          amount: Math.round(plan.projectCost * c.share),
-          share: c.share,
-        }))
-      : null;
+  const split = plan && !isGap(plan) && business ? costBreakdown(plan.projectCost, business) : null;
 
   return (
     <div className="dc-phone">
@@ -214,8 +207,10 @@ export default function CapitalScreen() {
               {split ? (
                 <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {split.map((c) => (
-                    <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '11px', color: '#CBDAEC', width: '112px' }}>{c.label}</span>
+                    <div key={c.label.en} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', color: '#CBDAEC', width: '112px' }}>
+                        {label(c.label, s.lang)}
+                      </span>
                       <div
                         style={{
                           flex: 1,

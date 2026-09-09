@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { buildReport, betterAlternatives } from '../src/domain/feasibility.ts';
+import { buildReport, betterAlternatives, costBreakdown } from '../src/domain/feasibility.ts';
 import { planLoan, projectCostFrom, isGap } from '../src/domain/finance.ts';
 import { MOCK_VILLAGES } from '../src/data/fixtures/villages.ts';
 import { MOCK_BUSINESSES, MOCK_COMPETITOR_COUNTS } from '../src/data/fixtures/businesses.ts';
@@ -156,6 +156,70 @@ test('no recommendation is forced where there is nothing better', () => {
 test('recommendations stay absent for a village with no report', () => {
   // Not an error, just nothing - same as the report itself.
   assert.deepEqual(betterAlternatives({ ...LOW, villageId: 'lgd-123456' }), []);
+});
+
+test('the cost breakdown is the chosen business, never a default', () => {
+  const plan = planLoan(22000, 'ST');
+  const cost = plan.projectCost; // 2,20,000
+
+  // Literal expectations, not `MOCK_BUSINESSES[id].costSplit` echoed back: if
+  // the screen ever fell back to one business for all of them, comparing
+  // against the fixture would happily agree with itself. Two businesses, so a
+  // single hardcoded default cannot satisfy both.
+  const EXPECTED = {
+    'leaf-plates': [
+      ['Plate machines', 129800],
+      ['Shed + power', 39600],
+      ['Leaves + working', 50600],
+    ],
+    grocery: [
+      ['Opening stock', 121000],
+      ['Shop + shelving', 59400],
+      ['Working capital', 39600],
+    ],
+  };
+
+  for (const [id, rows] of Object.entries(EXPECTED)) {
+    const got = costBreakdown(cost, MOCK_BUSINESSES[id]);
+    assert.deepEqual(
+      got.map((c) => [c.label.en, c.amount]),
+      rows,
+      `${id} breakdown`,
+    );
+    // every line carries a Hindi label too - the screens localise it themselves
+    for (const c of got) assert.ok(c.label.hi && c.label.hi !== c.label.en, `${id} missing hi label`);
+    // and the parts add up to the whole they were split from
+    assert.equal(
+      got.reduce((n, c) => n + c.amount, 0),
+      cost,
+      `${id} lines do not sum to the project cost`,
+    );
+  }
+
+  // the two must not be interchangeable - that is the bug this guards
+  assert.notDeepEqual(
+    costBreakdown(cost, MOCK_BUSINESSES['leaf-plates']).map((c) => c.label.en),
+    costBreakdown(cost, MOCK_BUSINESSES.grocery).map((c) => c.label.en),
+  );
+});
+
+test('the breakdown is driven by the shared project cost, for every business', () => {
+  // Both capital screens call costBreakdown(plan.projectCost, business), and
+  // plan.projectCost comes from projectCostFrom - so this is the same chain
+  // both layouts render, asserted once.
+  for (const capital of [100, 22000]) {
+    const plan = planLoan(capital, 'ST');
+    assert.equal(plan.projectCost, projectCostFrom(capital));
+    for (const b of Object.values(MOCK_BUSINESSES)) {
+      const lines = costBreakdown(plan.projectCost, b);
+      assert.equal(lines.length, b.costSplit.length);
+      assert.equal(
+        lines.reduce((n, c) => n + c.amount, 0),
+        plan.projectCost,
+        `${b.id} @ ${capital}`,
+      );
+    }
+  }
 });
 
 test('a real LGD village still returns nothing', () => {

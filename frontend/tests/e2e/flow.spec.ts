@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { nextPhone } from './minted';
+import { CAPITAL, EXPECTED_SPLIT } from './expected-cost-split';
 
 const API = 'http://localhost:4001';
 
@@ -494,6 +495,33 @@ test('onboarding asks for the business before the capital', async ({ page }) => 
   });
   await page.goto('/screens/capital');
   await expect(page).toHaveURL(/\/screens\/category/);
+});
+
+test('the capital breakdown is the chosen business, on the phone layout', async ({ page }) => {
+  await onboard(page);
+
+  for (const [id, spec] of Object.entries(EXPECTED_SPLIT)) {
+    await page.evaluate((business) => {
+      const s = JSON.parse(localStorage.getItem('udyam.session.v1')!);
+      localStorage.setItem('udyam.session.v1', JSON.stringify({ ...s, business, capital: null }));
+    }, id);
+    await page.goto('/screens/capital');
+    await page.getByLabel('Your own capital, in rupees').fill(CAPITAL);
+
+    for (const [label, amount] of spec.rows) {
+      await expect(page.getByText(label, { exact: true }), `${id}: ${label}`).toBeVisible();
+      await expect(page.getByText(amount, { exact: true }).first(), `${id}: ${amount}`).toBeVisible();
+    }
+    // and none of the OTHER business's labels leaked in
+    for (const [otherId, other] of Object.entries(EXPECTED_SPLIT)) {
+      if (otherId === id) continue;
+      for (const [label] of other.rows) {
+        await expect(page.getByText(label, { exact: true }), `${id} shows ${otherId}'s ${label}`).toHaveCount(
+          0,
+        );
+      }
+    }
+  }
 });
 
 test('the capital screen uses the native keyboard, not a drawn keypad', async ({ page }) => {

@@ -191,6 +191,27 @@ export function betterAlternatives(opts: {
     }));
 }
 
+/** One line of the project-cost breakdown. `label` stays bilingual so each
+ *  layout localises it with its own `label()` call. */
+export type CostLine = { label: Bilingual; amount: number; share: number };
+
+/**
+ * How a project cost divides over a business's own cost lines.
+ *
+ * Both capital screens render this and both used to do the multiplication
+ * themselves. That is the same shape of bug as the duplicated project-cost
+ * formula: two copies of one calculation that nothing forces to agree. The
+ * amounts here come from `planLoan`'s `projectCost`, which comes from
+ * `projectCostFrom`, so the whole chain is one definition end to end.
+ */
+export function costBreakdown(projectCost: number, business: MockBusiness): CostLine[] {
+  return business.costSplit.map((c) => ({
+    label: c.label,
+    amount: Math.round(projectCost * c.share),
+    share: c.share,
+  }));
+}
+
 export function narrate(r: FeasibilityReport, lang: Lang): string {
   const v = pick(r.village.name, lang);
   const b = pick(r.business.name, lang).toLowerCase();
