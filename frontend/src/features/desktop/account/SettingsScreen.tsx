@@ -16,7 +16,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { AvatarPicker, T, useT } from '@/components';
 import { rememberLayout } from '@/lib/layout';
-import { DesktopShell } from '../shell';
+import { DesktopShell, ScreenHead } from '../shell';
 
 /**
  * D-P8. One flex column of rows on the `--panel` ground - not cards in
@@ -43,12 +43,18 @@ export default function SettingsScreen() {
   };
 
   return (
-    <DesktopShell
-      padding="40px 60px"
-      background="var(--panel)"
-      gap={20}
-      title={<T hi="सेटिंग्स" en="Settings" />}
-    >
+    <DesktopShell padding="40px 60px" background="var(--panel)" gap={20}>
+      {/* The head the dashboard and the verdict screen already use, rather than
+          `DesktopShell`'s plain `title` - one page title, one component.
+
+          No "Need help?" link beside it: there is no help destination in this
+          app to point one at. The Applications screen carries none to reuse,
+          and the Help row below opens the phone layout, which is not help. */}
+      <ScreenHead
+        title={<T hi="सेटिंग्स" en="Settings" />}
+        sub={<T hi="आपका खाता और ऐप की पसंद" en="Your account and how this app behaves" />}
+      />
+
       {/* the account itself, at the head of the list */}
       <div
         style={{
@@ -117,23 +123,29 @@ export default function SettingsScreen() {
         </span>
       </Row>
 
+      {/* No count on this row. There is no saved-draft state to count: the
+          status enum is `draft | complete`, `saveCase` files every row as
+          `complete`, and nothing in either layout ever writes a draft. The
+          badge this replaces read `s.savedAt ? 1 : 0` - a local boolean about
+          this browser, not the number of applications the server holds. The row
+          is the way through to that real list rather than a second, wrong copy
+          of its length. */}
       <Row
         icon={File02Icon}
         label={<T hi="सहेजे आवेदन" en="Saved applications" />}
         onClick={() => nav.go('saved')}
       >
-        <span
-          style={{
-            fontSize: '12px',
-            fontWeight: 700,
-            color: 'var(--navy)',
-            background: 'var(--navy-tint)',
-            borderRadius: '20px',
-            padding: '3px 11px',
-          }}
+        <svg
+          aria-hidden
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--faint)"
+          strokeWidth="2.2"
         >
-          {s.savedAt ? 1 : 0}
-        </span>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
       </Row>
 
       <Row icon={HelpCircleIcon} label={<T hi="मदद व सहायता" en="Help & support" />}>
@@ -145,6 +157,11 @@ export default function SettingsScreen() {
           <T hi="फ़ोन पर खोलिए" en="Open on phone" />
         </a>
       </Row>
+
+      {/* Log out is set apart, not only coloured: it is the one row that ends
+          the session, so a rule separates it from the rows above rather than
+          leaving it as the next card in one unbroken run. */}
+      <div aria-hidden style={{ height: '1px', background: 'var(--line)', margin: '12px 0 2px' }} />
 
       <Row danger icon={Logout01Icon} label={<T hi="लॉग आउट" en="Log out" />}>
         {confirming ? (
@@ -220,13 +237,24 @@ function Row({
         cursor: onClick ? 'pointer' : 'default',
       }}
     >
-      <HugeiconsIcon
-        icon={icon}
-        size={20}
-        color={danger ? 'var(--rust)' : 'var(--navy)'}
-        strokeWidth={2}
-        style={{ flex: 'none' }}
-      />
+      {/* A tinted circle per row - the settings-list convention, and what makes
+          six different marks read as one column rather than six loose glyphs.
+          Decorative: the label beside it is the row's accessible name, so the
+          circle is hidden from the accessibility tree. */}
+      <span
+        aria-hidden
+        style={{
+          flex: 'none',
+          width: '38px',
+          height: '38px',
+          borderRadius: '50%',
+          display: 'grid',
+          placeItems: 'center',
+          background: danger ? 'var(--rust-tint)' : 'var(--navy-tint)',
+        }}
+      >
+        <HugeiconsIcon icon={icon} size={20} color={danger ? 'var(--rust)' : 'var(--navy)'} strokeWidth={2} />
+      </span>
       <span
         style={{
           flex: 1,

@@ -806,12 +806,22 @@ test('the anchor-based figures render on the phone layout', async ({ page }) => 
   expect(scheme).not.toContain('This is tight for');
 
   await page.goto('/screens/emi');
-  expect(await screen(page).innerText()).toContain(DEMO.emi);
+  const emi = await screen(page).innerText();
+  expect(emi).toContain(DEMO.emi);
+  // the affordability figure, from case.ts's emiShare() - the EMI screens
+  // print it as "~19%", the same string the desktop layout prints
+  expect(emi).toContain(`~${DEMO.emiSharePct}%`);
 
   await page.goto('/screens/feasibility');
   const feas = await screen(page).innerText();
   expect(feas).toContain(DEMO.revenue);
   expect(feas).toContain(String(DEMO.score));
+
+  // The report screen prints the SAME share as a sentence rather than a stat,
+  // and it is the third caller of emiShare(). There is no desktop counterpart:
+  // the desktop report screen does not show an affordability line at all.
+  await page.goto('/screens/report');
+  expect(await screen(page).innerText()).toContain(`about ${DEMO.emiSharePct}% of estimated income`);
 });
 
 test('capital under the required margin warns on the phone layout', async ({ page }) => {

@@ -30,6 +30,13 @@ type Spec = {
   padding?: string;
   /** Column counts of the body's top-level grids, in document order. */
   grids?: number[];
+  /**
+   * The illustration file this screen paints, when it is NOT the one
+   * `MONUMENTS` names. That map is shared with the phone layout; a desktop
+   * screen can override it in CSS, and this records the override so the
+   * assertion below still has something exact to check.
+   */
+  monument?: string;
   session: 'fresh' | 'identified' | 'located' | 'chosen' | 'complete';
 };
 
@@ -96,6 +103,11 @@ const SPEC: Spec[] = [
     asides: [RAIL],
     padding: '32px 40px',
     session: 'complete',
+    // This screen names a real village and tehsil, so it deliberately paints
+    // an abstract band rather than `MONUMENTS.feasibility` - a Mumbai
+    // landmark under a report about a village in Sonbhadra implied a place
+    // the report is not about. Desktop only; the phone keeps the silhouette.
+    monument: 'fields',
   },
   {
     artboard: 'D-P3',
@@ -297,9 +309,8 @@ test.describe('desktop layout matches the design canvas', () => {
       // Asserted on the rendered pseudo-element, because the class being
       // present proves nothing - an earlier pass had it invisible behind the
       // content area's own background.
-      expect(m.monument, `${spec.artboard} paints ${MONUMENTS[spec.slug as Slug]}`).toContain(
-        `${MONUMENTS[spec.slug as Slug]}.svg`,
-      );
+      const art = spec.monument ?? MONUMENTS[spec.slug as Slug];
+      expect(m.monument, `${spec.artboard} paints ${art}`).toContain(`${art}.svg`);
       expect(m.monumentBand, 'the monument band has real height').toBeGreaterThan(100);
       expect(m.monumentOnRail, 'the monument belongs to the content area, not the rail').toBe(false);
       // the layer sits at z-index -1, which only paints above the content

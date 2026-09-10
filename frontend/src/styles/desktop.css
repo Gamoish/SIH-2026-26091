@@ -128,6 +128,17 @@
   opacity: var(--monument-opacity, 0.22);
 }
 
+/* The verdict screen names a real village and tehsil, so it does not get a
+   landmark: `gateway-of-india` under a report about a village in Sonbhadra
+   implied a place the report is not about. Overridden here rather than in
+   `MONUMENTS` because that map is shared with the phone layout, and this pass
+   is desktop-only - `[data-screen]` is the layout's wrapper, `.dc-desk` only
+   exists in the rail chrome, so the phone's own feasibility screen keeps the
+   silhouette it has. */
+[data-screen='feasibility'] .dc-desk {
+  --monument: url('/fields.svg');
+}
+
 /* Card-stack screens keep the original, shorter band. Their content runs to
    the bottom of the viewport, so at the taller size the monument's spire rises
    through the gutters between cards and reads as a stray mark rather than a

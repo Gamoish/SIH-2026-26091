@@ -285,6 +285,25 @@ button:disabled {
   content: counter(tally);
 }
 
+/* 4b. The score's ring drawing itself in. The arc's finished length is set
+      inline from the same figure `--tally-to` carries, so this cannot draw to
+      a position the engine did not produce; the keyframe only says where it
+      starts (empty). `--arc-len` is the full circumference, so `from` is a
+      completely undrawn ring whatever the score turns out to be.
+
+      Same duration and easing as the count-up above, deliberately: they are
+      one gesture - the number and the ring arrive together - not two effects
+      that happen to overlap. The reduced-motion block above clamps this with
+      everything else. */
+@keyframes arc {
+  from {
+    stroke-dashoffset: var(--arc-len);
+  }
+}
+.arc {
+  animation: arc var(--dur-4) var(--ease-out) both;
+}
+
 /* 5. The onboarding step bar filling as the flow advances. */
 .step-dot {
   transition:

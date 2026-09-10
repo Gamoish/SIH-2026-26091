@@ -19,7 +19,7 @@ import { TopBarShell, Legend } from '../shell';
  * fake numbers counting up either.
  */
 export default function LoadingScreen() {
-  const { s } = useSession();
+  const { s, set } = useSession();
   const nav = useNav();
   // Derived, not stored: a chosen village with no demo fixture behind it is a
   // fact about the session, knowable during render. Setting it from an effect
@@ -42,12 +42,21 @@ export default function LoadingScreen() {
       radiusKm: s.radiusKm,
       capital: s.capital,
     })
-      .then((r) => live && (r ? nav.replace('feasibility') : setRequestFailed(true)))
+      .then((r) => {
+        if (!live) return;
+        if (!r) return setRequestFailed(true);
+        // Stamped here, not read off the clock on the verdict screen: this is
+        // the moment the report was actually produced, and the screen that
+        // shows it can be revisited days later from Applications. Written
+        // before the navigation so the next screen already has it.
+        set({ reportAt: new Date().toISOString() });
+        nav.replace('feasibility');
+      })
       .catch(() => live && setRequestFailed(true));
     return () => {
       live = false;
     };
-  }, [s.village, s.business, s.capital, s.radiusKm, nav]);
+  }, [s.village, s.business, s.capital, s.radiusKm, nav, set]);
 
   if (failed) {
     return (

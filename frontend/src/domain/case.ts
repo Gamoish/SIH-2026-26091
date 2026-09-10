@@ -85,6 +85,67 @@ export function caseFrom(s: Session): Case {
   return { report, plan, alternatives, capitalFit };
 }
 
+/**
+ * The reading the score's own inputs add up to, for the verdict screen to put
+ * into a sentence.
+ *
+ * The score is `headroom * 0.6 + capitalFit * 0.4`. Both halves are already
+ * shown as bare figures elsewhere on that screen; what was missing was what
+ * they MEAN together, and a fixed sentence saying "moderately competitive"
+ * under every result would have said it whether or not it was true. Everything
+ * here is computed from this case.
+ *
+ * `headroom` is recomputed rather than read off the report, because
+ * `buildReport` keeps it as a local. It is the same two lines - the catchment
+ * one unit of this trade needs, against the people one unit here would
+ * actually get - and `insight-headroom-tracks-the-score` in tests/case.test.mjs
+ * pins the two together so the copy cannot quietly disagree with the number it
+ * is explaining.
+ *
+ * ponytail: duplicated formula, because domain/feasibility.ts is off limits in
+ * this pass. Fold it into FeasibilityReport and delete the arithmetic here the
+ * next time that file is open.
+ */
+export type Insight = {
+  /** 0-1: the share of one viable unit's catchment this unit would have. */
+  headroom: number;
+  /** People each existing unit here already serves. */
+  perCompetitor: number;
+  /** People one unit of this trade needs to be viable. */
+  viableCatchment: number;
+  /** Which of the three readings `headroom` falls into. */
+  reading: 'room' | 'tight' | 'crowded';
+  /** Non-null when the applicant's own capital is short of the scheme margin. */
+  margin: CapitalFit | null;
+  /** Whether demand or the size of the setup is what caps the revenue estimate. */
+  limitedBy: 'market' | 'capacity';
+};
+
+export function insight(c: Case): Insight | null {
+  if (!c.report) return null;
+  const r = c.report;
+
+  // Unrounded for the arithmetic, rounded only for the sentence: rounding the
+  // catchment first moved the reconstructed score by a point.
+  const catchment = 10000 / r.business.densityPer10k;
+  const headroom = Math.min(1, r.peoplePerCompetitor / catchment);
+
+  return {
+    headroom,
+    perCompetitor: r.peoplePerCompetitor,
+    viableCatchment: Math.round(catchment),
+    // Cut where the advice actually changes. Below 0.45 a new unit would get
+    // under half the catchment its trade needs and the honest word is crowded;
+    // above 0.7 headroom has stopped being the thing holding the score down.
+    // The bounds are set against the range the engine really produces
+    // (roughly 0.13 to 0.73 over the fixtures) rather than against a tidy
+    // 0/1 split that would have left one of the three readings unreachable.
+    reading: headroom >= 0.7 ? 'room' : headroom >= 0.45 ? 'tight' : 'crowded',
+    margin: c.capitalFit,
+    limitedBy: r.revenueLimitedBy,
+  };
+}
+
 /** EMI as a share of the estimated monthly income - the affordability check. */
 export function emiShare(c: Case): number | null {
   if (!c.report || !c.plan || isGap(c.plan)) return null;

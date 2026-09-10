@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 125" width="640" height="125" fill="#000">
+  <!--
+    An abstract band: low hills behind, terraced field rows in front. No
+    landmark, no regional silhouette.
+
+    The feasibility screen states a village and a tehsil by name, and the
+    monument band used to paint the Gateway of India under it - a Mumbai
+    landmark under a report about a village in Sonbhadra. Rather than guess a
+    district-appropriate monument for every place the report can name, this
+    says nothing specific about where it is, which is the only claim that is
+    true for all of them.
+
+    The drawing fills its viewBox top to bottom on purpose. `.dc-monument`
+    fits the art with `background-size: contain` into a full-width band, so
+    the two things that decide where the illustration lands are its aspect
+    ratio and how much of its own box it actually uses. At roughly 5:1 and
+    drawn edge to edge, it spans the full width AND its ridge line comes up
+    to meet the last card. An earlier pass left blank space above the hills,
+    which pushed the art down into a white gap below the content; a taller
+    canvas then fixed the gap but fitted by height and stopped being
+    full-width.
+
+    Painted, not masked, like every other file the band can carry.
+  -->
+  <g id="hills">
+    <path
+      d="M0 38 C46 8 88 6 130 26 C168 43 196 41 228 21 C268 -5 314 -1 352 28 C388 54 420 54 456 30 C498 2 546 5 588 33 C608 46 624 52 640 55 L640 125 L0 125 Z"
+      opacity=".38"
+    />
+    <path
+      d="M0 62 C58 38 104 36 152 53 C204 73 246 71 292 51 C344 29 392 31 438 55 C486 81 540 82 594 62 C612 55 626 53 640 53 L640 125 L0 125 Z"
+      opacity=".6"
+    />
+  </g>
+
+  <g id="fields">
+    <!-- the field edge the furrows sit behind -->
+    <path d="M0 88 L640 88" stroke="#000" stroke-width="1.8" fill="none" opacity=".5" />
+    <!-- furrows, fanning out towards the viewer -->
+    <path
+      d="M52 125 L150 90 M128 125 L200 90 M204 125 L250 90 M278 125 L300 90 M350 125 L349 90 M422 125 L398 90 M496 125 L448 90 M572 125 L498 90"
+      stroke="#000"
+      stroke-width="1.9"
+      fill="none"
+      opacity=".48"
+    />
+    <path
+      d="M0 105 C120 100 240 110 360 104 C468 99 556 107 640 102"
+      stroke="#000"
+      stroke-width="1.5"
+      fill="none"
+      opacity=".3"
+    />
+  </g>
+
+  <g id="trees" opacity=".72">
+    <!-- generic round-crowned trees, no species read -->
+    <g>
+      <rect x="93.2" y="52" width="2.6" height="14" />
+      <circle cx="94.5" cy="47" r="8.4" />
+    </g>
+    <g>
+      <rect x="262.2" y="60" width="2.2" height="11" />
+      <circle cx="263.3" cy="56" r="6.6" />
+    </g>
+    <g>
+      <rect x="497.2" y="49" width="2.8" height="16" />
+      <circle cx="498.6" cy="43" r="9.4" />
+    </g>
+    <g>
+      <rect x="556.2" y="64" width="2" height="10" />
+      <circle cx="557.2" cy="60" r="5.6" />
+    </g>
+  </g>
+</svg>

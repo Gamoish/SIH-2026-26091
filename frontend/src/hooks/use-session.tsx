@@ -28,6 +28,7 @@ const EMPTY: Session = {
   capital: null,
   business: null,
   savedAt: null,
+  reportAt: null,
 };
 
 const KEY = 'udyam.session.v1';

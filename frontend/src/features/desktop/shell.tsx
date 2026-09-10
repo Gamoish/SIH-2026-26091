@@ -399,9 +399,8 @@ export function DesktopShell({
   return (
     <div className="dc-desk dc-flag">
       <aside className="dc-desk-side">
-        {/* Who is signed in, at the head of the rail: on a desktop the account
-            is the thing you act on, and the flag corner already marks the page
-            as the service's. The wordmark keeps its place at the foot. */}
+        {/* Who is signed in heads the rail; the service's own mark and tagline
+            sit at the foot, below the nav. */}
         <div style={{ padding: '0 22px 18px' }}>
           <AvatarPicker
             size={44}
@@ -446,22 +445,30 @@ export function DesktopShell({
 
         <div style={{ flex: 1 }} />
 
+        {/* Anchored to the bottom by the spacer above, so it stays at the foot
+            of a 264px rail whatever the nav does. The separator is the same
+            rule that used to sit between these two blocks - it moved with
+            them rather than being added or dropped. */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
             margin: '0 22px',
             padding: '14px 0 2px',
             borderTop: '1px solid rgba(255,255,255,.12)',
           }}
         >
-          <Lockup h={26} />
+          <Lockup h={34} />
+          <div style={{ fontSize: '11.5px', color: '#B9CBE0', lineHeight: 1.55, marginTop: '10px' }}>
+            <T hi="एक सरकारी व्यवहार्यता और ऋण सलाहकार" en="A government feasibility and loan adviser" />
+          </div>
         </div>
       </aside>
 
+      {/* No <Tricolour /> here, unlike the onboarding chromes. A full-width
+          band of flag colour across the top of every post-onboarding screen
+          read as theme chrome rather than as anything about the page, and the
+          service is already marked twice over on these screens - the flag
+          corner from `.dc-flag`, and the lockup at the head of the rail. */}
       <div className="dc-desk-main">
-        <Tricolour />
         <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
           <div
             className="dc-desk-body dc-monument reveal"
@@ -527,6 +534,89 @@ export function Legend({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+    </div>
+  );
+}
+
+/**
+ * The row that heads a rail screen: a way back, the title and its subtitle,
+ * then whatever that screen wants on the right.
+ *
+ * Extracted from the verdict screen, which grew it first, so the dashboard and
+ * anything after it get the same row rather than a second one that drifts a
+ * pixel and a font-size away. The two slots are what actually differ between
+ * screens - the verdict screen puts the generated-on date in `meta` and a
+ * Print button in `actions`; the dashboard puts its location pill there - so
+ * they are slots rather than props with opinions.
+ *
+ * Keeps `dc-desk-title`, the class `utilities.css` already hides when
+ * printing: this row is chrome, and a printed sheet should start at the
+ * content. It replaces `DesktopShell`'s own `title` prop on the screens that
+ * use it; that prop still backs the screens that only want a plain heading.
+ */
+export function ScreenHead({
+  title,
+  sub,
+  onBack,
+  backLabel,
+  meta,
+  actions,
+}: {
+  title: React.ReactNode;
+  sub?: React.ReactNode;
+  /** Omit for a screen with nothing sensible behind it; the control is then not rendered. */
+  onBack?: () => void;
+  /** Where back goes, for screen readers - "Back" alone says nothing useful. */
+  backLabel?: string;
+  /** Quiet supporting text on the right, before the actions. */
+  meta?: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
+  return (
+    <div
+      className="dc-desk-title"
+      style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '22px' }}
+    >
+      {onBack ? (
+        <button
+          onClick={onBack}
+          aria-label={backLabel}
+          style={{
+            flex: 'none',
+            marginTop: '4px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '32px',
+            height: '32px',
+            borderRadius: '9px',
+            border: '1px solid var(--line)',
+            background: 'var(--card)',
+            color: 'var(--muted)',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+      ) : null}
+
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: '20px', fontWeight: 700, lineHeight: 1.25 }}>{title}</div>
+        {sub ? (
+          <div style={{ fontSize: '13.5px', color: 'var(--muted)', marginTop: '2px' }}>{sub}</div>
+        ) : null}
+      </div>
+
+      <span style={{ flex: 1 }} />
+
+      {meta ? (
+        <div style={{ fontSize: '12.5px', color: 'var(--muted)', marginTop: '7px', flex: 'none' }}>
+          {meta}
+        </div>
+      ) : null}
+      {actions}
     </div>
   );
 }

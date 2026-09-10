@@ -32,6 +32,17 @@ export const DEMO = {
   // capitalFit reads raw capital and revenue is market-limited here.
   score: 75,
   revenue: '₹1,57,153',
+
+  /**
+   * EMI as a share of estimated monthly income: emiShare() in case.ts, the one
+   * implementation all three screens now call. ₹2,525 against ₹1,57,153/12.
+   *
+   * Stored as the number, not as rendered text, because the two screens print
+   * it differently - "~19%" on the EMI screens, "about 19% of estimated
+   * income" in the report's sentence. Each spec builds its own string from
+   * this, so one constant still pins all three render sites.
+   */
+  emiSharePct: 19,
 } as const;
 
 /**

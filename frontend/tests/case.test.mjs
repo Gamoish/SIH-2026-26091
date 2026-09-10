@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { caseFrom, emiShare } from '../src/domain/case.ts';
+import { caseFrom, emiShare, insight } from '../src/domain/case.ts';
 import { isGap } from '../src/domain/finance.ts';
 
 let n = 0;
@@ -72,6 +72,50 @@ test('an unconfirmed scheme yields a gap rather than an invented figure', () => 
 test('EMI share is a sane percentage of estimated income', () => {
   const share = emiShare(caseFrom(session()));
   assert.ok(share > 0 && share < 100, `implausible EMI share: ${share}`);
+});
+
+/**
+ * The verdict screen's sentence is built from `insight()`, and `insight()`
+ * recomputes headroom because buildReport keeps it as a local - see the note
+ * there. If the engine's definition of headroom ever moves, the copy would go
+ * on explaining the old one. This is what fails when that happens.
+ *
+ * The score is `headroom * 0.6 + capitalFit * 0.4`, and capitalFit is
+ * `capital / (capital + 5000)` - both from buildReport. Reconstructing the
+ * score from insight's headroom and asserting it equals the engine's is the
+ * strongest available check that the two are still the same quantity.
+ */
+test('the insight headroom still tracks the score', () => {
+  for (const patch of [{}, { capital: 12000 }, { business: 'grocery' }, { radiusKm: 10 }]) {
+    const s = session(patch);
+    const c = caseFrom(s);
+    const i = insight(c);
+    const rebuilt = Math.round((i.headroom * 0.6 + (s.capital / (s.capital + 5000)) * 0.4) * 100);
+    assert.equal(rebuilt, c.report.score, `headroom drifted for ${JSON.stringify(patch)}`);
+  }
+});
+
+test('the insight reading follows the numbers rather than being fixed', () => {
+  // Village varies as well as business: at one village every trade can land in
+  // the same band quite legitimately, and a test that only swapped the trade
+  // would have passed on a hardcoded reading.
+  const readings = new Set(
+    [
+      { village: 'bijpur', business: 'grocery' },
+      { village: 'jarha', business: 'tailoring' },
+      { village: 'kutku', business: 'leaf-plates' },
+    ].map((patch) => insight(caseFrom(session(patch))).reading),
+  );
+  assert.ok(readings.size > 1, `every business read the same: ${[...readings]}`);
+});
+
+test('insight carries the capital-margin shortfall, and only when there is one', () => {
+  assert.equal(insight(caseFrom(session())).margin, null);
+  assert.equal(insight(caseFrom(session({ capital: 12000 }))).margin.requiredMargin, 18000);
+});
+
+test('no report means no insight, rather than an empty one', () => {
+  assert.equal(insight(caseFrom(session({ village: null }))), null);
 });
 
 console.log(`\n${n} case tests passed`);

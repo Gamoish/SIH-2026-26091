@@ -262,6 +262,58 @@ test('finishing a case files it to the database, and the list reads it back', as
   await expect(page.getByText('Leaf plates')).toBeVisible();
 });
 
+/**
+ * The status of an application and the feasibility score of the business it is
+ * about are two different facts. The list used to imply otherwise - a bar, a
+ * score and a badge in one row read as "this application is 79% filed" - so
+ * this asserts they are separate elements carrying separate values, not one
+ * number rendered twice.
+ */
+test('the applications list separates filing status from the feasibility score', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/share');
+  await expect(page.getByText('Feasibility summary')).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
+
+  await page.goto('/desktop/saved');
+  const row = page.getByTestId('application-row').first();
+  await expect(row).toBeVisible({ timeout: 10_000 });
+
+  const status = row.getByTestId('application-status');
+  const score = row.getByTestId('application-score');
+  await expect(status).toBeVisible();
+  await expect(score).toBeVisible();
+
+  // `useInnerText` throughout: <T> renders both languages and hides one in CSS,
+  // so textContent would read "पूराComplete" and prove nothing about the screen.
+  //
+  // the badge says a status off the `draft | complete` enum, and names no number
+  await expect(status).toHaveText(/^(Complete|Draft)$/, { useInnerText: true });
+  // the score is a labelled figure out of 100, and names no status
+  await expect(score).toHaveText(/^Feasibility score \d{1,3} \/ 100$/, { useInnerText: true });
+
+  // Distinct elements: neither contains the other, so no single value is being
+  // shown as both. And nothing in the row is a bar filled from the score.
+  expect(await status.evaluate((el, other) => el.contains(other), await score.elementHandle())).toBe(false);
+  const scoreValue = Number((await score.innerText()).match(/(\d{1,3}) \/ 100/)![1]);
+  const barWidths = await row.evaluate((el) =>
+    [...el.querySelectorAll('*')]
+      .map((e) => getComputedStyle(e).width)
+      .filter((w) => w.endsWith('%'))
+      .map((w) => parseFloat(w)),
+  );
+  expect(barWidths, 'no element in the row is sized to the score').not.toContain(scoreValue);
+
+  // the summary strip counts the same rows, and its three figures add up
+  const num = async (id: string) => Number(await page.getByTestId(id).textContent());
+  expect(await num('count-filed')).toBe((await num('count-complete')) + (await num('count-pending')));
+  expect(await num('count-filed')).toBe(await page.getByTestId('application-row').count());
+});
+
 test('the score counts up to the real figure, and the accessible name does not', async ({ page }) => {
   await onboard(page);
   await expect(page).toHaveURL(/\/desktop\/feasibility/);
@@ -498,6 +550,302 @@ for (const [layout, base] of [
   });
 }
 
+/**
+ * The redesigned verdict screen (D-P2). Structure first, then the two claims
+ * that are easy to fake: that the supporting copy carries THIS case's radius
+ * and village rather than a hardcoded "5 km", and that the key insight is
+ * derived rather than a fixed sentence.
+ */
+/**
+ * The dashboard (D-P6). It shares its header row and its score gauge with the
+ * verdict screen, so the two things worth pinning are that the shared pieces
+ * are really the shared ones, and that the four chips carry four real values
+ * off the active case rather than restating the line above them.
+ */
+/**
+ * The rail's vertical order: who is signed in, then the nav, then the service
+ * mark and tagline at the foot.
+ *
+ * Nothing asserted this before - the rail's contents were checked, never their
+ * arrangement - so the lockup could move between the head and the foot without
+ * a single test noticing. Measured by position rather than by DOM index, since
+ * a flex spacer is what actually pins the lockup to the bottom.
+ */
+/**
+ * The applications screen heads itself with the shared `ScreenHead`, exactly as
+ * the dashboard and settings do, and the flag mark hangs off the page corner
+ * from `.dc-flag::before` on the shell - not from anything this screen owns.
+ *
+ * Asserted here because a report of a "cut-off header" on this page pointed at
+ * that mark. It is a corner ribbon by design and is measured on all three
+ * screens: same box, same art, painting above the body rather than clipped by
+ * it. A regression that cropped it, or a head that quietly forked into a
+ * second implementation on this screen, fails here.
+ */
+test('the applications screen heads itself exactly as the other rail screens do', async ({ page }) => {
+  await onboard(page);
+
+  const read = async (slug: string) => {
+    await page.goto(`/desktop/${slug}`);
+    await expect(page.locator('.dc-desk-title')).toBeVisible();
+    return page.evaluate(() => {
+      const host = document.querySelector('.dc-desk.dc-flag') as HTMLElement | null;
+      const head = document.querySelector('.dc-desk-title') as HTMLElement | null;
+      if (!host || !head) return null;
+      const mark = getComputedStyle(host, '::before');
+      const box = head.getBoundingClientRect();
+      // an ancestor that clips is what would crop the mark to a fragment
+      const clipping: string[] = [];
+      for (let n: HTMLElement | null = host; n; n = n.parentElement) {
+        const s = getComputedStyle(n);
+        if (s.overflow !== 'visible') clipping.push(`${n.className || n.tagName}:${s.overflow}`);
+      }
+      return {
+        markImage: mark.backgroundImage,
+        markSize: `${mark.width} x ${mark.height}`,
+        markZ: mark.zIndex,
+        hostTop: Math.round(host.getBoundingClientRect().top),
+        headVisible: box.width > 300 && box.height > 20,
+        headTop: Math.round(box.top),
+        clipping,
+      };
+    });
+  };
+
+  const saved = await read('saved');
+  const home = await read('home');
+  const settings = await read('settings');
+
+  expect(saved).not.toBeNull();
+  // the mark renders whole: same art, same box and same layer as the others,
+  // and nothing on the way up to the shell clips it
+  expect(saved!.markImage, 'the flag mark is painted on the applications screen').toContain(
+    'flag-corner.svg',
+  );
+  expect(saved!.markSize).toBe(home!.markSize);
+  expect(saved!.markSize).toBe(settings!.markSize);
+  expect(saved!.markZ).toBe(home!.markZ);
+  expect(saved!.clipping, 'nothing clips the shell on the applications screen').toEqual([]);
+  expect(saved!.hostTop, 'the shell starts flush with the top').toBe(0);
+
+  // and the head itself is the full row, at the same place as on the dashboard.
+  // Deliberately not compared against settings: the canvas gives that screen
+  // 40px 60px of body padding against this one's 36px 44px, so its head sits
+  // 4px lower by design and asserting otherwise would fail on a correct page.
+  expect(saved!.headVisible).toBe(true);
+  expect(settings!.headVisible).toBe(true);
+  expect(saved!.headTop).toBe(home!.headTop);
+
+  // the head's own three parts, from the shared component
+  await page.goto('/desktop/saved');
+  await expect(page.locator('.dc-desk-title').getByText('Your applications')).toBeVisible();
+  await expect(page.locator('.dc-desk-title').getByText('Every check you have filed so far')).toBeVisible();
+  await expect(page.locator('.dc-desk-title').getByRole('button', { name: 'Add a new check' })).toBeVisible();
+});
+
+test('the applications list sorts by the real filed date, from a real control', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/saved');
+
+  // with nothing filed there is no list to order, so no control either
+  await expect(page.getByTestId('apps-sort')).toHaveCount(0);
+
+  await page.goto('/desktop/share');
+  await expect(page.getByText('Feasibility summary')).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
+
+  await page.goto('/desktop/saved');
+  const sort = page.getByTestId('apps-sort');
+  await expect(sort).toBeVisible({ timeout: 10_000 });
+
+  // a real control over the real order, not a label that reads like one
+  expect(await sort.evaluate((el) => el.tagName)).toBe('SELECT');
+  expect(await sort.evaluate((el) => [...(el as HTMLSelectElement).options].map((o) => o.value))).toEqual([
+    'newest',
+    'oldest',
+  ]);
+  await expect(sort).toHaveValue('newest');
+  await sort.selectOption('oldest');
+  await expect(sort).toHaveValue('oldest');
+  // the rows survive the reorder - a sort that drops the applicant's own row
+  // would be worse than no sort at all
+  await expect(page.getByTestId('application-row')).toHaveCount(1);
+});
+
+test('the rail stacks the account, the nav, then the mark at the foot', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/home');
+
+  const rail = page.locator('.dc-desk-side');
+  const box = async (l: ReturnType<typeof rail.locator>) => (await l.first().boundingBox())!;
+
+  const account = await box(rail.getByText(/^\+91 /));
+  const nav = await box(rail.locator('nav'));
+  const wordmark = await box(rail.getByRole('img', { name: /Udyam Sathi/ }));
+  const tagline = await box(rail.getByText('A government feasibility and loan adviser'));
+
+  expect(account.y, 'the account block heads the rail').toBeLessThan(nav.y);
+  expect(nav.y, 'the nav sits above the mark').toBeLessThan(wordmark.y);
+  expect(wordmark.y, 'the tagline follows the mark').toBeLessThanOrEqual(tagline.y);
+
+  // and the mark really is at the foot, not merely last
+  const railBox = await box(rail);
+  expect(
+    railBox.y + railBox.height - (tagline.y + tagline.height),
+    'the mark is anchored to the bottom of the rail',
+  ).toBeLessThan(40);
+});
+
+test('the dashboard heads itself, and its chips carry the real case', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/home');
+
+  const body = page.locator('.dc-desk-body');
+
+  await expect(body.getByText(`Hello, Suresh Kharwar`)).toBeVisible();
+  await expect(body.getByText('Your dashboard')).toBeVisible();
+
+  // The same arc gauge the verdict screen uses - the ring element, not just a
+  // number - carrying the engine's score.
+  await expect(page.getByRole('img', { name: `${DEMO.score} / 100` })).toBeVisible();
+  await expect(body.locator('svg circle.arc')).toHaveCount(1);
+
+  // Four chips, four distinct real values off the active case.
+  const text = await body.innerText();
+  for (const chip of [DEMO.business, `${DEMO.village}, Dudhi`, 'NSTFDC', DEMO.loan]) {
+    expect(text, `chip: ${chip}`).toContain(chip);
+  }
+  // and the headline above them is the verdict, not those same values again
+  expect(text).toContain('Good opportunity');
+
+  // Three real actions, each with its explanatory footer line.
+  await expect(body.getByText('All 6 competitors and the price range, village by village.')).toBeVisible();
+  await expect(body.getByText('6% under NSTFDC, instalment by instalment.')).toBeVisible();
+  await expect(body.getByText('Print it or save a PDF to take to a bank or CSC centre.')).toBeVisible();
+
+  // No guide exists, so nothing offers one.
+  expect(text).not.toMatch(/View guide|Need help/i);
+});
+
+/**
+ * The location pill is a label, not a control - there is no behaviour to give
+ * it yet, and the panel beside the active card is the real way to run a check
+ * somewhere else. This is what fails if it is ever quietly made clickable
+ * without a destination.
+ */
+test('the dashboard location pill is a label, not a silent button', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/home');
+
+  const head = page.locator('.dc-desk-title');
+  await expect(head.getByText(`${DEMO.village}, Dudhi`)).toBeVisible();
+  await expect(head.locator('button')).toHaveCount(0);
+});
+
+test('the dashboard next-step cards reach the three screens they name', async ({ page }) => {
+  await onboard(page);
+
+  for (const [name, url] of [
+    ['Full report', /\/desktop\/report/],
+    ['Repayment plan', /\/desktop\/emi/],
+    ['Show to bank', /\/desktop\/share/],
+  ] as const) {
+    await page.goto('/desktop/home');
+    await page.getByRole('button', { name: new RegExp(name) }).click();
+    await expect(page).toHaveURL(url);
+  }
+});
+
+test('the verdict screen heads itself, dates itself, and explains its own figures', async ({ page }) => {
+  await onboard(page);
+  await expect(page).toHaveURL(/\/desktop\/feasibility/);
+
+  const body = page.locator('.dc-desk-body');
+
+  // the breadcrumb, with the subtitle under it
+  await expect(body.getByText('Your result', { exact: true })).toBeVisible();
+  await expect(body.getByText('Business feasibility analysis')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Go to home' })).toBeVisible();
+
+  // The date comes from the session stamp written when the check finished,
+  // not from today's clock: assert the two agree.
+  const stamped = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').reportAt as string | null,
+  );
+  expect(stamped, 'the loading screen stamped reportAt').toBeTruthy();
+  const expected = new Date(stamped!).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  await expect(body.getByText(`Generated on ${expected}`)).toBeVisible();
+
+  // The full-width flag strip is gone from the rail chrome; the corner glyph
+  // (asserted in canvas-layout.spec.ts) is what marks the page now.
+  await expect(page.locator('.dc-tricolour')).toHaveCount(0);
+
+  // Stat subcopy carries the radius and village THIS check ran on. The demo
+  // walks 10 km, so a hardcoded "5 km" would fail here.
+  const text = await body.innerText();
+  expect(text).toContain(`People living within ${DEMO.radius} of ${DEMO.village}, Dudhi.`);
+  expect(text).toContain(`${DEMO.business} units already running in that circle.`);
+  expect(text).toContain('On average, each existing unit serves about this many people.');
+
+  // What next lists what the report actually contains, and the CTA carries no
+  // decorative arrow any more.
+  await expect(body.getByText('Competitors — village by village')).toBeVisible();
+  await expect(body.getByText('Suggested price — the')).toBeVisible();
+  await expect(body.getByText('Strengths & risks —')).toBeVisible();
+  const cta = page.getByRole('button', { name: /Read the full report/ });
+  await expect(cta.locator('svg')).toHaveCount(0);
+});
+
+/**
+ * The key insight has to be reasoning about THIS case, not a fixed sentence.
+ *
+ * Two independent checks, because either alone is weak: the sentence quotes
+ * the same people-per-competitor figure the stat tile shows (so it is reading
+ * the report, not a constant), and two different businesses in the same
+ * village produce different insight text.
+ */
+test('the key insight is derived from the case, not a fixed string', async ({ page }) => {
+  await onboard(page);
+
+  const body = page.locator('.dc-desk-body');
+  await expect(body.getByText('Key insight')).toBeVisible();
+
+  // The figure the "People per competitor" tile shows, read off the rendered
+  // text rather than the DOM: every label renders in both languages and CSS
+  // hides one, so innerText is the only view that matches what is on screen.
+  const shown = await body.innerText();
+  const tile = shown.match(/([\d,]+)\s*\n\s*People per competitor/);
+  expect(tile, 'found the people-per-competitor tile').not.toBeNull();
+  const perCompetitor = tile![1];
+
+  const insight = await body.locator('p').last().innerText();
+  expect(insight, 'the insight quotes the case figure').toContain(perCompetitor);
+  expect(insight).toMatch(/people to itself/);
+
+  // And it moves when the case does. The business is changed in the session
+  // rather than by onboarding a second account: the case is derived from the
+  // session on every render, and an onboarded browser cannot re-enter the
+  // first-run steps anyway.
+  await page.evaluate(() => {
+    const key = 'udyam.session.v1';
+    const s = JSON.parse(localStorage.getItem(key) ?? '{}');
+    localStorage.setItem(key, JSON.stringify({ ...s, business: 'poultry' }));
+  });
+  await page.reload();
+  await expect(body.getByText('Key insight')).toBeVisible();
+
+  const other = await body.locator('p').last().innerText();
+  expect(other, 'a different business reads differently').not.toBe(insight);
+});
+
 test('the anchor-based figures render on the desktop layout', async ({ page }) => {
   await onboard(page);
 
@@ -515,7 +863,11 @@ test('the anchor-based figures render on the desktop layout', async ({ page }) =
   expect(scheme).not.toContain('This is tight for');
 
   await page.goto('/desktop/emi');
-  expect(await page.locator('.dc-desk-body').innerText()).toContain(DEMO.emi);
+  const emi = await page.locator('.dc-desk-body').innerText();
+  expect(emi).toContain(DEMO.emi);
+  // the affordability figure, from case.ts's emiShare() - the EMI screens
+  // print it as "~19%"
+  expect(emi).toContain(`~${DEMO.emiSharePct}%`);
 
   await page.goto('/desktop/report');
   const report = await page.locator('.dc-desk-body').innerText();
@@ -539,4 +891,79 @@ test('capital under the required margin warns on the desktop layout', async ({ p
   // and it is advisory: the plan underneath still renders its own figures
   expect(body).toContain(SHORT_MARGIN.projectCost);
   expect(body).toContain(SHORT_MARGIN.loan);
+});
+
+/**
+ * The three Settings rows that actually do something. Each asserts the real
+ * effect - the session field, the phone sheet's save, the cleared token - not
+ * that a control rendered.
+ *
+ * The other three rows are deliberately inert and stay that way: the phone
+ * number and the category are read-only here (the category IS editable, but
+ * only through the phone's edit-category screen, which explains the scheme
+ * consequences), and Saved applications is navigation to the Applications
+ * screen rather than a control.
+ */
+test('the language toggle on desktop settings switches the app, not just itself', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/settings');
+
+  const lang = () => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').lang);
+
+  await page.getByRole('button', { name: 'हिंदी' }).click();
+  await expect.poll(lang).toBe('hi');
+  // the page itself is now in Hindi - the toggle drives `T`, not a stored flag
+  await expect(page.getByText('सेटिंग्स').first()).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-lang', 'hi');
+
+  await page.getByRole('button', { name: 'English' }).click();
+  await expect.poll(lang).toBe('en');
+  await expect(page.getByText('Your account and how this app behaves')).toBeVisible();
+});
+
+test('Change name on desktop settings reaches the real edit and the new name comes back', async ({
+  page,
+}) => {
+  await onboard(page);
+  await page.goto('/desktop/settings');
+  await expect(page.getByText('Suresh Kharwar').first()).toBeVisible();
+
+  // There is no desktop screen for the name, so the row hands off to the phone
+  // layout and writes the cookie that keeps it there - the same handoff the
+  // photo and category rows use.
+  await page.getByRole('link', { name: 'Change name' }).click();
+  await expect(page).toHaveURL(/\/screens\/settings/);
+  await expect(page.locator('.dc-phone')).toBeVisible();
+
+  await page.getByRole('button', { name: /^Name/ }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Your name').fill('Meena Devi');
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog).toHaveCount(0);
+
+  // and back on desktop the profile card carries it
+  await page.evaluate(() => {
+    document.cookie = 'udyam.layout=desktop; path=/; max-age=31536000; samesite=lax';
+  });
+  await page.goto('/desktop/settings');
+  await expect(page.getByText('Meena Devi').first()).toBeVisible();
+});
+
+test('Log out on desktop settings confirms, then really ends the session', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/settings');
+  expect(await page.evaluate(() => localStorage.getItem('udyam.token.v1'))).not.toBeNull();
+
+  // one click arms it, a second ends it: the row does not log out on a stray click
+  await page.getByRole('button', { name: 'Log out', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Yes, log out' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('udyam.token.v1'))).not.toBeNull();
+
+  await page.getByRole('button', { name: 'Yes, log out' }).click();
+
+  await expect(page).toHaveURL(/\/desktop\/language/);
+  expect(await page.evaluate(() => localStorage.getItem('udyam.token.v1'))).toBeNull();
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').phone))
+    .toBe('');
 });

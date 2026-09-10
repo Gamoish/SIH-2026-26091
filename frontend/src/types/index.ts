@@ -23,4 +23,13 @@ export type Session = {
   capital: number | null;
   business: BusinessId | null;
   savedAt: string | null;
+  /**
+   * When the feasibility check last finished, ISO. Set by the loading screen -
+   * the one point where the report is known to have been built - so the
+   * verdict screen can date what it is showing instead of printing today.
+   *
+   * Distinct from `savedAt`, which marks the much later moment the case was
+   * filed as an application; most sessions have this and never get that.
+   */
+  reportAt: string | null;
 };
