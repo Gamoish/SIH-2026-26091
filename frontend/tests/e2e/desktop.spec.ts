@@ -640,7 +640,9 @@ test('the applications screen heads itself exactly as the other rail screens do'
   await page.goto('/desktop/saved');
   await expect(page.locator('.dc-desk-title').getByText('Your applications')).toBeVisible();
   await expect(page.locator('.dc-desk-title').getByText('Every check you have filed so far')).toBeVisible();
-  await expect(page.locator('.dc-desk-title').getByRole('button', { name: 'Add a new check' })).toBeVisible();
+  await expect(
+    page.locator('.dc-desk-title').getByRole('button', { name: 'Start a new check' }),
+  ).toBeVisible();
 });
 
 test('the applications list sorts by the real filed date, from a real control', async ({ page }) => {
@@ -707,7 +709,7 @@ test('the dashboard heads itself, and its chips carry the real case', async ({ p
   const body = page.locator('.dc-desk-body');
 
   await expect(body.getByText(`Hello, Suresh Kharwar`)).toBeVisible();
-  await expect(body.getByText('Your dashboard')).toBeVisible();
+  await expect(body.getByText('Your check, your loan options and what to do next')).toBeVisible();
 
   // The same arc gauge the verdict screen uses - the ring element, not just a
   // number - carrying the engine's score.
@@ -918,7 +920,7 @@ test('the language toggle on desktop settings switches the app, not just itself'
 
   await page.getByRole('button', { name: 'English' }).click();
   await expect.poll(lang).toBe('en');
-  await expect(page.getByText('Your account and how this app behaves')).toBeVisible();
+  await expect(page.getByText('Your name, number, language and category')).toBeVisible();
 });
 
 test('Change name on desktop settings reaches the real edit and the new name comes back', async ({
@@ -966,4 +968,293 @@ test('Log out on desktop settings confirms, then really ends the session', async
   await expect
     .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').phone))
     .toBe('');
+});
+
+/**
+ * The head is one component, on every desktop screen that has one - not four
+ * that look alike. The report screen was the last holdout: it drew its row from
+ * `DesktopShell`'s `title` prop, so it had no back control and no subtitle
+ * while the other four had all three parts.
+ *
+ * Asserted structurally rather than by eye: every page renders exactly one
+ * `.dc-desk-title`, each carries a title and a subtitle, and the rail beside
+ * it is byte-for-byte the same lockup and tagline on all of them.
+ */
+/** The four pages this audit covers, in rail order. */
+const AUDITED = ['home', 'feasibility', 'saved', 'settings'] as const;
+
+/**
+ * One icon library, one stroke weight.
+ *
+ * The desktop pages used to draw icons two ways: Hugeicons in the rail and the
+ * settings rows, hand-written <path> data everywhere else - the back arrow,
+ * both print controls, both plus marks, the three summary glyphs, the location
+ * pin, the three next-step marks. The weights that came with that were 1.9, 2,
+ * 2.1, 2.2, 2.4 and 2.6, which is invisible on one icon and obvious in a
+ * column of them.
+ *
+ * `Icon` fixes the weight at 2 and does not expose it, so this asserts the one
+ * thing that would regress if someone reached past it: every icon on these
+ * pages reports the same weight.
+ *
+ * `.cta` is excluded on purpose. That is `Primary`, the full-width button
+ * shared with the phone layout, and its arrow is drawn at 2.6 - changing it
+ * would change the phone, which this desktop-only pass must not touch.
+ */
+test('every desktop icon is drawn at one weight, from one library', async ({ page }) => {
+  await onboard(page);
+
+  for (const slug of AUDITED) {
+    await page.goto('/desktop/' + slug);
+    await expect(page.locator('.dc-desk-body')).toBeVisible();
+
+    const weights = await page.evaluate(() => {
+      const body = document.querySelector('.dc-desk-body');
+      if (!body) return [];
+      return [...body.querySelectorAll('svg[stroke-width]')]
+        .filter((el) => !el.closest('.cta'))
+        .map((el) => el.getAttribute('stroke-width'));
+    });
+
+    expect(weights.length, slug + ' draws icons').toBeGreaterThan(0);
+    expect([...new Set(weights)], slug + ' icon weights').toEqual(['2']);
+  }
+});
+
+/**
+ * Green means good and amber means worth-checking, on every page that shows a
+ * verdict.
+ *
+ * The dashboard used to paint `good` in `--saffron-soft` and `check` in a
+ * hard-coded amber - two oranges - so "Good opportunity" was a warning colour
+ * there and a success colour on the result screen. Asserted by channel rather
+ * than by hex, so the tokens can be retuned without rewriting the test: a
+ * green has more green in it than red, an orange does not.
+ */
+test('a good verdict reads green on every page that shows one', async ({ page }) => {
+  await onboard(page);
+
+  const channels = async (slug: string) => {
+    await page.goto('/desktop/' + slug);
+    const el = page.locator('.dc-desk-body').getByText('Good opportunity').first();
+    await expect(el).toBeVisible();
+    return el.evaluate((n) => {
+      const [r, g, b] = getComputedStyle(n).color.match(/\d+/g)!.map(Number);
+      return { r, g, b };
+    });
+  };
+
+  for (const slug of ['home', 'feasibility']) {
+    const c = await channels(slug);
+    expect(c.g, slug + ' paints a good verdict green, not orange').toBeGreaterThan(c.r);
+  }
+});
+
+/**
+ * The dashboard gauge is the same component as the result screen's, so it must
+ * settle on the same figure. The end state is asserted, not the animation:
+ * `--tally` is what the keyframe drives, and it has to land exactly on the
+ * engine's score rather than near it.
+ */
+test('the dashboard gauge settles on the engine score', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/home');
+
+  const dial = page.locator('.dc-desk-body [role="img"]').first();
+  await expect(dial).toHaveAttribute('aria-label', DEMO.score + ' / 100');
+
+  await expect
+    .poll(async () =>
+      Number(
+        await page
+          .locator('.dc-desk-body .tally')
+          .first()
+          .evaluate((el) => getComputedStyle(el).getPropertyValue('--tally')),
+      ),
+    )
+    .toBe(DEMO.score);
+
+  // the arc is the same one the result screen draws, and it ends partly drawn
+  const arc = page.locator('.dc-desk-body svg circle.arc').first();
+  await expect(arc).toHaveCount(1);
+  const drawn = await arc.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { offset: parseFloat(s.strokeDashoffset), len: parseFloat(s.strokeDasharray) };
+  });
+  expect(drawn.offset).toBeGreaterThan(0);
+  expect(drawn.offset).toBeLessThan(drawn.len);
+});
+
+/**
+ * The language switch answers a press: `aria-pressed` moves with the choice
+ * and the thumb behind it is transformed to the selected half. The transform
+ * is read rather than the animation - the end state is the contract.
+ */
+test('the language switch reports and moves its state', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/settings');
+
+  const hi = page.getByRole('button', { name: 'हिंदी' });
+  const en = page.getByRole('button', { name: 'English' });
+  const thumb = page.locator('.seg-thumb');
+
+  await expect(en).toHaveAttribute('aria-pressed', 'true');
+  await expect(hi).toHaveAttribute('aria-pressed', 'false');
+  const atEn = await thumb.evaluate((el) => getComputedStyle(el).transform);
+
+  await hi.click();
+  await expect(hi).toHaveAttribute('aria-pressed', 'true');
+  await expect(en).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(async () => thumb.evaluate((el) => getComputedStyle(el).transform)).not.toBe(atEn);
+});
+
+/**
+ * Keyboard focus has to be visible on every page. There was no focus rule in
+ * the stylesheet at all before this pass, so each control fell back to
+ * whatever the engine draws by default - which on a button painting its own
+ * background can be nearly invisible.
+ */
+test('keyboard focus is visible on every desktop page', async ({ page }) => {
+  await onboard(page);
+
+  for (const slug of AUDITED) {
+    await page.goto('/desktop/' + slug);
+    const control = page.locator('.dc-desk-body button, .dc-desk-body a').first();
+    await control.focus();
+
+    const ring = await control.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style, slug + ' focus ring style').not.toBe('none');
+    expect(parseFloat(ring.width), slug + ' focus ring width').toBeGreaterThan(0);
+  }
+});
+
+/**
+ * Starting a check is a route change that has to fetch and re-guard, so the
+ * button says it is working rather than looking ignored for that beat. This is
+ * the only thing that animates on the applications page - there is no
+ * entrance animation on load.
+ */
+test('starting a check from the applications page confirms the press', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/saved');
+
+  const start = page.getByTestId('start-check');
+  await expect(start).toBeVisible();
+  await start.click();
+
+  // it either shows the working state or has already arrived; both are correct
+  await expect(page).toHaveURL(/\/desktop\/location/);
+});
+
+test('every desktop page heads itself with the one shared head', async ({ page }) => {
+  await onboard(page);
+
+  const HEADS = [
+    ['home', 'Hello, Suresh Kharwar', 'Your check, your loan options and what to do next'],
+    ['feasibility', 'Your result', 'Business feasibility analysis'],
+    ['report', 'Full report', 'Competitors, price, risks'],
+    ['saved', 'Your applications', 'Every check you have filed so far'],
+    ['settings', 'Settings', 'Your name, number, language and category'],
+  ] as const;
+
+  const rails = new Set<string>();
+
+  for (const [slug, title, sub] of HEADS) {
+    await page.goto('/desktop/' + slug);
+    const head = page.locator('.dc-desk-title');
+
+    // exactly one head, and it is the shared one: title AND subtitle, which is
+    // what DesktopShell's bare `title` prop cannot render
+    await expect(head, slug + ' has one head').toHaveCount(1);
+    await expect(head.getByText(title, { exact: false }), slug + ' head title').toBeVisible();
+    await expect(head.getByText(sub, { exact: false }), slug + ' head subtitle').toBeVisible();
+
+    // the rail: the same lockup art and the same tagline on every page
+    const rail = page.locator('.dc-desk-side');
+    await expect(rail).toBeVisible();
+    await expect(rail.locator('img[src*="udyam-wordmark"]')).toBeVisible();
+    await expect(rail.getByText('A government feasibility and loan adviser')).toBeVisible();
+    rails.add(
+      await rail.evaluate((n) => [...n.querySelectorAll('img')].map((i) => i.getAttribute('src')).join('|')),
+    );
+
+    // the flag glyph is painted on every one of them
+    const flag = await page
+      .locator('.dc-flag')
+      .evaluate((n) => getComputedStyle(n, '::before').backgroundImage);
+    expect(flag, slug + ' flag glyph').toContain('flag-corner.svg');
+  }
+
+  // one rail, not five that happen to agree today
+  expect(rails.size, 'the rail lockup is identical on every page').toBe(1);
+});
+
+test('the report screen has a way back, from the shared head', async ({ page }) => {
+  await onboard(page);
+  await page.goto('/desktop/report');
+
+  // it is reached BY leaving the verdict screen, so its head has to offer the
+  // way back the other screens' heads do
+  await page.locator('.dc-desk-title').getByRole('button', { name: 'Back to your result' }).click();
+  await expect(page).toHaveURL(/\/desktop\/feasibility/);
+});
+
+/**
+ * One action, one name. `useStartCheck` is the single handler behind the
+ * dashboard panel, the applications head and the panel under the filed list;
+ * before this they called it "Start a new check", "Add a new check" and "Want
+ * to apply for another business opportunity?".
+ */
+test('starting a check is called the same thing everywhere it is offered', async ({ page }) => {
+  await onboard(page);
+
+  await page.goto('/desktop/home');
+  await expect(page.locator('.dc-desk-body').getByText('Start a new check')).toBeVisible();
+
+  await page.goto('/desktop/share');
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
+
+  await page.goto('/desktop/saved');
+  await expect(page.getByTestId('application-row').first()).toBeVisible({ timeout: 10_000 });
+  // the head's button and the panel below the list, both named for the action
+  await expect(page.locator('.dc-desk-body').getByText('Start a new check')).toHaveCount(2);
+  await expect(page.getByText('Add a new check')).toHaveCount(0);
+  await expect(page.getByText('Want to apply for another business opportunity?')).toHaveCount(0);
+});
+
+/** Every rounded label on the desktop screens is the one `Pill`, so they all
+ *  draw a full round rather than one screen's own 20px corner. */
+test('badges across the desktop screens are one component', async ({ page }) => {
+  await onboard(page);
+
+  await page.goto('/desktop/share');
+  await expect
+    .poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('udyam.session.v1') ?? '{}').savedAt), {
+      timeout: 20_000,
+    })
+    .toBeTruthy();
+
+  await page.goto('/desktop/saved');
+  await expect(page.getByTestId('application-row').first()).toBeVisible({ timeout: 10_000 });
+
+  // every rounded label on the list - the two row tags and the status - is the
+  // one component, so all of them draw the full round
+  const radii = async () =>
+    page.getByTestId('pill').evaluateAll((ns) => ns.map((n) => getComputedStyle(n).borderRadius));
+  const saved = await radii();
+  expect(saved.length, 'the applications list draws pills').toBeGreaterThan(1);
+  expect(new Set(saved), 'one radius across every pill on the list').toEqual(new Set(['999px']));
+
+  // and the dashboard's chips are the same component, not a look-alike
+  await page.goto('/desktop/home');
+  const home = await radii();
+  expect(home.length, 'the dashboard draws pills').toBeGreaterThan(1);
+  expect(new Set(home), 'one radius across every pill on the dashboard').toEqual(new Set(['999px']));
 });

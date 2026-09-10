@@ -41,9 +41,10 @@ export function Stat({
    */
   sub?: React.ReactNode;
   /**
-   * Bare <path>s for a 24x24 stroke icon, drawn in the tone's own colour on a
-   * white square - the same treatment the filed-application rows give their
-   * document glyph, so a tile and a row read as the same family.
+   * An `<Icon>` from the shared vocabulary, on a white square - the same
+   * treatment the filed-application rows give their document glyph, so a tile
+   * and a row read as the same family. The square sets `color`, so the glyph
+   * inherits the tone's own colour without the caller naming it.
    *
    * Optional, and off by default: the report screen's tiles are told apart by
    * the line under each number, and an icon there would decorate without
@@ -81,20 +82,10 @@ export function Stat({
             display: 'grid',
             placeItems: 'center',
             flex: 'none',
+            color: skin.value,
           }}
         >
-          <svg
-            width={lg ? 22 : 19}
-            height={lg ? 22 : 19}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={skin.value}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            {icon}
-          </svg>
+          {icon}
         </span>
       ) : null}
 

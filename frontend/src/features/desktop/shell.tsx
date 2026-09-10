@@ -3,9 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { Home05Icon, File02Icon, Settings02Icon } from '@hugeicons/core-free-icons';
-import { T, AvatarPicker } from '@/components';
+import { T, AvatarPicker, Icon, type IconName } from '@/components';
 import { useSession } from '@/hooks/use-session';
 import { ONBOARDING, previousStep, useNav, type Slug } from '@/lib/nav';
 
@@ -158,9 +156,7 @@ function BackStep({ step }: { step?: Slug }) {
         cursor: 'pointer',
       }}
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-        <path d="M15 6l-6 6 6 6" />
-      </svg>
+      <Icon name="back" size={16} />
       <T hi="पिछला क़दम" en="Previous step" />
     </button>
   );
@@ -358,12 +354,13 @@ export function TopBarShell({
 
 /* ---------------------------------------------------- post-onboarding chrome -- */
 
-/** Hugeicons (free pack, MIT) - the same three the phone dock uses, so one
- *  destination carries one mark whichever layout the visitor is in. */
-const NAV: { slug: Slug; hi: string; en: string; icon: typeof Home05Icon }[] = [
-  { slug: 'home', hi: 'होम', en: 'Home', icon: Home05Icon },
-  { slug: 'saved', hi: 'आपके आवेदन', en: 'Applications', icon: File02Icon },
-  { slug: 'settings', hi: 'सेटिंग्स', en: 'Settings', icon: Settings02Icon },
+/** The shared vocabulary in components/icon.tsx - the same marks the phone
+ *  dock and the settings rows use, so one destination carries one mark
+ *  whichever layout the visitor is in. */
+const NAV: { slug: Slug; hi: string; en: string; icon: IconName }[] = [
+  { slug: 'home', hi: 'होम', en: 'Home', icon: 'home' },
+  { slug: 'saved', hi: 'आपके आवेदन', en: 'Applications', icon: 'filed' },
+  { slug: 'settings', hi: 'सेटिंग्स', en: 'Settings', icon: 'settings' },
 ];
 
 /**
@@ -436,7 +433,11 @@ export function DesktopShell({
                 aria-current={on ? 'page' : undefined}
                 className="navitem"
               >
-                <HugeiconsIcon icon={n.icon} size={18} strokeWidth={on ? 2.1 : 1.9} />
+                {/* One weight, active or not. The active item is already a
+                    saffron fill with bold text; a third signal at 2.1 vs 1.9
+                    was invisible beside those and inconsistent with every
+                    other icon on the page. */}
+                <Icon name={n.icon} size={18} />
                 <T hi={n.hi} en={n.en} />
               </Link>
             );
@@ -471,7 +472,7 @@ export function DesktopShell({
       <div className="dc-desk-main">
         <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
           <div
-            className="dc-desk-body dc-monument reveal"
+            className="dc-desk-body dc-monument"
             style={{
               flex: 1,
               minWidth: 0,
@@ -596,9 +597,7 @@ export function ScreenHead({
             cursor: 'pointer',
           }}
         >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path d="M15 6l-6 6 6 6" />
-          </svg>
+          <Icon name="back" size={17} />
         </button>
       ) : null}
 

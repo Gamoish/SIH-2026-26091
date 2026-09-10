@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { toSquareDataUrl } from '@/lib/photo';
 import { Avatar } from './avatar';
+import { Icon } from './icon';
 import { useT } from './bilingual';
 
 /**
@@ -75,19 +76,12 @@ export function AvatarPicker({
             border: `2px solid ${onDark ? 'var(--navy-800)' : '#fff'}`,
             display: 'grid',
             placeItems: 'center',
+            // the glyph inherits this; it used to be `stroke="#fff"` on a
+            // hand-drawn camera at its own stroke weight
+            color: '#fff',
           }}
         >
-          <svg
-            width={Math.round(size * 0.22)}
-            height={Math.round(size * 0.22)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2.6"
-          >
-            <path d="M3 8h3l2-3h8l2 3h3v12H3z" />
-            <circle cx="12" cy="13" r="3.4" />
-          </svg>
+          <Icon name="camera" size={Math.round(size * 0.22)} />
         </span>
       </button>
 

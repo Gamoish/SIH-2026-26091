@@ -16,8 +16,11 @@ import {
   ScoreDial,
   Stat,
   T,
+  useT,
+  Action,
+  Icon,
 } from '@/components';
-import { DesktopShell, Legend } from '../shell';
+import { DesktopShell, Legend, ScreenHead } from '../shell';
 import { CompetitorsBody, CompetitorsStats } from './CompetitorsScreen';
 import { PricingBody } from './PricingScreen';
 import { SwotBody } from './SwotScreen';
@@ -58,6 +61,7 @@ type DetailKey = keyof typeof DETAILS;
 export default function ReportScreen() {
   const { s } = useSession();
   const nav = useNav();
+  const t = useT();
   const { report, plan, alternatives } = useCase();
   const [detail, setDetail] = useState<DetailKey | null>(null);
   if (!report) return null;
@@ -68,26 +72,6 @@ export default function ReportScreen() {
     <DesktopShell
       padding="32px 40px"
       asideWidth={380}
-      title={<T hi="पूरी रिपोर्ट" en="Full report" />}
-      actions={
-        <button
-          onClick={() => window.print()}
-          className="no-print"
-          style={{
-            border: '1px solid var(--line)',
-            background: 'var(--card)',
-            borderRadius: '9px',
-            padding: '9px 16px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            fontFamily: 'var(--sans)',
-            cursor: 'pointer',
-            color: 'var(--muted)',
-          }}
-        >
-          <T hi="छापिए" en="Print" />
-        </button>
-      }
       aside={
         <>
           <div className="dc-desk-card" style={{ padding: '20px 22px' }}>
@@ -149,6 +133,30 @@ export default function ReportScreen() {
         </>
       }
     >
+      {/* The same head the verdict screen, the dashboard, the applications
+          list and settings use. This screen drew its own row from
+          `DesktopShell`'s `title` prop, which has no back control and no
+          subtitle - so the one screen a reader reaches BY leaving another was
+          also the only one with no way back in its head.
+
+          The subtitle is the exact string the dashboard's card for this screen
+          already uses, so the door and the room behind it are named the same. */}
+      <ScreenHead
+        title={<T hi="पूरी रिपोर्ट" en="Full report" />}
+        sub={<T hi="प्रतियोगी, दाम, जोखिम" en="Competitors, price, risks" />}
+        onBack={() => nav.go('feasibility')}
+        backLabel={t('नतीजे पर लौटिए', 'Back to your result')}
+        actions={
+          <Action
+            onClick={() => window.print()}
+            ariaLabel={t('पूरी रिपोर्ट छापिए या PDF बनाइए', 'Print or save the full report as a PDF')}
+            icon={<Icon name="print" size={16} />}
+          >
+            <T hi="छापिए / PDF" en="Print / PDF" />
+          </Action>
+        }
+      />
+
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
         <ScoreDial score={report.score} size={132} />
         <div style={{ flex: 1 }}>
@@ -301,17 +309,9 @@ function Onward({
         </span>
       </span>
 
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--faint)"
-        strokeWidth="2.4"
-        style={{ flex: 'none' }}
-      >
-        <path d="M9 6l6 6-6 6" />
-      </svg>
+      <span aria-hidden style={{ color: 'var(--faint)', display: 'grid', flex: 'none' }}>
+        <Icon name="next" size={15} />
+      </span>
     </button>
   );
 }

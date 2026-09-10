@@ -7,7 +7,7 @@ import { useCase } from '@/hooks/use-case';
 import { isGap } from '@/domain/finance';
 import { label } from '@/domain/feasibility';
 import { inr } from '@/lib/format';
-import { Primary, ScoreDial, T } from '@/components';
+import { Icon, Pill, Primary, ScoreDial, T, verdictColor, type IconName } from '@/components';
 import { DesktopShell, Legend, ScreenHead } from '../shell';
 
 /**
@@ -34,7 +34,12 @@ export default function HomeScreen() {
     <DesktopShell padding="36px 44px">
       <ScreenHead
         title={who ? <T hi={`नमस्ते, ${who}`} en={`Hello, ${who}`} /> : <T hi="नमस्ते" en="Hello" />}
-        sub={<T hi="आपका डैशबोर्ड" en="Your dashboard" />}
+        sub={
+          <T
+            hi="आपकी जाँच, कर्ज़ के विकल्प और अगला कदम"
+            en="Your check, your loan options and what to do next"
+          />
+        }
         actions={place ? <LocationPill place={place} /> : null}
       />
 
@@ -53,7 +58,7 @@ export default function HomeScreen() {
                 background: 'var(--navy)',
                 backgroundImage: 'var(--ledger-ink)',
                 color: '#fff',
-                borderRadius: '18px',
+                borderRadius: '14px',
                 padding: '26px 30px',
                 display: 'flex',
                 alignItems: 'center',
@@ -81,7 +86,12 @@ export default function HomeScreen() {
                     fontSize: '21px',
                     fontWeight: 700,
                     marginTop: '4px',
-                    color: report.verdict === 'good' ? 'var(--saffron-soft)' : '#E6B94F',
+                    // The shared mapping: green for good, amber for
+                    // worth-checking, lightened for this navy card. Both
+                    // verdicts used to be oranges here, so "Good opportunity"
+                    // was a warning colour on the dashboard and a success
+                    // colour on the result screen.
+                    color: verdictColor(report.verdict, true),
                   }}
                 >
                   {report.verdict === 'good' ? (
@@ -92,17 +102,26 @@ export default function HomeScreen() {
                 </div>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', marginTop: '11px' }}>
-                  <Chip>{label(report.business.name, s.lang)}</Chip>
-                  <Chip>{place}</Chip>
+                  <Pill tone="on-dark">{label(report.business.name, s.lang)}</Pill>
+                  <Pill tone="on-dark">{place}</Pill>
                   {money ? (
                     <>
-                      <Chip>{money.scheme.code}</Chip>
-                      <Chip strong>{inr(money.loanAmount)}</Chip>
+                      {/* Both of these were bare values: a four-letter code
+                          and a rupee figure with nothing saying what either
+                          one was. The business and the village name
+                          themselves; these two do not, so they carry the
+                          word that says what they are. */}
+                      <Pill tone="on-dark">
+                        <T hi={`योजना ${money.scheme.code}`} en={`Scheme ${money.scheme.code}`} />
+                      </Pill>
+                      <Pill tone="solid">
+                        <T hi={`ऋण ${inr(money.loanAmount)}`} en={`Loan ${inr(money.loanAmount)}`} />
+                      </Pill>
                     </>
                   ) : (
-                    <Chip>
+                    <Pill tone="on-dark">
                       <T hi="योजना आँकड़े पुष्ट नहीं" en="Scheme figures unconfirmed" />
-                    </Chip>
+                    </Pill>
                   )}
                 </div>
               </div>
@@ -113,7 +132,7 @@ export default function HomeScreen() {
               style={{
                 border: '2px dashed var(--navy-tint)',
                 background: 'var(--navy-tint2)',
-                borderRadius: '18px',
+                borderRadius: '14px',
                 fontFamily: 'var(--sans)',
                 color: 'var(--navy-dark)',
                 cursor: 'pointer',
@@ -137,16 +156,9 @@ export default function HomeScreen() {
                   placeItems: 'center',
                 }}
               >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--navy)"
-                  strokeWidth="2.4"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
+                <span style={{ color: 'var(--navy)', display: 'grid' }}>
+                  <Icon name="add" size={24} />
+                </span>
               </span>
               <span style={{ fontSize: '16px', fontWeight: 700 }}>
                 <T hi="नई जाँच शुरू करें" en="Start a new check" />
@@ -185,12 +197,7 @@ export default function HomeScreen() {
               onClick={() => nav.go('report')}
               tint="var(--teal-tint)"
               stroke="var(--teal)"
-              icon={
-                <>
-                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-                  <path d="M14 3v5h5" />
-                </>
-              }
+              icon="filed"
               hi="पूरी रिपोर्ट"
               en="Full report"
               sub={<T hi="प्रतियोगी, दाम, जोखिम" en="Competitors, price, risks" />}
@@ -207,7 +214,7 @@ export default function HomeScreen() {
               onClick={() => nav.go('emi')}
               tint="var(--green-tint)"
               stroke="var(--green)"
-              icon={<path d="M4 19V10M11 19V5M18 19v-7" />}
+              icon="plan"
               hi="वापसी योजना"
               en="Repayment plan"
               sub={
@@ -237,13 +244,7 @@ export default function HomeScreen() {
               onClick={() => nav.go('share')}
               tint="var(--saffron-tint)"
               stroke="var(--saffron)"
-              icon={
-                <>
-                  <path d="M12 3v12" />
-                  <path d="M7 11l5 5 5-5" />
-                  <path d="M5 21h14" />
-                </>
-              }
+              icon="bank"
               hi="बैंक को दिखाइए"
               en="Show to bank"
               sub={<T hi="एक पन्ने का सारांश" en="One-page summary" />}
@@ -267,7 +268,7 @@ export default function HomeScreen() {
             />
           </p>
           <Primary onClick={startCheck} arrow>
-            <T hi="जाँच शुरू कीजिए" en="Start a check" />
+            <T hi="पहली जाँच शुरू कीजिए" en="Start your first check" />
           </Primary>
         </div>
       )}
@@ -287,58 +288,17 @@ export default function HomeScreen() {
  */
 function LocationPill({ place }: { place: string }) {
   return (
-    <span
-      style={{
-        flex: 'none',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        border: '1px solid var(--line)',
-        background: 'var(--card)',
-        borderRadius: '999px',
-        padding: '8px 14px',
-        fontSize: '13.5px',
-        fontWeight: 600,
-        color: 'var(--text)',
-      }}
+    <Pill
+      tone="outline"
+      size="md"
+      icon={
+        <span aria-hidden style={{ color: 'var(--saffron)', display: 'grid', flex: 'none' }}>
+          <Icon name="place" size={15} />
+        </span>
+      }
     >
-      <svg
-        aria-hidden
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--saffron)"
-        strokeWidth="2.2"
-        style={{ flex: 'none' }}
-      >
-        <path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z" />
-        <circle cx="12" cy="10" r="2.6" />
-      </svg>
       {place}
-    </span>
-  );
-}
-
-/** One fact from the active case, on the navy card. */
-function Chip({ children, strong = false }: { children: React.ReactNode; strong?: boolean }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        borderRadius: '999px',
-        padding: '4px 11px',
-        fontSize: '12.5px',
-        fontWeight: strong ? 700 : 600,
-        background: strong ? 'var(--saffron)' : 'rgba(255,255,255,.12)',
-        border: `1px solid ${strong ? 'var(--saffron)' : 'rgba(255,255,255,.2)'}`,
-        color: '#fff',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {children}
-    </span>
+    </Pill>
   );
 }
 
@@ -357,7 +317,7 @@ function Step({
   onClick: () => void;
   tint: string;
   stroke: string;
-  icon: React.ReactNode;
+  icon: IconName;
   hi: string;
   en: string;
   sub: React.ReactNode;
@@ -392,9 +352,9 @@ function Step({
             marginBottom: '14px',
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.2">
-            {icon}
-          </svg>
+          <span style={{ color: stroke, display: 'grid' }}>
+            <Icon name={icon} size={20} />
+          </span>
         </span>
         <span
           style={{

@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav, useStartCheck } from '@/lib/nav';
 import { api, ApiError, type Application } from '@/lib/api';
 import { fileCounts, sortByFiled, type SortOrder } from '@/lib/applications';
-import { Primary, Stat, T, useT } from '@/components';
+import { Action, Icon, Pill, Primary, Stat, T, useT, verdictTone, type Verdict } from '@/components';
 import { DesktopShell, Legend, ScreenHead } from '../shell';
 
 type State =
@@ -58,6 +58,19 @@ export default function SavedScreen() {
 
   const [order, setOrder] = useState<SortOrder>('newest');
 
+  /**
+   * The one moment this page animates, and it answers a press rather than a
+   * page load. Starting a check is a route change that has to fetch and
+   * re-guard before anything moves, so without this the button looked ignored
+   * for that beat. Both doors to the same action share the flag, so pressing
+   * one visibly settles the other too.
+   */
+  const [starting, setStarting] = useState(false);
+  const begin = () => {
+    setStarting(true);
+    startCheck();
+  };
+
   const rows = state.at === 'ready' ? state.rows : [];
   const n = fileCounts(rows);
 
@@ -66,7 +79,7 @@ export default function SavedScreen() {
       <ScreenHead
         title={<T hi="आपके आवेदन" en="Your applications" />}
         sub={<T hi="अब तक भेजी गई हर जाँच" en="Every check you have filed so far" />}
-        actions={<AddCheck onClick={startCheck} />}
+        actions={<AddCheck onClick={begin} busy={starting} />}
       />
 
       {rows.length > 0 ? (
@@ -78,7 +91,7 @@ export default function SavedScreen() {
           <Stat
             tone="navy"
             size="sm"
-            icon={FILED_GLYPH}
+            icon={<Icon name="filed" size={19} />}
             label={<T hi="भेजे गए" en="Filed" />}
             value={<span data-testid="count-filed">{n.filed}</span>}
             sub={<T hi="अब तक भेजे गए कुल आवेदन" en="Total applications submitted" />}
@@ -86,7 +99,7 @@ export default function SavedScreen() {
           <Stat
             tone="green"
             size="sm"
-            icon={COMPLETE_GLYPH}
+            icon={<Icon name="complete" size={19} />}
             label={<T hi="पूरे" en="Completed" />}
             value={<span data-testid="count-complete">{n.complete}</span>}
             sub={<T hi="पूरी जाँच के साथ दाख़िल" en="Filed with the check finished" />}
@@ -94,7 +107,7 @@ export default function SavedScreen() {
           <Stat
             tone="amber"
             size="sm"
-            icon={PENDING_GLYPH}
+            icon={<Icon name="pending" size={19} />}
             label={<T hi="बाक़ी" en="Pending" />}
             value={<span data-testid="count-pending">{n.pending}</span>}
             sub={<T hi="अभी ड्राफ़्ट में पड़े हैं" en="Still sitting as drafts" />}
@@ -117,8 +130,8 @@ export default function SavedScreen() {
             en="No applications filed yet. Finish a check and save it to see it here."
           />
           <div style={{ maxWidth: '260px', marginTop: '18px' }}>
-            <Primary onClick={startCheck} arrow>
-              <T hi="जाँच शुरू कीजिए" en="Start a check" />
+            <Primary onClick={begin} disabled={starting} arrow>
+              <T hi="पहली जाँच शुरू कीजिए" en="Start your first check" />
             </Primary>
           </div>
         </Note>
@@ -135,39 +148,12 @@ export default function SavedScreen() {
               <Row key={a.id} app={a} lang={s.lang} />
             ))}
           </div>
-          <AddAnother onClick={startCheck} />
+          <AddAnother onClick={begin} busy={starting} />
         </>
       ) : null}
     </DesktopShell>
   );
 }
-
-/**
- * The three summary glyphs.
- *
- * The document is the exact path pair the filed-application rows draw in their
- * own icon square, so the tile counting those rows carries their mark rather
- * than a second drawing of the same idea. The tick and the clock are the same
- * 24-box, 2-weight stroke language.
- */
-const FILED_GLYPH = (
-  <>
-    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-    <path d="M14 3v5h5" />
-  </>
-);
-const COMPLETE_GLYPH = (
-  <>
-    <path d="M21 11.5V12a9 9 0 1 1-5.3-8.2" />
-    <path d="M8.5 11.5l3 3L21 5" />
-  </>
-);
-const PENDING_GLYPH = (
-  <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7.5V12l3 1.8" />
-  </>
-);
 
 /**
  * How the list is ordered.
@@ -215,26 +201,22 @@ function SortPicker({ value, onChange }: { value: SortOrder; onChange: (v: SortO
 
 /** The head's action. Same handler as the dashboard's "Start a new check"
  *  panel - `useStartCheck` clears `savedAt` and walks back to the location
- *  question, and there is one implementation of that behind both doors. */
-function AddCheck({ onClick }: { onClick: () => void }) {
+ *  question, and there is one implementation of that behind both doors.
+ *
+ *  The shared inline button rather than its own saffron rectangle: this used
+ *  to draw a fill at its own radius and type size, which was a fourth primary
+ *  button on a four-page app. */
+function AddCheck({ onClick, busy }: { onClick: () => void; busy: boolean }) {
   return (
-    <button
+    <Action
+      tone="primary"
       onClick={onClick}
-      style={{
-        border: 0,
-        background: 'var(--saffron)',
-        color: '#fff',
-        borderRadius: '9px',
-        padding: '10px 20px',
-        fontSize: '14px',
-        fontWeight: 700,
-        fontFamily: 'var(--sans)',
-        cursor: 'pointer',
-        flex: 'none',
-      }}
+      busy={busy}
+      testId="start-check"
+      icon={<Icon name="add" size={16} />}
     >
-      <T hi="नई जाँच जोड़ें" en="Add a new check" />
-    </button>
+      {busy ? <T hi="शुरू हो रही है…" en="Starting…" /> : <T hi="नई जाँच शुरू करें" en="Start a new check" />}
+    </Action>
   );
 }
 
@@ -255,7 +237,7 @@ function storedReport(report: unknown, lang: 'hi' | 'en') {
     v && typeof v[lang] === 'string' ? v[lang] : undefined;
   return {
     score: typeof r.score === 'number' ? r.score : undefined,
-    verdict: r.verdict === 'good' || r.verdict === 'check' ? r.verdict : undefined,
+    verdict: (r.verdict === 'good' || r.verdict === 'check' ? r.verdict : undefined) as Verdict | undefined,
     business: pick(r.business?.name),
     village: pick(r.village?.name),
     block: typeof r.village?.block === 'string' ? r.village.block : undefined,
@@ -300,17 +282,9 @@ function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
           flex: 'none',
         }}
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke={done ? 'var(--teal)' : 'var(--faint)'}
-          strokeWidth="2"
-        >
-          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-          <path d="M14 3v5h5" />
-        </svg>
+        <span style={{ color: done ? 'var(--teal)' : 'var(--faint)', display: 'grid' }}>
+          <Icon name="filed" size={24} />
+        </span>
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -341,15 +315,15 @@ function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
           style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginTop: '9px' }}
         >
           {saved?.verdict ? (
-            <Tag>
+            <Pill tone={verdictTone(saved.verdict)}>
               {saved.verdict === 'good' ? (
                 <T hi="अच्छा मौका" en="Good opportunity" />
               ) : (
                 <T hi="पहले जाँच लीजिए" en="Worth checking first" />
               )}
-            </Tag>
+            </Pill>
           ) : null}
-          {scheme ? <Tag>{scheme}</Tag> : null}
+          {scheme ? <Pill>{scheme}</Pill> : null}
 
           {/* The feasibility score, beside the tags and plainly labelled: it
               rates the business idea, it is not progress toward filing. The
@@ -368,56 +342,27 @@ function Row({ app, lang }: { app: Application; lang: 'hi' | 'en' }) {
         </div>
       </div>
 
-      <span
-        data-testid="application-status"
-        style={{
-          fontSize: '12.5px',
-          fontWeight: 700,
-          padding: '7px 16px',
-          borderRadius: '20px',
-          flex: 'none',
-          background: done ? 'var(--green-tint)' : 'var(--panel)',
-          color: done ? '#0E6234' : 'var(--faint)',
-        }}
-      >
-        {done ? <T hi="पूरा" en="Complete" /> : <T hi="ड्राफ़्ट" en="Draft" />}
+      <span data-testid="application-status">
+        <Pill tone={done ? 'good' : 'quiet'}>
+          {done ? <T hi="पूरा" en="Complete" /> : <T hi="ड्राफ़्ट" en="Draft" />}
+        </Pill>
       </span>
     </div>
   );
 }
 
-/** One fact off the stored row. Never a control: there is nothing to filter by
- *  yet, and a chip that looks pressable and does nothing is worse than a label. */
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        borderRadius: '999px',
-        padding: '3px 10px',
-        fontSize: '12px',
-        fontWeight: 600,
-        background: 'var(--panel)',
-        border: '1px solid var(--line)',
-        color: 'var(--muted)',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {children}
-    </span>
-  );
-}
-
 /** Below the list: the same start-a-check action the head offers, phrased for
  *  someone who has already filed one. */
-function AddAnother({ onClick }: { onClick: () => void }) {
+function AddAnother({ onClick, busy }: { onClick: () => void; busy: boolean }) {
   const t = useT();
   return (
     <button
       onClick={onClick}
-      className="rowh dc-desk-card"
+      disabled={busy}
+      aria-busy={busy || undefined}
+      className="rowh dc-desk-card press"
       style={{
+        opacity: busy ? 0.72 : 1,
         marginTop: '20px',
         width: '100%',
         textAlign: 'left',
@@ -444,13 +389,13 @@ function AddAnother({ onClick }: { onClick: () => void }) {
           flex: 'none',
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" strokeWidth="2.4">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <span style={{ color: 'var(--navy)', display: 'grid' }}>
+          <Icon name="add" size={22} />
+        </span>
       </span>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: 'block', fontSize: '15.5px', fontWeight: 700, color: 'var(--navy-dark)' }}>
-          {t('क्या किसी और कारोबार के लिए आवेदन करना है?', 'Want to apply for another business opportunity?')}
+          {busy ? t('शुरू हो रही है…', 'Starting…') : t('नई जाँच शुरू करें', 'Start a new check')}
         </span>
         <span style={{ display: 'block', fontSize: '13px', color: 'var(--muted)', marginTop: '3px' }}>
           {t(

@@ -5,16 +5,7 @@ import { useSession } from '@/hooks/use-session';
 import { useNav } from '@/lib/nav';
 import { CATEGORIES } from '@/lib/categories';
 import { tokenStore } from '@/lib/api';
-import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  Globe02Icon,
-  SmartPhone01Icon,
-  UserCircleIcon,
-  File02Icon,
-  HelpCircleIcon,
-  Logout01Icon,
-} from '@hugeicons/core-free-icons';
-import { AvatarPicker, T, useT } from '@/components';
+import { Action, AvatarPicker, Icon, T, useT, type IconName } from '@/components';
 import { rememberLayout } from '@/lib/layout';
 import { DesktopShell, ScreenHead } from '../shell';
 
@@ -52,21 +43,13 @@ export default function SettingsScreen() {
           and the Help row below opens the phone layout, which is not help. */}
       <ScreenHead
         title={<T hi="सेटिंग्स" en="Settings" />}
-        sub={<T hi="आपका खाता और ऐप की पसंद" en="Your account and how this app behaves" />}
+        sub={<T hi="आपका नाम, नंबर, भाषा और वर्ग" en="Your name, number, language and category" />}
       />
 
       {/* the account itself, at the head of the list */}
       <div
-        style={{
-          background: '#fff',
-          border: '1px solid var(--line)',
-          borderRadius: '14px',
-          padding: '20px 22px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '18px',
-          boxShadow: 'var(--e1)',
-        }}
+        className="dc-desk-card"
+        style={{ padding: '20px 22px', display: 'flex', alignItems: 'center', gap: '18px' }}
       >
         <AvatarPicker size={64} />
         <div style={{ minWidth: 0 }}>
@@ -85,39 +68,15 @@ export default function SettingsScreen() {
         </a>
       </div>
 
-      <Row icon={Globe02Icon} label={<T hi="भाषा" en="Language" />}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {(['hi', 'en'] as const).map((code) => {
-            const on = s.lang === code;
-            return (
-              <button
-                key={code}
-                onClick={() => set({ lang: code })}
-                style={{
-                  minWidth: '92px',
-                  minHeight: '40px',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--sans)',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  background: on ? 'var(--navy)' : '#fff',
-                  color: on ? '#fff' : 'var(--text)',
-                  border: on ? '2px solid var(--navy)' : '1px solid var(--line)',
-                }}
-              >
-                {code === 'hi' ? 'हिंदी' : 'English'}
-              </button>
-            );
-          })}
-        </div>
+      <Row icon="language" label={<T hi="भाषा" en="Language" />}>
+        <LangToggle value={s.lang} onChange={(lang) => set({ lang })} />
       </Row>
 
-      <Row icon={SmartPhone01Icon} label={<T hi="फ़ोन नंबर" en="Phone number" />}>
+      <Row icon="phone" label={<T hi="फ़ोन नंबर" en="Phone number" />}>
         <span style={{ fontSize: '15px', fontWeight: 600 }}>{s.phone ? `+91 ${s.phone}` : '—'}</span>
       </Row>
 
-      <Row icon={UserCircleIcon} label={<T hi="आपका वर्ग" en="Your category" />}>
+      <Row icon="account" label={<T hi="आपका वर्ग" en="Your category" />}>
         <span style={{ fontSize: '15px', fontWeight: 600 }}>
           {category ? t(category.hi, category.en) : '—'}
         </span>
@@ -131,24 +90,16 @@ export default function SettingsScreen() {
           is the way through to that real list rather than a second, wrong copy
           of its length. */}
       <Row
-        icon={File02Icon}
+        icon="filed"
         label={<T hi="सहेजे आवेदन" en="Saved applications" />}
         onClick={() => nav.go('saved')}
       >
-        <svg
-          aria-hidden
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="var(--faint)"
-          strokeWidth="2.2"
-        >
-          <path d="M9 6l6 6-6 6" />
-        </svg>
+        <span aria-hidden style={{ color: 'var(--faint)', display: 'grid' }}>
+          <Icon name="next" size={18} />
+        </span>
       </Row>
 
-      <Row icon={HelpCircleIcon} label={<T hi="मदद व सहायता" en="Help & support" />}>
+      <Row icon="help" label={<T hi="मदद व सहायता" en="Help & support" />}>
         <a
           href="/screens/settings"
           onClick={() => rememberLayout('phone')}
@@ -163,50 +114,100 @@ export default function SettingsScreen() {
           leaving it as the next card in one unbroken run. */}
       <div aria-hidden style={{ height: '1px', background: 'var(--line)', margin: '12px 0 2px' }} />
 
-      <Row danger icon={Logout01Icon} label={<T hi="लॉग आउट" en="Log out" />}>
+      <Row danger icon="logout" label={<T hi="लॉग आउट" en="Log out" />}>
         {confirming ? (
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={logout} style={BTN.danger}>
+            <Action tone="danger" onClick={logout}>
               <T hi="हाँ, लॉग आउट" en="Yes, log out" />
-            </button>
-            <button onClick={() => setConfirming(false)} style={BTN.quiet}>
+            </Action>
+            <Action onClick={() => setConfirming(false)}>
               <T hi="रहने दीजिए" en="Cancel" />
-            </button>
+            </Action>
           </div>
         ) : (
-          <button onClick={() => setConfirming(true)} style={{ ...BTN.quiet, color: 'var(--rust)' }}>
+          <Action onClick={() => setConfirming(true)} icon={<Icon name="logout" size={16} />}>
             <T hi="लॉग आउट करें" en="Log out" />
-          </button>
+          </Action>
         )}
       </Row>
     </DesktopShell>
   );
 }
 
-const BTN: Record<'danger' | 'quiet', React.CSSProperties> = {
-  danger: {
-    border: 0,
-    background: 'var(--rust)',
-    color: '#fff',
-    borderRadius: '9px',
-    padding: '9px 16px',
-    fontSize: '13.5px',
-    fontWeight: 700,
-    fontFamily: 'var(--sans)',
-    cursor: 'pointer',
-  },
-  quiet: {
-    border: '1px solid var(--line)',
-    background: '#fff',
-    color: 'var(--muted)',
-    borderRadius: '9px',
-    padding: '9px 16px',
-    fontSize: '13.5px',
-    fontWeight: 700,
-    fontFamily: 'var(--sans)',
-    cursor: 'pointer',
-  },
-};
+/**
+ * The language switch: a segmented control whose thumb slides between the two
+ * options.
+ *
+ * This is the one moment on this page that moves, and it moves because the
+ * reader just pressed it - the motion is the answer to their own action, not
+ * an entrance. Before, both options were separate buttons that swapped fill
+ * colours instantly, so the change registered as a repaint rather than as a
+ * switch being thrown.
+ *
+ * Still two real <button>s rather than a div with a role, so the keyboard, the
+ * focus ring and the accessible name are the browser's. `aria-pressed` carries
+ * the state; a screen reader hears which one is on without needing the thumb.
+ * The slide is `transform` on a separate layer, so it costs no layout, and the
+ * global reduced-motion block clamps it to its end state like everything else.
+ */
+function LangToggle({ value, onChange }: { value: 'hi' | 'en'; onChange: (v: 'hi' | 'en') => void }) {
+  const at = value === 'hi' ? 0 : 1;
+  return (
+    <div
+      style={{
+        position: 'relative',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '3px',
+        padding: '3px',
+        background: 'var(--panel)',
+        border: '1px solid var(--line)',
+        borderRadius: '11px',
+      }}
+    >
+      <span
+        aria-hidden
+        className="seg-thumb"
+        style={{
+          position: 'absolute',
+          top: '3px',
+          bottom: '3px',
+          left: '3px',
+          width: 'calc(50% - 4.5px)',
+          borderRadius: '8px',
+          background: 'var(--navy)',
+          transform: at === 0 ? 'translateX(0)' : 'translateX(calc(100% + 3px))',
+        }}
+      />
+      {(['hi', 'en'] as const).map((code) => {
+        const on = value === code;
+        return (
+          <button
+            key={code}
+            onClick={() => onChange(code)}
+            aria-pressed={on}
+            style={{
+              position: 'relative',
+              minWidth: '92px',
+              minHeight: '38px',
+              borderRadius: '8px',
+              border: 0,
+              background: 'transparent',
+              cursor: 'pointer',
+              fontFamily: 'var(--sans)',
+              fontSize: '14px',
+              fontWeight: 700,
+              color: on ? '#fff' : 'var(--text)',
+              transition: 'color var(--dur-3) var(--ease-out)',
+            }}
+          >
+            {code === 'hi' ? 'हिंदी' : 'English'}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 /** One settings row: icon, label, and whatever control the row carries. */
 function Row({
@@ -216,7 +217,7 @@ function Row({
   onClick,
   danger,
 }: {
-  icon: typeof Globe02Icon;
+  icon: IconName;
   label: React.ReactNode;
   children?: React.ReactNode;
   onClick?: () => void;
@@ -225,16 +226,14 @@ function Row({
   return (
     <div
       onClick={onClick}
+      className="dc-desk-card"
       style={{
-        background: '#fff',
-        border: `1px solid ${danger ? 'var(--rust-tint)' : 'var(--line)'}`,
-        borderRadius: '14px',
         padding: '18px 20px',
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
-        boxShadow: 'var(--e1)',
         cursor: onClick ? 'pointer' : 'default',
+        ...(danger ? { border: '1px solid var(--rust-tint)' } : null),
       }}
     >
       {/* A tinted circle per row - the settings-list convention, and what makes
@@ -253,7 +252,9 @@ function Row({
           background: danger ? 'var(--rust-tint)' : 'var(--navy-tint)',
         }}
       >
-        <HugeiconsIcon icon={icon} size={20} color={danger ? 'var(--rust)' : 'var(--navy)'} strokeWidth={2} />
+        <span style={{ color: danger ? 'var(--rust)' : 'var(--navy)', display: 'grid' }}>
+          <Icon name={icon} size={20} />
+        </span>
       </span>
       <span
         style={{

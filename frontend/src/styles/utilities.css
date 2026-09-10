@@ -103,6 +103,37 @@ button:disabled {
   background: #b8540a;
   transform: translateY(1px);
 }
+/* ---------------------------------------------------------------------------
+   Keyboard focus.
+
+   There was no focus rule anywhere in this stylesheet, so every control fell
+   back to whatever ring the browser draws by default - which differs per
+   engine and, on the buttons that paint their own background, can come out
+   nearly invisible. Nothing here was removing the outline; it simply was
+   never made consistent.
+
+   `:focus-visible` rather than `:focus`, so a mouse press does not leave a
+   ring behind while a Tab press does. Saffron reads against both grounds the
+   app uses: the white body and the navy rail. The offset keeps it clear of
+   the control's own border instead of sitting on top of it.
+
+   Scoped to the two desktop chromes (`.dc-desk`, `.dc-onb`) rather than left
+   global, because the pass that added it was desktop-only. The phone layout
+   still falls back to the browser default and wants the same rule; that is a
+   phone-scoped change, not a side effect of this one.
+   --------------------------------------------------------------------------- */
+:is(.dc-desk, .dc-onb) :where(a, button, select, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--saffron);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* The rail is navy and its links already carry a radius; matching it stops the
+   ring cutting across the corners of the active item's saffron fill. */
+.dc-desk-side .navitem:focus-visible {
+  outline-color: #fff;
+  border-radius: 9px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -302,6 +333,14 @@ button:disabled {
 }
 .arc {
   animation: arc var(--dur-4) var(--ease-out) both;
+}
+
+/* 4c. The segmented switch's thumb sliding between its two options. Answers a
+      press, so it is motion the reader asked for rather than an entrance; the
+      only moving thing on the settings page. Transform only - the thumb is
+      absolutely positioned, so nothing reflows behind it. */
+.seg-thumb {
+  transition: transform var(--dur-3) var(--ease-out);
 }
 
 /* 5. The onboarding step bar filling as the flow advances. */

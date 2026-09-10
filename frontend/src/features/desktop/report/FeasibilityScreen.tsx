@@ -7,7 +7,7 @@ import { useCase } from '@/hooks/use-case';
 import { insight, type Insight } from '@/domain/case';
 import { narrate, label } from '@/domain/feasibility';
 import { inr, num } from '@/lib/format';
-import { Primary, ScoreDial, Stat, T, useT } from '@/components';
+import { Action, Icon, Primary, ScoreDial, Stat, T, useT, verdictColor } from '@/components';
 import { DesktopShell, Legend, ScreenHead } from '../shell';
 
 /**
@@ -51,7 +51,7 @@ export default function FeasibilityScreen() {
                 style={{
                   fontSize: '30px',
                   fontWeight: 700,
-                  color: good ? 'var(--green)' : 'var(--amber)',
+                  color: verdictColor(report.verdict),
                   lineHeight: 1.2,
                 }}
               >
@@ -158,34 +158,16 @@ function Head({ place, business }: { place: string; business: string }) {
            no Share button - the share sheet at /desktop/share files the case as
            an application, which is several steps further down the flow, and a
            button that quietly filed something would be worse than no button. */
-        <button
+        <Action
           onClick={() => window.print()}
-          className="no-print"
-          aria-label={t(
+          ariaLabel={t(
             `${business}, ${place} की जाँच छापिए या PDF बनाइए`,
             `Print or save this check for ${business}, ${place} as a PDF`,
           )}
-          style={{
-            flex: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            border: '1px solid var(--line)',
-            background: 'var(--card)',
-            borderRadius: '9px',
-            padding: '9px 15px',
-            fontSize: '13.5px',
-            fontWeight: 600,
-            fontFamily: 'var(--sans)',
-            cursor: 'pointer',
-            color: 'var(--muted)',
-          }}
+          icon={<Icon name="print" size={16} />}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1">
-            <path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" />
-          </svg>
           <T hi="छापिए / PDF" en="Print / PDF" />
-        </button>
+        </Action>
       }
     />
   );
@@ -262,18 +244,9 @@ function Item({ children }: { children: React.ReactNode }) {
     <li
       style={{ display: 'flex', alignItems: 'flex-start', gap: '9px', fontSize: '13.5px', lineHeight: 1.5 }}
     >
-      <svg
-        aria-hidden
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--green)"
-        strokeWidth="2.6"
-        style={{ flex: 'none', marginTop: '2px' }}
-      >
-        <path d="M4 12.5l5.5 5.5L20 7" />
-      </svg>
+      <span aria-hidden style={{ color: 'var(--green)', display: 'grid', flex: 'none', marginTop: '1px' }}>
+        <Icon name="complete" size={15} />
+      </span>
       <span>{children}</span>
     </li>
   );
