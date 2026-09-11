@@ -48,8 +48,8 @@ function Mark() {
 }
 
 /** Ministry of Social Justice & Empowerment lockup, pinned to the navy panel's
- *  top-left. The asset is black-on-white, so it sits on a white chip rather
- *  than directly on `--navy`. */
+ *  top-left. The asset is black-on-transparent, so it is inverted to white to
+ *  read against `--navy`. */
 function MinistryMark() {
   return (
     <img
@@ -61,9 +61,7 @@ function MinistryMark() {
         left: '24px',
         height: '96px',
         width: 'auto',
-        background: '#fff',
-        borderRadius: '8px',
-        padding: '8px 10px',
+        filter: 'invert(1)',
       }}
     />
   );
