@@ -59,7 +59,7 @@ function MinistryMark() {
         position: 'absolute',
         top: '24px',
         left: '24px',
-        height: '96px',
+        height: '150px',
         width: 'auto',
         filter: 'invert(1)',
       }}
