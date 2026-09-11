@@ -62,36 +62,11 @@ export default function LanguageScreen() {
             }}
           />
 
-          {/* PLACEHOLDER, not the asset. The real Ministry of Social Justice &
-              Empowerment lockup has not been supplied yet, and an official
-              emblem is exactly the wrong thing to approximate - a hand-drawn
-              stand-in for the State Emblem would be both wrong and improper to
-              publish. So this is a labelled empty box until the real file
-              lands: drop it in public/ and swap this div for an <img>.
-
-              Dashed + muted is the same treatment the not-yet-available
-              languages below use, so the screen already reads it as "coming",
-              and it stays visually subordinate to the site mark beside it. */}
-          <div
-            role="img"
-            aria-label="MoSJE logo"
-            style={{
-              width: '104px',
-              height: '38px',
-              border: '1px dashed var(--line)',
-              borderRadius: '8px',
-              background: 'var(--panel)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '9.5px',
-              lineHeight: 1.3,
-              textAlign: 'center',
-              color: 'var(--faint)',
-            }}
-          >
-            MoSJE logo
-          </div>
+          <img
+            src="/govt.png"
+            alt="Ministry of Social Justice & Empowerment"
+            style={{ height: '52px', width: 'auto' }}
+          />
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '24px', fontWeight: 700 }}>अपनी भाषा चुनिए</div>

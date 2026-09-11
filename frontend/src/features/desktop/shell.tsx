@@ -47,42 +47,25 @@ function Mark() {
   );
 }
 
-/**
- * PLACEHOLDER for the Ministry of Social Justice & Empowerment lockup, the
- * navy-panel twin of the one on the phone language screen.
- *
- * Same reasoning as there: the real asset has not been supplied, and an
- * official emblem is the wrong thing to approximate - a hand-drawn State
- * Emblem would be both inaccurate and improper to ship. Swap this for an
- * <img> once the file lands in public/.
- *
- * The phone version is dashed grey on white. That styling would nearly vanish
- * on `--navy`, so the treatment is translated rather than copied: a
- * translucent white fill and dashed white border carry the same "not real yet"
- * reading against the dark panel, and the label uses `#C7D8EC` - the muted
- * on-navy colour the tagline below it already uses.
- */
+/** Ministry of Social Justice & Empowerment lockup, pinned to the navy panel's
+ *  top-left. The asset is black-on-white, so it sits on a white chip rather
+ *  than directly on `--navy`. */
 function MinistryMark() {
   return (
-    <div
-      role="img"
-      aria-label="MoSJE logo"
+    <img
+      src="/govt.png"
+      alt="Ministry of Social Justice & Empowerment"
       style={{
-        width: '132px',
-        height: '44px',
-        flex: 'none',
-        border: '1px dashed rgba(255,255,255,.45)',
-        borderRadius: '9px',
-        background: 'rgba(255,255,255,.07)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '11px',
-        color: '#C7D8EC',
+        position: 'absolute',
+        top: '24px',
+        left: '24px',
+        height: '72px',
+        width: 'auto',
+        background: '#fff',
+        borderRadius: '8px',
+        padding: '8px 10px',
       }}
-    >
-      MoSJE logo
-    </div>
+    />
   );
 }
 
@@ -211,10 +194,11 @@ export function SplitShell({
             textAlign: 'center',
             gap: '22px',
             padding: '40px',
+            position: 'relative',
           }}
         >
-          <Mark />
           {ministryMark ? <MinistryMark /> : null}
+          <Mark />
           <div style={{ fontSize: '17.5px', color: '#C7D8EC', maxWidth: '400px', lineHeight: 1.85 }}>
             {tagline ?? (
               <T
