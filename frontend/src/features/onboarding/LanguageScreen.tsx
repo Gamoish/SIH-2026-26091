@@ -65,7 +65,7 @@ export default function LanguageScreen() {
           <img
             src="/govt.png"
             alt="Ministry of Social Justice & Empowerment"
-            style={{ height: '52px', width: 'auto' }}
+            style={{ height: '68px', width: 'auto' }}
           />
         </div>
         <div style={{ textAlign: 'center' }}>
